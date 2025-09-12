@@ -1,0 +1,81 @@
+Subject,LearningCondition,Order,WSTRight,WSTWrong,EnglishHits,EnglishCR,EnglishScore,FrenchHits,FrenchCR,FrenchScore,NrLangs,Sex,Age,StudyProgramme,LanguageExpert,NativeLanguage,OtherLanguages,SwissGerman
+S10,oe-u,TestOrderB,31,0,7,20,0.5875,9,26,0.5446428571,3,woman,23,Heilpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S100,ij-ei,TestOrderB,35,0,25,18,0.7625,43,26,0.8482142857,3,woman,24,LDS I,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S11,oe-u,TestOrderA,27,0,9,19,0.5875,19,27,0.6517857143,3,woman,21,"Medien-und kommunikationswissenschaft (Haupt), Geografie (Neben)",no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch, Spanisch",yes
+S12,ij-ei,TestOrderB,35,0,16,20,0.7,4,26,0.5,3,man,21,Sozialanthropologie und Linguistik,yes,Schweizerdeutsch (Dialekt),"Englisch, Italienisch, Cebuano",yes
+S14,ij-ei,TestOrderB,35,2,13,20,0.6625,23,26,0.6696428571,3,woman,22,Heil-/Sozialpädagogik,no,"Schweizerdeutsch (Dialekt), Italienisch","Französisch, Englisch, Italienisch",yes
+S15,oe-u,TestOrderA,30,1,17,20,0.7125,9,27,0.5625,3,woman,20,"Medien und Kommunikation, Psychologie",no,Schwäbisch (Deutsch),"Französisch, Englisch, Spanisch",no
+S16,ij-ei,TestOrderB,36,0,19,20,0.7375,33,34,0.9017857143,5,woman,23,Geschichte und Italienisch,yes,"Schweizerdeutsch (Dialekt), Hochdeutsch, Portugiesich","Französisch, Englisch, Italienisch, Spanisch",yes
+S18,ij-ei,TestOrderB,36,0,16,20,0.7,23,27,0.6875,3,woman,24,Sozialarbeit und Sozialpolitik/Recht,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Vietnamesisch",yes
+S2,oe-u,TestOrderB,30,2,10,20,0.625,11,24,0.5267857143,2,man,20,HF: Math. NF: Philo,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch",yes
+S20,oe-u,TestOrderB,32,0,28,19,0.825,14,17,0.4285714286,3,woman,21,Soziologie und Zeitgeschichte im Nebenfach,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch, Italienisch",yes
+S21,ij-ei,TestOrderA,28,0,19,17,0.6625,28,19,0.5892857143,3,woman,22,klinische Heil- und Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S22,oe-u,TestOrderB,27,0,8,20,0.6,6,26,0.5178571429,3,woman,20,Sozialarbeit und Sozialpolitik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S23,ij-ei,TestOrderA,33,0,18,18,0.675,22,23,0.6071428571,3,woman,25,Schulische Heilpädagogik,no,"Hochdeutsch, Spanisch","Französisch, Englisch, Spanisch",no
+S25,ij-ei,TestOrderA,32,2,7,18,0.5375,11,27,0.5803571429,3,woman,22,Klinische Sozial- und Heilpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S28,oe-u,TestOrderB,29,2,10,20,0.625,19,16,0.4553571429,2,woman,20,soziologie,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S29,ij-ei,TestOrderA,31,0,8,20,0.6,14,24,0.5535714286,2,woman,21,klinische heilpädagogik und sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S3,ij-ei,TestOrderA,33,9,16,20,0.7,17,18,0.4732142857,2,woman,21,Psychologie und BWL,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch",yes
+S32,oe-u,TestOrderB,34,0,17,16,0.6125,21,21,0.5625,3,woman,23,Logopädie,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch, Finnisch",yes
+S33,ij-ei,TestOrderA,38,1,11,19,0.6125,19,24,0.5982142857,4,woman,22,Klinische Heil- und Sozialpädagogik,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch, Spanisch, Polnisch",yes
+S34,ij-ei,TestOrderB,34,8,18,17,0.65,16,21,0.5178571429,3,woman,23,"Medien-und Kommunikation, Soziologie, Zeitgeschichte",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S35,oe-u,TestOrderA,35,0,22,20,0.775,26,27,0.7142857143,3,man,22,Recht,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S36,ij-ei,TestOrderB,32,0,12,20,0.65,20,25,0.625,2,man,23,BWL,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S37,ij-ei,TestOrderA,33,0,7,20,0.5875,11,27,0.5803571429,3,woman,23,BWL,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S38,oe-u,TestOrderB,32,0,16,20,0.7,11,24,0.5267857143,3,woman,21,Hauptfach: Medien- und Kommunikationswissenschaften Nebenfach: Psychologie,no,Hochdeutsch,"Französisch, Englisch, Spanisch",no
+S39,ij-ei,TestOrderA,30,5,17,18,0.6625,7,22,0.4553571429,4,man,21,"Hauptfach: MuKW, Nebenfach: BWL",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Rätoromanisch",yes
+S4,ij-ei,TestOrderB,32,0,19,20,0.7375,14,23,0.5357142857,3,woman,21,"Psychologie, Neurowissenschaften im Nebenfach",no,Hochdeutsch,"Französisch, Englisch, Italienisch, Latein",no
+S40,ij-ei,TestOrderB,33,0,18,19,0.7,20,24,0.6071428571,3,man,22,"Hauptfach: Sozialarbeit und Sozialpolitik, Nebenfach: Medien- und Kommunikationswissenschaften",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S41,ij-ei,TestOrderA,35,0,26,19,0.8,26,27,0.7142857143,3,man,20,Mathematik und Informatik,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch, Italienisch",yes
+S42,oe-u,TestOrderB,34,0,20,20,0.75,35,26,0.7767857143,4,woman,37,Jus,no,"Schweizerdeutsch (Dialekt), Tschechisch","Französisch, Englisch, Italienisch, Spanisch",yes
+S43,oe-u,TestOrderA,26,0,7,16,0.4875,19,24,0.5982142857,2,woman,22,Klinische Heil- und Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S44,ij-ei,TestOrderB,34,0,11,20,0.6375,14,26,0.5892857143,3,woman,23,Bachelor / Lehrdiplom Vorschul- & Primarstufe (Abschluss 2013) / Master Schulische Heilpädagogik (Abschluss voraussichtlich 2015)p,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Latein",yes
+S45,ij-ei,TestOrderA,29,3,5,19,0.5375,16,27,0.625,4,woman,22,Psychologie,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Albanisch",yes
+S47,ij-ei,TestOrderA,33,0,28,19,0.825,13,22,0.5089285714,2,woman,24,Schulische Heilpädagogik,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch",yes
+S48,oe-u,TestOrderB,35,0,8,20,0.6,13,25,0.5625,2,woman,21,Logopädie,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Latein",yes
+S49,oe-u,TestOrderA,35,0,17,20,0.7125,26,26,0.6964285714,3,woman,23,Sozialarbeit,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S5,oe-u,TestOrderA,31,0,8,20,0.6,6,28,0.5535714286,3,woman,22,"Sozialarbeit, Sozialpolitik und Religionswissenschaft",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S50,ij-ei,TestOrderB,32,0,14,20,0.675,5,27,0.5267857143,2,woman,22,Psychologie,no,Hochdeutsch,"Französisch, Englisch",no
+S51,ij-ei,TestOrderA,34,2,19,20,0.7375,24,18,0.5357142857,3,woman,21,Klinische Heil- und Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S52,ij-ei,TestOrderB,35,0,8,20,0.6,19,27,0.6517857143,3,woman,23,Recht,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Russisch",yes
+S53,ij-ei,TestOrderA,25,0,14,19,0.65,12,22,0.5,4,woman,19,"Medien und Kommunikation im Hauptfach, Zeitgeschichte und Psychologie im Nebenfach",no,"Schweizerdeutsch (Dialekt), Englisch","Französisch, Englisch, Italienisch, Spanisch",yes
+S54,oe-u,TestOrderB,32,0,6,19,0.55,10,23,0.5,2,woman,21,Sozialarbeit / Sonderpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S55,oe-u,TestOrderA,34,0,13,20,0.6625,10,26,0.5535714286,2,woman,22,Psychologie und Neurowissenschaften,no,"Hochdeutsch, Schwäbisch-Dialekt","Französisch, Englisch",no
+S56,ij-ei,TestOrderB,33,0,19,20,0.7375,13,27,0.5982142857,2,man,21,Mathematik/Physik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S57,oe-u,TestOrderA,30,0,5,20,0.5625,5,25,0.4910714286,3,man,24,BWL,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S58,oe-u,TestOrderB,33,1,14,18,0.625,20,26,0.6428571429,2,woman,21,Klinische Heil- und Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S59,oe-u,TestOrderA,31,1,14,18,0.625,18,21,0.5357142857,3,woman,24,"Soziologie, Sozialarbeit und Sozialpolitik",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S6,oe-u,TestOrderB,34,0,15,20,0.6875,19,21,0.5446428571,3,woman,21,Klinische Heil- & Sozialpädagogik,no,"Schweizerdeutsch (Dialekt), Kroatisch","Französisch, Englisch, Serbisch, Kroatisch",yes
+S60,oe-u,TestOrderB,34,0,17,18,0.6625,15,22,0.5267857143,3,woman,22,Klinische Heilpädagogik und Sozialpädadogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S61,ij-ei,TestOrderA,29,0,6,20,0.575,8,24,0.5,2,woman,20,Recht,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch",yes
+S62,oe-u,TestOrderB,27,2,4,19,0.525,9,25,0.5267857143,2,woman,22,"Psychologie (Hauptfach), Medien und Kommunikationswissenschaften (Nebenfach)",no,Hochdeutsch,"Englisch, Bulgarisch",no
+S63,ij-ei,TestOrderA,37,0,34,18,0.875,38,24,0.7678571429,3,woman,25,Rechtswissenschaften,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S64,ij-ei,TestOrderB,34,2,14,20,0.675,16,26,0.6071428571,3,woman,22,Klinische Heil- und Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S66,oe-u,TestOrderB,34,0,22,20,0.775,23,25,0.6517857143,2,woman,22,"medien und kommunikationswissenschaft, literaturwissenschaft",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S67,oe-u,TestOrderA,29,0,12,20,0.65,18,19,0.5,2,woman,21,"Medien-und Kommunikationswissenschaften 90, Soziologie 60, Zeitgeschichte 30",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S68,oe-u,TestOrderB,35,0,27,20,0.8375,17,25,0.5982142857,3,man,24,"Sozialarbeit & Sozialpolitik, Erziehungswissenschaften",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S69,ij-ei,TestOrderA,30,0,8,20,0.6,11,28,0.5982142857,3,woman,22,"Medien und Kommunikationswissenschaft, Sozialanthropologie, Psychologie",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S7,ij-ei,TestOrderA,37,0,23,20,0.7875,23,25,0.6517857143,2,man,23,"Mathematik, Physik",no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch",yes
+S70,ij-ei,TestOrderB,31,1,16,17,0.625,27,17,0.5446428571,2,woman,22,Klinische heil-und sozialpädagogik,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch",yes
+S71,ij-ei,TestOrderA,32,1,19,19,0.7125,23,26,0.6696428571,3,woman,24,Schulische Heilpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S73,ij-ei,TestOrderA,33,3,14,19,0.65,19,22,0.5625,3,woman,21,Sozialarbeit und Sozialpolitik/ pädagogik und Psychologie,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S74,oe-u,TestOrderB,32,10,11,17,0.5625,14,25,0.5714285714,2,man,26,Schulische Heilpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S76,ij-ei,TestOrderB,34,1,16,20,0.7,10,28,0.5892857143,3,woman,21,Allgemeine und Schweizerische Zeitgeschichte und Mathematik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S77,oe-u,TestOrderA,33,0,26,20,0.825,24,24,0.6428571429,4,woman,22,Medien- und Kommunikationswissenschaft,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch, Portugiesisch",yes
+S78,ij-ei,TestOrderB,33,0,22,19,0.75,30,20,0.625,2,woman,23,Logopädie,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S79,oe-u,TestOrderA,29,1,11,20,0.6375,16,23,0.5535714286,3,woman,21,"Medien- & Kommunikationswissenschaft, NF: Sozialanthropologie, Spanisch",yes,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch",yes
+S8,ij-ei,TestOrderB,35,2,25,19,0.7875,21,23,0.5982142857,4,woman,20,"HF Sozialarbeit & Sozialpolitik, NF Theologie",no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch, Russisch",yes
+S80,oe-u,TestOrderB,33,6,16,20,0.7,27,26,0.7053571429,3,woman,21,Hauptfach: Soziologie Nebenfach: Recht,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S81,oe-u,TestOrderA,34,1,12,20,0.65,18,26,0.625,3,woman,23,schulische Heilpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S82,oe-u,TestOrderB,33,0,23,19,0.7625,21,28,0.6875,3,man,20,Medien und Kommunikation,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch",yes
+S83,oe-u,TestOrderA,33,0,10,20,0.625,10,27,0.5714285714,2,woman,20,klinische Heilpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S85,oe-u,TestOrderA,33,1,20,17,0.675,13,22,0.5089285714,2,woman,21,Klinische Heil-/Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes
+S86,ij-ei,TestOrderB,32,2,10,20,0.625,19,22,0.5625,3,woman,22,Primarlehrerin und jetzt Schulische Heilpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Lateinisch",yes
+S88,oe-u,TestOrderB,33,3,15,20,0.6875,13,19,0.4553571429,4,woman,23,Psychologie & BWL,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Spanisch, Latein",yes
+S89,oe-u,TestOrderA,32,0,18,19,0.7,22,21,0.5714285714,3,woman,21,klinische Heil-& Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Spanisch",yes
+S90,ij-ei,TestOrderB,34,1,19,19,0.7125,22,24,0.625,5,woman,22,Recht,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Spanisch, Russisch",yes
+S91,ij-ei,TestOrderA,37,0,19,20,0.7375,26,19,0.5714285714,2,woman,21,Sozialarbeit und Heilpädagogik,no,"Schweizerdeutsch (Dialekt), Hochdeutsch","Französisch, Englisch, Latein",yes
+S93,ij-ei,TestOrderA,36,3,27,20,0.8375,32,25,0.7321428571,4,man,21,Recht,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Italienisch, Spanisch",yes
+S94,ij-ei,TestOrderB,32,2,15,18,0.6375,24,21,0.5892857143,4,woman,21,Psychologie,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch, Spanisch, Portugiesisch",yes
+S96,ij-ei,TestOrderB,33,3,13,17,0.5875,26,24,0.6607142857,3,woman,24,Heil- und Sozialpädagogik,no,"Schweizerdeutsch (Dialekt), Italienisch","Französisch, Englisch, Spanisch",yes
+S97,oe-u,TestOrderA,34,0,9,20,0.6125,9,26,0.5446428571,2,woman,21,Heil- und Sozialpädagogik,no,Schweizerdeutsch (Dialekt),"Französisch, Englisch",yes

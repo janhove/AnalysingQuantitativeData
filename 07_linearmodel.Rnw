@@ -1,0 +1,687 @@
+\chapter{Another look at the mean}\label{ch:linmod}
+This part of the lecture notes is devoted to the workhorse of 
+quantitative data analysis: the \term{general linear model}.\footnote{Not to be confused with the \term{general\emph{ised} linear model}.
+This is an extension of the general linear model---I didn't invent these names\dots.
+We'll touch briefly on one popular instantiation of the generalised linear model, namely
+logistic regression, in the optional Chapter \ref{ch:logistic}.}
+The general linear model is a tool with which we can
+express how one or several \term{predictors}
+(or, indeed, none) are related to a single \term{outcome}. 
+(It is common to speak instead of independent and dependent variables,
+but I find the terms predictor and outcome clearer and more intuitive.)
+Commonly used techniques such as $t$-tests, analysis of variance
+(\textsc{anova}) as well as regression models are all instantiations of the general linear model
+or are otherwise closely connected to it.
+So a firm grasp of its underpinnings will stand you in good stead
+when learning how to analyse quantitative data.
+Moreover, if you want to master more advanced techniques
+such as generalised linear models (e.g., logistic regression)
+or mixed-effects modelling, you need to be comfortable with the general 
+linear model first.
+
+In this chapter, we introduce several key concepts of the
+general linear model by estimating the mean of a population
+in a different manner from what we have done previously.
+In the chapters that follow, the
+models become gradually more complex, but the fundamental principles
+from this chapter will still apply.
+
+Let us, for the moment, set aside everything we have said about means.
+We are given data 
+(in this case, the \textsc{gjt} scores from \citet{DeKeyser2010},
+see Chapter \ref{ch:uncertainty}) and we need to
+describe these data in a meaningful way. 
+Listing all the datapoints
+would not be very informative. 
+A better approach is to separate the data
+into two parts: a systematic component, capturing what the datapoints
+have in common, and an unsystematic component, capturing the individual
+discrepancies between these commonalities and the actual values:
+\[
+\textrm{value of an observation} = \textrm{systematic component} + \textrm{discrepancy}.
+\]
+To keep the notation concise, this equation is usually written as
+\begin{equation}\label{eq:beta0}
+ y_i = \beta_0 + \varepsilon_i,
+\end{equation}
+for $i = 1, \dots, n$.
+Here, $y_i$ is the $i$-th observation in the dataset,
+$\beta_0$ represents what is common to all values in the population,
+and $\varepsilon_i$ expresses how far the $i$-th observation deviates
+from this population value.
+The $\varepsilon_i$ values are called the \term{errors};
+we assume that $\E(\varepsilon_i) = 0$.
+We write $\beta_0$ rather than simply $\beta$,
+because later we'll use several $\beta$s
+to represent the commonality among the $y$ values.
+
+Typically, we are more interested in the $\beta$s
+than in the $\varepsilon$s.
+Since we don't have access to the entire population,
+we must content ourselves with an estimate of $\beta_0$.
+In Equation \ref{eq:beta0}, $\beta_0$ is a parameter
+with a specific, though usually unknown, value;
+for estimates of this parameter we use the notation
+$\widehat{\beta}_0$.
+Because $\widehat{\beta}_0$ is only an estimate,
+the errors are also only estimated:
+\[
+  y_i = \widehat{\beta}_0 + \widehat{\varepsilon}_i,
+\]
+which is equivalent to
+\[
+  \widehat{\varepsilon}_i = y_i - \widehat{\beta}_0,
+\]
+for $i = 1, \dots, n$.
+Estimated errors are called \term{residuals}.
+
+But how can we obtain $\widehat{\beta}_0$
+(or, in other words, estimate $\beta_0$)?
+In principle, the equation holds for any value of $\widehat{\beta}_0$,
+since we can simply choose the $\widehat{\varepsilon}$ values to accommodate
+our choice of $\widehat{\beta}_0$.
+The first two \textsc{gjt} scores in the dataset are
+151 and 182. 
+If we were to select an arbitrary value for $\beta_0$, say 1823,
+we could set $\widehat{\varepsilon}_1 = -1672$ and $\widehat{\varepsilon}_2 = -1641$,
+and the equation would be satisfied:
+\[
+  y_1 = 151 = 1823 - 1672,
+\]
+\[
+  y_2 = 182 = 1823 - 1641.
+\]
+Alternatively, if we were to choose
+$\beta_0 = 14$,
+we could set $\widehat{\varepsilon}_1 = 137$ and $\widehat{\varepsilon}_2 = 168$,
+and again the equation would hold:
+\[
+  y_1 = 151 = 14 + 137,
+\]
+\[
+  y_2 = 182 = 14 + 168.
+\]
+So we need a principled method for estimating $\beta_0$.
+
+\section{Optimisation criteria}
+The question arises as to what the optimal way is
+to determine $\widehat{\beta}_0$.
+The unsurprising answer is: it depends on what we mean
+by `optimal'.
+One sensible definition of `optimal' is
+to estimate $\beta_0$ in such a way that
+the sum of the absolute residuals
+($\sum_{i = 1}^{n} |\widehat{\varepsilon}_i|$) is as small as possible.
+If we choose 135 as the value of $\widehat{\beta}_0$,
+the sum of the absolute residuals is 1993.
+Here we assume that the dataset
+\texttt{dekeyser2010.csv} has the object name \texttt{d}.
+
+<<>>=
+sum(abs(d$GJT - 135))
+@
+
+If instead we choose 148 as the value, the sum of the absolute residuals is 1799.
+<<>>=
+sum(abs(d$GJT - 148))
+@
+
+If we define `optimal' in this way, then 148 is the better
+estimate of $\beta_0$. We could repeat this exercise
+for a wide range of candidate values and then select the one that minimises the sum.
+This approach is called the \term{method of least absolute deviations}.
+As Figure \ref{fig:optimisation} (left) shows,
+$\beta_0$ estimates between 150 and 151 are optimal in this sense.
+Not coincidentally, all values in the interval $[150, 151]$
+are medians of the GJT scores:
+when $\beta_0$ is estimated using the method of least absolute deviations,
+the result is a median of the sample.
+For a proof, see \citet{Schwertman1990}.
+
+<<echo = FALSE, fig.cap = "Left: If we estimate the parameter so as to minimise the sum of the absolute deviations, we obtain the sample median. Right: If we estimate the parameter so as to minimise the sum of the squared deviations, we obtain the sample mean.\\label{fig:optimisation}", echo = FALSE, fig.width = 8, fig.height = 2.3, out.width=".9\\textwidth">>=
+sum_of_squares <- function(x, m) {
+  sum((x - m)^2)
+}
+df <- data.frame(beta0 = seq(145, 155, by = 0.01))
+df$SS <- NA
+for (i in 1:nrow(df)) {
+  df$SS[i] <- sum_of_squares(x = d$GJT, m = df$beta0[i])
+}
+p1 <- ggplot(df,
+       aes(x = beta0, y = SS)) +
+  geom_line() +
+  xlab(expression(widehat(beta[0]))) +
+  ylab(expression(paste(Sigma[{i==1}]^n, widehat(epsilon)[i]^2))) +
+  ggtitle("Least squares")
+
+sum_of_deviations <- function(x, m) {
+  sum(abs(x - m))
+}
+
+df$SD <- NA
+for (i in 1:nrow(df)) {
+  df$SD[i] <- sum_of_deviations(x = d$GJT, m = df$beta0[i])
+}
+
+p2 <- ggplot(df,
+       aes(x = beta0, y = SD)) +
+  geom_line() +
+  xlab(expression(widehat(beta[0]))) +
+  ylab(expression(paste(Sigma[{i==1}]^n, abs(widehat(epsilon)[i])))) +
+  ggtitle("Least absolute deviations")
+
+gridExtra::grid.arrange(p2, p1, ncol = 2)
+@
+
+Another sensible definition of `optimal' is that $\beta_0$ needs to
+be estimated in such a way that the sum of the squared
+residuals, i.e.,
+\[
+  \sum_{i = 1}^n \widehat{\varepsilon}_i^2 = \widehat{\varepsilon}_1^2 + \dots + \widehat{\varepsilon}_n^2,
+\]
+is as small as possible.
+This is the \term{method of least squares}.
+As shown in the right graph of Figure \ref{fig:optimisation},
+the optimal $\widehat{\beta}_0$ value when using least squares
+is about 150.8 for the \textsc{gjt} data.
+The mean of the \textsc{gjt} data is about 150.8, too, and
+of course, this isn't a coincidence, either:
+when we estimate $\beta_0$ using least squares,
+we obtain the sample mean!
+
+\mypar{Theorem}
+  The sample mean minimises the sum of squared residuals.
+\parend
+
+This result can be proved using secondary school mathematics.
+In fact, here are two different proofs---one using derivatives
+and another using elementary algebra.
+
+\begin{proof}
+Consider the expression
+\[
+ \sum_{i=1}^{n} (y_i - \widehat{\beta}_0)^2
+\]
+as a function of $\widehat{\beta}_0$. This function is the sum of
+$n$ quadratic functions, so it is itself a quadratic function.
+We're interested in the value of $\widehat{\beta}$ that minimises this function.
+As you may recall from secondary school, we can find this value by differentiating
+the function, setting the derivative to zero, and solving the resulting expression
+for $\widehat{\beta}_0$. So let's do this.
+
+First compute the derivative of $\sum_{i=1}^{n} (y_i - \widehat{\beta}_0)^2$ with respect to $\widehat{\beta}_0:$
+\begin{align*}
+  \frac{\textrm{d}}{\textrm{d} \widehat{\beta}_0}\sum_{i = 1}^n (y_i - \widehat{\beta}_0)^2
+  &=\frac{\textrm{d}}{\textrm{d} \widehat{\beta}_0} \sum_{i = 1}^n \left(y_i^2 - 2y_i\widehat{\beta}_0 + \widehat{\beta}_0^2\right) \\
+  &= \sum_{i = 1}^n \left(\frac{\textrm{d}}{\textrm{d} \widehat{\beta}_0} y_i^2 -  \frac{\textrm{d}}{\textrm{d} \widehat{\beta}_0} 2y_i\widehat{\beta}_0 + \frac{\textrm{d}}{\textrm{d} \widehat{\beta}_0} \widehat{\beta}_0^2\right) \\
+  &= \sum_{i = 1}^n \left(0 - 2y_i + 2\widehat{\beta}_0\right)  \\
+  &= -\left(2 \sum_{i=1}^n y_i\right) + 2n\widehat{\beta}_0.
+\end{align*}
+These equalities rely on the identity $(a-b)^2 = a^2 - 2ab + b^2$ and
+on basic derivatives.
+The above is equal to zero if and only if
+$2\sum_{i=1}^n y_i = 2n\widehat{\beta}_0$.
+Dividing both sides by $2n$, we obtain
+\[
+  \widehat{\beta}_0 = \frac{1}{n}\sum_{i=1}^n y_i,
+\]
+that is, the arithmetic mean of the $y_i$ values.
+\end{proof}
+
+\begin{proof}
+An alternative proof that doesn't rely on taking derivatives is this.
+Write $\overline y := \left(\sum_{i=1}^n y_i\right)/n$, i.e., the sample mean.
+Note that
+\begin{align*}
+ \sum_{i=1}^{n} (y_i - \widehat{\beta}_0)^2
+ &= \sum_{i=1}^{n} \left((y_i - \overline y) + (\overline y - \widehat{\beta}_0)\right)^2 \\
+ &= \sum_{i=1}^n \left((y_i - \overline y)^2 + 2(y_i - \overline y)(\overline y - \widehat{\beta}_0) + (\overline y - \widehat{\beta}_0)^2\right) \\
+ &= \sum_{i=1}^n (y_i - \overline y)^2 + 2(\overline y - \widehat{\beta}_0)\underbrace{\left(\sum_{i=1}^n y_i - n\overline y\right)}_{= n\overline y - n\overline y = 0} \underbrace{n(\overline y - \widehat{\beta}_0)^2}_{\geq 0}  \\
+ &\geq \sum_{i=1}^n (y_i - \overline y)^2,
+\end{align*}
+with equality if and only if $\widehat{\beta}_0 = \overline y$.
+\end{proof}
+
+Both computationally and mathematically, the method of least squares is the easiest to work with.
+Unless mentioned otherwise, the parameter estimates in the general linear model
+are obtained using this method (`\term{ordinary least squares}', or \textsc{ols}).
+If you want to use the method of least absolute deviations,
+median (or quantile) regression models are available.
+Further, in several applications in machine learning,
+other optimality criteria are quite common. 
+
+\section{General linear models in R}
+We can use the \texttt{lm()} function to build linear models
+whose parameters are estimated using least squares.
+This function takes a formula in which the outcome is listed
+in front of the tilde and the predictors are listed after it.
+In the present case, we don't have any predictors, so we just
+write a 1 instead:
+<<>>=
+mod.lm <- lm(GJT ~ 1, data = d)
+@
+The estimated parameters can be printed by typing the name
+of the model at the prompt:
+<<>>=
+mod.lm
+@
+A more compact overview can be obtained using \texttt{coef()}:
+<<>>=
+coef(mod.lm)
+@
+Don't be confused by differences in the formatting (150.8 vs 150.7763).
+This is merely a matter of rounding the output;
+the underlying representation of these estimates is the same.
+
+We can obtain the residuals, that is, the $\widehat{\varepsilon}_i$ values as follows:
+<<eval = FALSE>>=
+resid(mod.lm) # output not shown
+@
+
+If we subtract the residuals from the observed values,
+we obtain the (so-called) \term{predicted values}. 
+(A term I'm not entirely chuffed with.)
+Since
+\[
+y_i - \widehat{\varepsilon}_i = y_i - (y_i - \widehat{\beta}_0) = \widehat{\beta}_0,
+\]
+this results in 76 repetitions of $\widehat{\beta}_0$:
+<<results = FALSE>>=
+# output not shown:
+d$GJT - resid(mod.lm)
+# alternatively (output not shown):
+predict(mod.lm)
+@
+
+\section{Quantifying uncertainty in a general linear model}
+What we've done so far is \emph{estimate} the $\beta_0$ parameter 
+that we're interested in.
+While we now have a principled approach for obtaining this estimate, 
+the resulting value will depend on the data that we've collected. 
+Usually, the estimate is based only on a sample from some larger population.
+As a result, 
+our estimate of $\beta_0$ won't exactly coincide with the true but unknown value of $\beta_0$, 
+that is, there is some inherent uncertainty about our estimate.
+
+\subsection{The bootstrap}\label{sec:semiparametric}
+Just as in the previous chapter, we can use the bootstrap
+to quantify the uncertainty in the estimate of $\beta_0$.
+Since in this case $\widehat{\beta}_0$ is equal to the
+sample mean,
+the result is, of course, identical to what we obtained before. 
+But this gives me the opportunity to show how the bootstrap
+can also be applied to more complex
+linear models.
+
+The logic is again that we treat the sample as a stand-in
+for the population. However, instead of drawing bootstrap samples
+from the data itself, this time we draw bootstrap samples
+from the residuals ($\widehat{\varepsilon}$). We then combine these
+with $\widehat{\beta}_0$ to generate the bootstrap samples.
+If we are only interested in the mean, this method
+offers no additional benefit, as it is mathematically equivalent
+to the earlier bootstrap approach. But it is pedagogically more useful
+(and sometimes statistically preferable),
+especially once we have several $\beta$s.
+Concretely:
+\begin{enumerate}
+ \item Compute $\widehat{\beta}_0$ and obtain in addition
+ a vector $\bm{\hat{\varepsilon}} = (\widehat{\varepsilon}_1, \dots, \widehat{\varepsilon}_n)$.
+ \item Draw a bootstrap sample from $\bm{\hat{\varepsilon}}$ by means of sampling with replacement.
+ Call this bootstrap sample $\bm{\hat{\varepsilon}^{*}}$.
+ This vector also has $n$ values,
+ with some $\widehat{\varepsilon}_i$ possibly absent and others appearing more than once.
+ \item Combine $\widehat{\beta}_0$ and $\bm{\hat{\varepsilon}^{*}}$ to create
+ a new series of $y$ values: $y_i^{*} = \widehat{\beta}_0 + \widehat{\varepsilon}_i^{*}$.
+ \item On the basis of $\bm{y^{*}}$, re-estimate the parameter of interest ($\widehat{\beta}_0^{*}$).
+ \item Repeat steps 2--4 several thousand times to obtain the distribution
+ of the bootstrapped $\beta_0$ estimates.
+\end{enumerate}
+
+The R code below implements these steps.
+<<cache = TRUE>>=
+n_bootstrap <- 20000
+bs_b0 <- vector(length = n_bootstrap)
+residuals <- resid(mod.lm)
+predictions <- predict(mod.lm)
+
+for (i in 1:n_bootstrap) {
+  bs_residual <- sample(residuals, replace = TRUE)
+  bs_outcome <- predictions + bs_residual
+  bs_mod <- lm(bs_outcome ~ 1)
+  bs_b0[i] <- coef(bs_mod)[1]
+}
+@
+
+We can then again visualise the distribution of the
+bootstrapped parameter estimates,
+and compute their standard deviation and the 2.5 and 97.5 percent
+quantiles. The results are, of course, identical
+to those in Chapter \ref{ch:uncertainty}.
+
+<<eval = FALSE>>=
+hist(bs_b0)
+sd(bs_b0)
+quantile(bs_b0, probs = c(0.025, 0.975))
+@
+
+\subsection{Another kind of bootstrap}
+In the bootstrap approach just discussed,
+we assumed that the errors in the population 
+are distributed in exactly the same way as the residuals in the sample. 
+One drawback of this assumption is that it may underestimate the 
+granularity of the residuals in the population.
+For example, in the \texttt{mod.lm} model there is a residual of $-14.78$ 
+and one of $-12.78$, but none of $-13.78$.
+A residual of $-14.78$ corresponds to an observation
+of $150.78 - 14.78 = 136$; a residual of $-13.78$
+would correspond to an observation of $150.78 - 13.78 = 137$.
+According to our assumption, then,
+there would be no participants in the population
+with a \textsc{gjt} score of 137.
+
+This is, of course, a rather odd assumption;
+in practice, however, it usually has little effect on inference. 
+An alternative is to assume instead that 
+the errors are normally distributed.
+Normal distributions are infinitely fine-grained, so this assumption
+is, as it were, the opposite extreme of the earlier one.
+We assume that the expectation of the errors is 0, 
+so we only need to determine the standard deviation
+of the normally distributed residuals in the population.
+This is estimated by the standard deviation of the residuals in the sample.
+Here we can use two functions:
+<<>>=
+sd(resid(mod.lm))
+sigma(mod.lm)
+@
+
+In this example (a linear model without predictors)
+the two values are identical, but once predictors
+are included, \texttt{sigma()} provides a better estimate
+of the standard deviation of the residuals. It is computed as
+\begin{equation}\label{eq:sigmap}
+\widehat{\sigma}_{\varepsilon} = \sqrt{\frac{1}{n - p} \sum_{i = 1}^{n} \widehat{\varepsilon}_i^2},
+\end{equation}
+where $p$ is the number
+of estimated $\beta$s.
+In this case $p = 1$, so the equation reduces to the
+sample standard deviation of the residuals:
+<<>>=
+sqrt(sum(resid(mod.lm)^2)/(length(resid(mod.lm)) - length(coef(mod.lm))))
+@
+We divide by $n-p$ for the same reason
+that one divides by $n-1$ when calculating the standard deviation
+of a sample: to counteract systematic underestimation.
+
+Instead of generating bootstrap residuals
+using sampling with replacement,
+we now generate them randomly from a normal distribution
+with $\mu = 0$ and $\sigma = \widehat{\sigma}_{\varepsilon}$:
+
+<<cache = TRUE>>=
+n_bootstrap <- 20000
+bs_b0 <- vector(length = n_bootstrap)
+sd_residuals <- sigma(mod.lm)
+predictions <- predict(mod.lm)
+
+for (i in 1:n_bootstrap) {
+  bs_residual <- rnorm(n = length(predictions), mean = 0, sd = sd_residuals)
+  bs_outcome <- predictions + bs_residual
+  bs_mod <- lm(bs_outcome ~ 1)
+  bs_b0[i] <- coef(bs_mod)[1]
+}
+@
+
+<<eval = FALSE>>=
+hist(bs_b0) # histogram, not shown
+sd(bs_b0)   # standard error
+# 95% confidence interval
+quantile(bs_b0, probs = c(0.025, 0.975))
+@
+
+This kind of bootstrap---in which we assume
+that the residuals follow a particular distribution
+and estimate the relevant parameters of that distribution
+from the sample---is called a \term{parametric bootstrap}.
+The bootstrap from the previous section---where
+bootstrap samples of model residuals
+are combined with model predictions and the relevant
+parameters are then re-estimated from these new values---is called
+a \term{semiparametric bootstrap}.
+The bootstrap from the previous chapter---where
+bootstrap samples are drawn from the original dataset---is 
+called a \term{nonparametric bootstrap}.
+
+Neither the assumption that the errors are distributed exactly as the residuals in sample
+nor the assumption that they are normally distributed and
+infinitely fine-grained can actually be correct here,
+since in this study only integers between 0 and 204
+could occur. The fact that we nevertheless obtain
+the same results under different assumptions already suggests
+that with this sample size and this kind of data distribution,
+the estimation of the uncertainty of a
+mean is not substantially affected by assumptions
+about the exact distribution of the errors in the population.
+
+\subsection{Using $t$ distributions}
+If we're prepared to assume that the residuals are normally distributed, 
+then the standard error and a confidence interval 
+can also be derived analytically. 
+The formulas required for this are not shown here,
+as they offer little additional pedagogical value.
+In R, one can use the \texttt{summary()} function
+to obtain the standard error
+(\texttt{Std.\ Error}):
+<<>>=
+summary(mod.lm)
+@
+Here, $\beta_0$ is labelled \texttt{(Intercept)}.
+What \texttt{t value} and \texttt{Pr(>|t|)} mean
+will only be discussed in a later chapter.
+
+The 95\% confidence interval can be calculated with \texttt{confint()}:
+<<>>=
+confint(mod.lm)
+@
+
+Of course, other intervals may also be calculated,
+for example an 80\% confidence interval:
+<<>>=
+confint(mod.lm, level = 0.80)
+@
+
+\mypar{Exercise}
+Why does the \texttt{summary()} function
+show the median but not the mean of the residuals?
+\parend
+
+\section{*Maximum likelihood estimation}\label{sec:ml}
+With the method of least squares (and its variants), parameter estimates
+are obtained by minimising the resulting estimated residuals.
+For certain more complex models
+(for example, the generalised linear model),
+this estimation method cannot be applied, and instead
+one uses the so-called \term{maximum likelihood method} (or a variant thereof).
+The principle of maximum likelihood estimation will now be illustrated
+using the \textsc{gjt} data.
+You may safely skip this section for now,
+until you encounter the maximum likelihood method
+later in your journey through statistics.
+
+Suppose that the observations
+$y_1, \dots, y_n$ are independent and normally distributed with mean $\mu$ and variance $\sigma^2$.
+The probability density $p(y_i)$ of such an observation is given by
+\[
+  p(y_i) = \frac{1}{\sqrt{2\pi} \sigma}\exp\left(-\frac{(y_i - \mu)^2}{2\sigma^2}\right).
+\]
+Because the observations are independent, the joint probability density
+$p(y_1, \dots, y_n)$
+of the random vector $(y_1, \dots, y_n)$ is equal to the product of the individual
+densities.
+(This was not shown in these lecture notes, but it follows from
+Definition \vref{def:indep2}.)
+Hence,
+\begin{equation}\label{eq:mle}
+  p(y_1, \dots, y_n) = \prod_{i = 1}^n \frac{1}{\sqrt{2\pi} \sigma}\exp\left(-\frac{(y_i - \mu)^2}{2\sigma^2}\right).
+\end{equation}
+If we treat this expression as a function of $\mu$, we call it the
+\term{likelihood function}.
+A sensible way to estimate $\mu$ on the basis of the data
+is to choose the value $\widehat{\mu}$ that maximises the likelihood function.
+The product makes this somewhat cumbersome, but we can take the logarithm
+and rewrite the product as a sum, since $\log ab = \log a + \log b$.
+This yields the \term{log-likelihood function}.
+As the logarithm is strictly increasing, the value that maximises the
+log-likelihood function also maximises the likelihood function.
+Accordingly, we determine $\widehat{\mu}$ as follows:
+\begin{align*}
+  \widehat{\mu}
+  &= \argmax_{\mu} \left(\prod_{i = 1}^n \frac{1}{\sqrt{2\pi} \sigma}\exp\left(-\frac{(y_i - \mu)^2}{2\sigma^2}\right)\right)
+  & [\textrm{maximise likelihood function}]\\
+  &= \argmax_{\mu} \left(\prod_{i = 1}^n \exp\left(-\frac{(y_i - \mu)^2}{2\sigma^2}\right)\right)
+  & [\textrm{constants are irrelevant}]\\
+  &= \argmax_{\mu} \log\left(\prod_{i = 1}^n \exp\left(-\frac{(y_i - \mu)^2}{2\sigma^2}\right)\right)
+  & [\textrm{logarithm}]\\
+  &= \argmax_{\mu} \sum_{i = 1}^n \log\left(\exp\left(-\frac{(y_i - \mu)^2}{2\sigma^2}\right)\right)
+  & [\textrm{rewrite product as sum}]\\
+  &= \argmax_{\mu} - \sum_{i = 1}^n \frac{(y_i - \mu)^2}{2\sigma^2}
+  & [\log(\exp x) = x]\\
+  &= \argmax_{\mu} -\sum_{i = 1}^n (y_i - \mu)^2
+  & [\textrm{constants are irrelevant}]\\
+  &= \argmin_{\mu} \sum_{i = 1}^n (y_i - \mu)^2.
+  & [\textrm{maximising $-x$ = minimising $x$}]
+\end{align*}
+
+Thus, we arrive at precisely the same optimisation problem
+as with the method of least squares!
+The solution is therefore also the same:
+\[
+  \widehat{\mu} = \frac{1}{n} \sum_{i = 1}^n y_i.
+\]
+
+More generally, in the classical linear model,
+we obtain the same $\beta$ estimates,
+regardless of whether we use the least squares method (without making
+any assumptions about the distribution of the data)
+or the maximum likelihood method (under the assumption
+of independent and identically normally distributed data).
+For certain more complex models, least squares cannot be applied,
+but maximum likelihood can.
+
+\section{Assumptions and relevance}\label{sec:linmodassumptions}
+Model assumptions enter into the data analysis at some point,
+be it when estimating the model parameters (using maximum likelihood)
+or when estimating the uncertainty about these estimates.
+In this chapter, three assumptions about the errors $\varepsilon_i$ were made:
+The $\varepsilon_i$ values are independent,
+they are drawn from the same distribution with expectation 0,
+and---when using $t$ distributions or maximum likelihood estimation---this
+distribution is a normal one.
+The first two of these assumptions are jointly referred to as the \term{i.i.d.\ assumption},
+where i.i.d.\ is the abbreviation of \textit{independently and identically distributed}.
+The i.i.d.\ assumption is equivalent to assuming that $\varepsilon_1, \dots, \varepsilon_n$
+constitute a random sample from some distribution with expectation 0.
+
+The independence assumption entails that if we know the value of one error, then
+this doesn't provide us with any more information about any of the remaining errors.
+(The formal definition of independence in Definition \vref{def:indep_rv} boils
+down to this.)
+To make this more concrete, consider the following example.
+Let's say you wanted to estimate the average length of the [u] vowel in 
+the Berne vernacular. 
+To this end, you have 25 informants from Berne read out 50 words containing [u].
+It is conceivable that some informants tend to produce longer [u] sounds 
+than others.
+That is, once you obtain a positive error 
+(corresponding to longer than average vowel length) 
+for a single production from a single speaker,
+chances are the other productions from this speaker will also have positive errors. 
+That is, once you've learnt something about the value of one specific error, 
+you can make more informed guesses about the values of some other error, too.
+(Recall that `error' merely refers to the discrepancy between
+the observation $y_i$ and the shared part $\mu = \beta_0$.)
+Similarly, it is conceivable that [u] sounds 
+tend to be longer in some words or phonological contexts than others. 
+If so, the error for a single word produced by a single speaker may 
+give you some clues as to the error for other productions
+of the same word. 
+In sum, the $25 \cdot 50 = 1250$ data points that 
+this study would produce would violate the independence assumption 
+if we were to analyse them with the tools we're going to discuss.
+
+The independence assumption is essential for inference.
+If it is violated, the uncertainty about the parameter estimates 
+may be massively underestimated using the methods covered in these lecture notes. 
+Deciding whether this assumption is justified typically requires 
+knowledge about how the data were collected.
+Problems with dependencies between errors can be tackled in a number of ways,
+with one popular approach since 2008 or so being the use of mixed-effects models.
+
+The assumption that the $\varepsilon_1, \dots, \varepsilon_n$ values 
+have the same distribution isn't too relevant just yet, but we will
+come back to it in the next chapter.
+(That said, we already discussed one of its consequences in Example \vref{example:weightedmean}.)
+
+The normality assumption is the least important of the three.
+In fact, in our running example, we \emph{know} that this assumption is violated:
+Normal distributions theoretically range from $-\infty$ to $+\infty$,
+but our data are known to be constrained to the interval $[0, 204]$.
+Moreover, normal data are infinitely fine-grained, whereas our data consists
+of integers. That said, we observed that we obtained pretty much the same
+uncertainty measures when assuming normality as when using the semiparametric
+bootstrap, which does not assume normality. This is quite common and can
+be attributed to the workings of the central limit theorem.
+
+In my view, you shouldn't worry too much about the normality and equality of distributions
+assumptions. What you should ask yourself instead, however, is whether the model
+you want to fit and the statistics you want to compute are at all relevant
+in the context of your study and in the light of your data. Consider the data in
+Figure \ref{fig:skewed}. It seems unlikely that the errors were drawn from a normal
+distribution. But rather than fit these data in a general linear model and then
+worry about the normality violation, you ought to ask yourself whether
+whatever research question you have can sensibly be answered in terms of the
+mean of these data. For this example, this seems unlikely, and a more pressing
+question presents itself: Where does the outlier come from?
+If, by contrast, you do think that the mean \emph{is} a sensible statistic to
+compute in light of your research question and your data, then normality violations
+are unlikely to affect your results---but you can always verify those
+results using the semiparametric bootstrap.
+Drawing plots of your data, both for yourself and for your readership, is essential
+in ensuring that your numeric analyses are relevant to the research questions
+at hand. Also see \citet{Vanhove2020b}.
+
+<<echo = FALSE, fig.cap = "You \\emph{could} fit these data in a general linear model. But the mean (dashed vertical line) just isn't an informative measure of these data's central tendency. So why bother?\\label{fig:skewed}">>=
+set.seed(2023-02-14)
+x <- rf(20, 1, 1)
+dotchart(sort(x), xlab = "x")
+abline(v = mean(x), lty = 2)
+@
+
+\section{Summary}
+\begin{itemize}
+\item Data points can be understood as a combination of a
+common component shared across all observations in the population
+and an individual deviation specific to each observation.
+
+\item In most cases, it is the common component that is of primary interest;
+this is estimated on the basis of the deviations and an
+appropriate optimisation criterion.
+
+\item The most widely used optimisation criterion
+is the method of least squares, which in the `univariate' case
+(when working with a single variable) yields the mean.
+However, other methods exist.
+Under the assumption of independently and identically normally distributed data,
+the maximum likelihood method leads to the same solution
+as least squares.
+
+\item The uncertainty of parameter estimates can be quantified
+either by means of the bootstrap or by making further assumptions.
+
+\item Rather than worry too much about normality, ask yourself whether
+  what you want to compute is actually relevant in the light of your research
+  questions and your data. If it is and you still have nagging doubts,
+  use the semiparametric bootstrap (or some similar procedure) to construct
+  confidence bounds or to verify the results obtained using $t$ distributions.
+\end{itemize}

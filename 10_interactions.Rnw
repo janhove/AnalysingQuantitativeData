@@ -1,0 +1,1304 @@
+\chapter{Differences between differences}\label{ch:interactions}
+Often, researchers aren't so much interested in how one predictor variable
+relates to some outcome. Rather, they're interested in how the relationship
+between one predictor and the outcome differs depending on another predictor.
+That is, they're interested in the \term{interaction} between two predictors.
+
+Consider Figure \ref{fig:interactions}, which shows four examples of what
+the joint effect of reading experience and word frequency on reading speed
+could look like. 
+In three cases, the lines are not parallel to each other; 
+in these cases, the effects of reading experience and word frequency on reading speed interact. 
+In one case, the lines do run in parallel, 
+and the effects of reading experience and word frequency on
+reading speed do not interact; that is, they are \term{additive}.
+
+<<echo = FALSE, out.width = '.8\\textwidth', fig.width = 4.3, fig.height = 4.1, fig.cap = "If the effects of reading experience and word frequency on reading speed interact, then the effect of reading experience on reading speed differs for different levels of word frequency. Or, equivalently, the effect of word frequency on reading speed differs for different levels of reading experience. This is reflected in the non-parallel lines. (The units on the $y$ axis in this example are arbitrary.)\\label{fig:interactions}">>=
+par(mfrow = c(2, 2),
+    mar = c(5.1, 4.1, 4.1, 2.1),
+    oma = c(0, 0, 0, 0),
+    cex = 0.6, cex.main = 1)
+
+plot(1, 1, type ="n", xaxt = "n",
+     xlim = c(0.4, 1.6),
+     ylim = c(0, 10),
+     xlab = "Reading experience", ylab = "Reading speed",
+     main = "no interaction\n(parallel lines)")
+axis(1, at = c(0.5, 1.5), labels = c("little", "much"))
+points(c(0.5, 1.5), c(3, 4.5), type = "b", pch = 16, lty = 2)
+points(c(0.5, 1.5), c(5, 6.5), type = "b", pch = 5, lty = 1)
+legend("topleft",
+       pch = c(5, 16),
+       lty = c(1, 2),
+       legend = c("high frequency", "low frequency"),
+       bty = "n")
+
+plot(1, 1, type ="n", xaxt = "n",
+     xlim = c(0.4, 1.6),
+     ylim = c(0, 10),
+     xlab = "Reading experience", ylab = "Reading speed",
+     main = "Interaction: stronger effect of experience\nfor frequent words")
+axis(1, at = c(0.5, 1.5), labels = c("little", "much"))
+points(c(0.5, 1.5), c(3, 4.5), type = "b", pch = 16, lty = 2)
+points(c(0.5, 1.5), c(5, 9), type = "b", pch = 5, lty = 1)
+
+plot(1, 1, type ="n", xaxt = "n",
+     xlim = c(0.4, 1.6),
+     ylim = c(0, 10),
+     xlab = "Reading experience", ylab = "Reading speed",
+     main = "Interaction: weaker effect of experience\nfor frequent words")
+axis(1, at = c(0.5, 1.5), labels = c("little", "much"))
+points(c(0.5, 1.5), c(3, 6.5), type = "b", pch = 16, lty = 2)
+points(c(0.5, 1.5), c(5, 6.5), type = "b", pch = 5, lty = 1)
+
+plot(1, 1, type ="n", xaxt = "n",
+     xlim = c(0.4, 1.6),
+     ylim = c(0, 10),
+     xlab = "Reading experience", ylab = "Reading speed",
+     main = "Cross-over interaction")
+axis(1, at = c(0.5, 1.5), labels = c("little", "much"))
+points(c(0.5, 1.5), c(6, 3), type = "b", pch = 16, lty = 2)
+points(c(0.5, 1.5), c(2.5, 5.5), type = "b", pch = 5, lty = 1)
+par(mfrow = c(1, 1))
+@
+
+\section{Interactions between two binary predictors}
+\citet{Berthele2011b} ask Swiss teachers in training to rate the 
+academic potential of a German-speaking boy based on a short recording
+in which he spoke French. About half of the future teachers were told
+that the boy's name was Luca (a typical Swiss name); the rest were told
+that the boy's name was Dragan (a name suggesting a Balkan migration background).
+Moreover, for about half of the participants, the recording contained
+code-switches from German; for about half, it didn't.
+The author wanted to find out how the purported name and the presence
+or absence of code-switches affected the teacher trainees' judgements
+of the boy's academic potential.
+
+As ever, the first step is to plot the data. 
+We'll try a boxplot first, see Figure \ref{fig:berthelebp1}. 
+The code-switching conditions are separated by means of facetting;
+this is achieved in the last line of the following code snippet.
+
+<<out.width = '.6\\textwidth', fig.width = 1.6*2.5, fig.height = 1.1*2.2, fig.cap = "A first attempt at plotting the data. The patterns in the data aren't so clear because the data are too coarse for boxplots.\\label{fig:berthelebp1}">>=
+d <- read_csv(here("data", "berthele2012.csv"))
+ggplot(d,
+       aes(x = Name,
+           y = Potential)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(shape = 1,
+             position = position_jitter(width = 0.2, height = 0)) +
+  facet_grid(cols = vars(CS))
+@
+
+While boxplots are a reasonable default,
+Figure \ref{fig:berthelebp1} shows that these data are too coarse to 
+plot in this way. Alternatively, we could compute the mean potential rating
+for each combination of predictor variables and plot these means. But then
+we wouldn't know how the data underlying these means are distributed;
+Figure \ref{fig:berthelebp2}.
+Such information is useful both to yourself and to your readers as they
+help you and them gauge if the means are a relevant indicator of the
+tendencies in the data.
+
+<<fig.width = 1.2*3, fig.height = 1.2*1.8, fig.cap = "The trends in the data are clearer here, but we can't glean the distribution of the data from this plot.\\label{fig:berthelebp2}", out.width = ".5\\textwidth">>=
+summary_berthele <- d |> 
+  group_by(Name, CS) |> 
+  summarise(n = n(),
+            MeanRating = mean(Potential),
+            StdRating = sd(Potential),
+            .groups = "drop")
+summary_berthele
+
+ggplot(summary_berthele,
+       aes(x = Name,
+           y = MeanRating,
+           linetype = CS, 
+           group = CS)) + 
+  geom_point() +
+  geom_line() +
+  ylab("Mean potential rating")
+@
+
+Luckily, we can have the best of both worlds. With the following commands,
+we plot the raw data as in Figure \ref{fig:berthelebp1} and then add
+the mean trends to them; Figure \ref{fig:berthelebp3}.
+
+<<fig.width = 1.8*2.5, fig.height = 1*2.2, fig.cap = "The best of both worlds.\\label{fig:berthelebp3}", out.width=".65\\textwidth">>=
+ggplot(d,
+       aes(x = Name,
+           y = Potential)) +
+  geom_point(shape = 1, colour = "grey50",
+             position = position_jitter(width = 0.2, height = 0)) +
+  geom_point(shape = 8, size = 3, colour = "blue",
+             data = summary_berthele,     # Data from different dataframe
+             aes(x = Name, y = MeanRating)) +
+  geom_line(colour = "blue",
+            data = summary_berthele,      # Data from different dataframe
+            aes(x = Name, y = MeanRating, group = CS)) +
+  facet_grid(cols = vars(CS))
+@
+
+\mypar[Try out several plots]{Tip}
+For group comparisons, boxplots are often a good choice, but it's often
+possible to improve on them. Don't hesitate to try out alternative plots.
+
+Incidentally, it can take some time to find a good way to visualise your
+data. For the last graph, I had to tinker with the colour of the data points
+as well as with the colour, shape and size of the means. But ultimately, all of
+this is time well spent.
+\parend
+
+We now turn our attention to the matter of modelling these data
+in the general linear model. 
+The plots suggest that the purported
+name and the presence or absence of code-switches interact: if code-switches
+are present, `Dragan's' academic potential is rated worse than `Luca's',
+but if they are absent, the order is flipped. We want our model to capture
+this interplay between the two predictors. To that end, we will need 
+four $\beta$ parameters.
+\begin{itemize}
+ \item $\beta_0$, the intercept, captures the baseline of the ratings.
+ \item $\beta_1$ captures the difference between the cells depending on the purported name (Dragan vs Luca).
+ \item $\beta_2$ captures the difference between the cells depending on the presence or absence of code-switches.
+ \item $\beta_3$ adjusts $\beta_1$ and $\beta_2$: How much larger or smaller is the difference between Dragan and Luca if there are code-switches compared to when there are no code-switches? Or, equivalently, how much larger or smaller is the difference between the presence and absence of code-switches depending on whether the purported name is Dragan or Luca?
+\end{itemize}
+
+The model equation is
+\[
+  y_i = \beta_0 + \beta_1 \cdot x_{1,i} + \beta_2 \cdot x_{2,i} + \beta_3 \cdot (x_{1,i} \cdot x_{2,i}) + \varepsilon_i,
+\]
+$i = 1, \dots, 155$. 
+If we want to use treatment coding, the predictors can be coded as follows:
+\begin{itemize}
+ \item $x_{1,i}$ indicates whether the $i$-th participant was told that the boy's name was Dragan (1) or Luca (0).
+ \item $x_{2,i}$ indicates whether the $i$-th participant rated a recording with (1) or without (0) code-switches. 
+ \item Consequently, $\beta_0$ represents the average rating by participants who've purportedly heard Luca (0) talk without code-switches (0).
+\end{itemize}
+
+The term $(x_{1,i} \cdot x_{2,i})$ may surprise you, but it does the job:
+The interaction term is a new variable that is the pointwise product of the two
+predictor variables. For the four cells in the present design, this new variable
+takes on two values:
+\begin{itemize}
+ \item Luca (0) without code-switches (0): $x_{1,i} \cdot x_{2,i} = 0 \cdot 0 = 0$.
+ \item Luca (0) with code-switches (1): $x_{1,i} \cdot x_{2,i} = 0 \cdot 1 = 0$.
+ \item Dragan (1) without code-switches (0): $x_{1,i} \cdot x_{2,i} = 1 \cdot 0 = 0$.
+ \item Dragan (1) with code-switches (1): $x_{1,i} \cdot x_{2,i} = 1 \cdot 1 = 1$.
+\end{itemize}
+
+Let's add the dummy variables and their product to the tibble:
+<<>>=
+d <- d |> 
+  mutate(
+    Dragan = ifelse(Name == "Dragan", 1, 0),
+    WithCS = ifelse(CS == "with", 1, 0),
+    DraganWithCS = Dragan * WithCS
+  )
+@
+
+Now fit a linear model with these variables:
+<<>>=
+potential.lm <- lm(Potential ~ Dragan + WithCS + DraganWithCS, data = d)
+potential.lm
+@
+
+We can use the estimated coefficients to reconstruct the cell means
+we computed earlier when drawing the graphs. In the following sums,
+rounding errors were corrected:
+\begin{itemize}
+ \item Not Dragan (so Luca), without code-switches:
+  \[
+    \widehat{y} = 3.09 + (0.53 \cdot 0) + (0.27 \cdot 0) + (-0.93 \cdot 0) = 3.09.
+  \]
+
+ \item Dragan, without code-switches:
+  \[
+    \widehat{y} = 3.09 + (0.53 \cdot 1) + (0.27 \cdot 0) + (-0.93 \cdot 0) = 3.63.
+  \]
+
+ \item Not Dragan (so Luca), with code-switches:
+  \[
+    \widehat{y} = 3.09 + (0.53 \cdot 0) + (0.27 \cdot 1) + (-0.93 \cdot 0) = 3.36.
+  \]
+
+ \item Dragan, with code-switches:
+  \[
+    \widehat{y} = 3.09 + (0.53 \cdot 1) + (0.27 \cdot 1) + (-0.93 \cdot 1) = 2.96.
+  \]
+\end{itemize}
+
+Since we're using treatment coding,
+the estimate of $0.53$ for \texttt{Dragan} ($\widehat{\beta}_1$) \emph{only} pertains to the recording without
+code-switches (the level coded as 0). I
+n order to obtain difference between the estimated conditional
+means between Luca and Dragan when the recording contains code-switches, you
+need to include the interaction terms: $0.53 - 0.93 = -0.40$.
+Similarly, the estimate of $0.27$ for \texttt{WithCS} ($\widehat{\beta}_2$) 
+only pertains to ratings of `Luca' (the level coded as 0). 
+In order to obtain the difference between
+the estimated conditional means between recordings with vs without code-switches
+for Dragan, you again need to include the interaction term: $0.27 - 0.93 = -0.66$.
+
+In the next exercise, you will learn to interpret the
+estimated parameters for a model that uses a different coding scheme.
+See \citet{Schad2020} and my blog post on recoding predictors (5 May 2020) 
+for more details.
+
+\mypar[Different coding scheme]{Exercise}
+Consider the following fictitious experiment and
+  analysis. Eighty participants are randomly assigned to the four cells
+  of a two-by-two design, each cell corresponding to one of the combinations
+  of two binary predictor variables (Variable 1: A vs B, Variable 2: X vs Y).
+  Then, their performance on some task is measured.
+<<echo = FALSE>>=
+df <- data.frame(
+  Var1 = rep(c("A", "B"), each = 40),
+  Var2 = rep(rep(c("X", "Y"), each = 20), 2)
+)
+df$Outcome <- c(
+  rnorm(20, mean = 10, sd = 2),
+  rnorm(20, mean = 9, sd = 2),
+  rnorm(20, mean = 12, sd = 2),
+  rnorm(20, mean = 6, sd = 2)
+)
+df <- df |> 
+  mutate(Var1 = ifelse(Var1 == "A", -0.5, 0.5),
+         Var2 = ifelse(Var2 == "X", -0.5, 0.5),
+         Interaction = Var1*Var2)
+exercise.lm <- lm(Outcome ~ Var1 + Var2 + Interaction, df)
+@
+
+  For the analysis, the analyst uses sum-coding: \texttt{Var1} reads $+0.5$
+  if the participant was assigned to a B-cell and $-0.5$ if they were assigned to
+  an A-cell; \texttt{Var2} reads $+0.5$ if the participant was assigned
+  to a Y-cell and $-0.5$ if they were assigned to an X-cell.
+  The \texttt{Interaction} term is the pointwise product of \texttt{Var1} and \texttt{Var2}.
+  The estimated parameter coefficients are as follows:
+<<echo = FALSE>>=
+coef(exercise.lm)
+@
+  \begin{enumerate}
+    \item Compute the mean outcome value for each of the four cells.
+    \item Explain what the estimated \texttt{(Intercept)} coefficient represents.
+    \item Explain what the estimated \texttt{Var1} and \texttt{Var2} coefficients represent.
+    \item Explain what the estimated \texttt{Interaction} coefficient represents.\parend
+  \end{enumerate}
+  
+\mypar{Tip}
+When in doubt as to the correct literal interpretation of your model's estimated
+parameters, sit down and do the calculations like in the previous exercise.
+In fact, also do them if you're \emph{not} in doubt.
+\parend
+
+We can obtain standard errors and confidence intervals
+just like before by using the \texttt{summary()} and \texttt{confint()}
+commands. 
+These computations are based on the assumption
+that the errors are i.i.d.\ normal, but you can always use bootstrapping
+to check if a different set of assumptions leads to the same conclusion.\label{sec:dragan}
+<<>>=
+summary(potential.lm)$coefficients
+confint(potential.lm, level = 0.90)
+@
+Because we used treatment coding here, the estimates for \texttt{Dragan}
+and \texttt{WithCS} aren't too relevant. The study's main result
+is that the presence of code-switches is some $0.93 \pm 0.28$ points more detrimental
+to ratings of `Dragan's' academic potential than it is to ratings of `Luca's' academic
+potential.
+Equivalently, the \emph{absence} of code-switches is some $0.93 \pm 0.28$ more
+beneficial to ratings of `Dragan's' academic potential 
+than it is to ratings of `Luca's' academic potential.\label{par:finding_berthele}
+
+\mypar{*Exercise}
+The main finding in \citet{Berthele2011b} was the 
+  interaction effect of $-0.9 \pm 0.3$ points (90\% CI: $[-1.39, -0.48]$).
+  Double-check this estimated standard error and the 90\% confidence interval
+  using a semiparametric bootstrap that does not assume that the errors
+  are drawn from the same distribution, as explained in Exercise \vref{exercise:heteroskedastic}.
+  
+  Tip: You can group the data by two variables by using 
+  \texttt{group\_by(variable1, variable2)}. 
+\parend
+
+\section{Interactions between a binary and a continuous predictor}
+Sometimes, researchers want to find out if the relationship between
+a more or less continuous predictor and the outcome differs between groups.
+This type of research question, too, can be addressed in a general linear model.
+The idea is the same as in the previous section: Dummy-code the group variable,
+compute its pointwise product with the continuous predictor, and feed
+the dummy-coded group variable, the continuous predictor, and their pointwise product
+into the model.
+
+This case is covered in an exercise. 
+But you should be aware of a common analytical
+strategy that does \emph{not} work. This doomed strategy is to fit several 
+models in order to gauge the relationship between
+the continuous predictor and the outcome separately for each group, and
+to conclude that if this relationship is statistically significant in one
+group but not in the other, there must be an interaction between the 
+groups and the continuous predictor. \citet{Gelman2006} and \citet{Nieuwenhuis2011}
+explain why this is a terrible idea.
+
+\mypar{Exercise}
+  The question tackled in this exercise is a bit silly, but I couldn't find
+  a fairly easy dataset where this type of analysis makes more sense.
+  
+  First use the following code to read in the data from my PhD thesis again.
+<<eval = FALSE>>=
+cognates <- read_csv(here("data", "vanhove2014_cognates.csv"))
+background <- read_csv(here("data", "vanhove2014_background.csv"))
+d <- cognates |>
+  left_join(background)
+@
+  We want to answer the silly `research' question if the relationship
+  between the participants' English skills (variable \texttt{English.Overall})
+  and their performance on the spoken Swedish cognate recognition task (variable \texttt{CorrectSpoken})
+  differs between men and women. 
+  Don't fly blind but plot first:
+<<eval = FALSE>>=
+# plot not shown in lecture notes
+ggplot(d,
+       aes(x = English.Overall,
+           y = CorrectSpoken)) +
+  geom_point(shape = 1) +
+  facet_grid(cols = vars(Sex))
+@
+  What do you suspect is going on here?
+  Fix the problem.
+  
+  Once you've fixed the problem, add a dummy variable \texttt{n.Male} to the data frame/tibble
+  that has the value 1 if the participant is a man and 0 if the participant
+  is a women.
+  Then fit the interaction model like so:
+<<eval = FALSE >>=
+int.mod <- lm(CorrectSpoken ~ n.Male * CorrectSpoken, data = d)
+@
+  Explain the literal meaning of each of the four estimated $\beta$ parameters
+  in this model.
+  Further calculate the model prediction for a man with a score of 1 on the 
+  \texttt{English.Overall} predictor without using \texttt{predict()}.
+  Compare it to the model prediction for a man with a score of 0 on this predictor.
+\parend
+
+\section{More complex interactions}
+It's possible to fit interactions between two continuous
+predictors; see the blog entry \href{https://janhove.github.io/posts/2017-06-26-continuous-interactions/}{\textit{Interactions between continuous variables}} (26 June 2017).
+It's also possible to fit interactions between three or more predictors.
+However, it can be difficult to make sense of three-way, four-way, etc.\ interactions,
+and I don't have any datasets that call for such an analysis.
+
+\section{About non-cross-over interactions}
+The mere fact that a statistical model suggests that two predictor variables
+interact in their effect on some outcome variable
+does \emph{not} imply that these predictor variables interact in their effect
+on the \emph{construct} that this outcome variable represents.
+This is particularly important to appreciate if the interaction in question
+is not a cross-over interaction, that is, if the relative order between two 
+groups or conditions doesn't change depending on the other predictor.
+For instance, if we observe a non-cross-over interaction between reading experience
+and word frequency on reading speed, this does not imply that reading experience
+and word frequency have non-additive effects on the cognitive construct that
+reading speed represents, viz., cognitive effort.
+The reason is that, for non-cross-over interactions, it is possible to monotonically
+transform the data so that the interaction disappears.
+By the same token, if there is \emph{no} interaction, it is typically possible
+to monotonically transform the data so that an interaction appears.
+See \citet{Wagenmakers2012} for further explanation.
+
+\mypar{Example}
+  A straightforward example may help make the problem more concrete.
+  Let's say we want to compare the fuel use of two drivers in two cars.
+  Fuel use is typically expressed in either litres of fuel needed to travel 100 kilometres
+  or in miles that can be travelled using one gallon of fuel; see Table \ref{tab:fuel}.
+
+\begin{table}[tbp]
+\centering
+\caption{Fictitious data of fuel use for two drivers and two cars.}
+\label{tab:fuel}
+\begin{tabular}{llrr}
+\toprule
+Car    & Driver   & Litres per 100 kilometres  & Miles per gallon \\
+\midrule
+Car 1  & Driver A & 6.5 &  36.2 \\
+       & Driver B & 7.0 &  33.6\\
+Car 2  & Driver A & 5.5 &  42.8\\
+       & Driver B & 6.0 &  39.2\\
+ \bottomrule
+\end{tabular}
+\end{table}
+
+When fuel use is expressed in litres per 100 kilometres,
+the data in this fictitious example shows two clear effects:
+Driver B needs half a litre per 100 kilometres more than does Driver A (regardless
+of the car),
+and Car 1 needs a litre per 100 kilometres more than does Car 2 (regardless of the driver).
+So there is no interaction term needed to model fuel use in this example
+when fuel use is expressed in litres per 100 kilometres.
+
+But when the same fuel use is expressed in miles per gallon, 
+we observe that Driver B can cover 2.6 miles per gallon more than Driver A
+when driving Car 1, but that the difference is 3.6 miles per gallon for Car 2.
+That is, the effects of Driver and Car aren't additive when the data are expressed
+in miles per gallon,
+and an interaction term would be needed to account for the 1-mile/gallon difference
+between the differences.
+
+By the same token, a significant non-cross-over interaction in response latencies
+when they are expressed in milliseconds per item may disappear when the latencies
+are expressed in items per second or when the latencies are log- or otherwise transformed.
+\parend
+
+
+% \chapter{Interaktionen}
+% Oft ist es nicht sosehr der Zusammenhang
+% zwischen dem outcome und diesem oder jenem Prädiktor, der uns interessiert.
+% Vielmehr sind wir am Zusammenspiel von zwei oder mehreren Prädiktoren interessiert.
+% Zum Beispiel ist es nicht so interessant,
+% ob man schneller auf hochfrequente als auf seltene Wörter reagiert -- dieser Befund ist längst Gemeingut.
+% Und es ist auch nicht so interessant,
+% ob gute Lesende schneller auf bestehende Wörter reagieren als schlechte Lesende -- auch das liegt auf der Hand.
+% Interessanter wäre dahingegen die Frage, ob der Effekt von Wortfrequenz unterschiedlich gross ist je nach der Lesefähigkeit der Versuchspersonen.
+% Dies ist eine Frage nach der \term{Interaktion} zwischen Lesefähigkeit und Wortfrequenz.
+% 
+% In Abbildung \vref{fig:interactions} werden drei von vielen 
+% möglichen Interaktionsmustern aufgeführt.
+% Ihr gemeinsames Merkmal ist, dass die gezeichneten Linien nicht parallel laufen;
+% bei der Absenz einer Interaktion ist dies schon der Fall.
+% In der Grafik links oben liegt aber keine Interaktion 
+% zwischen Lesefähigkeit und Wortfrequenz vor:
+% Beide Variablen hängen zwar mit der Lesegeschwindigkeit zusammen,
+% aber der Zusammenhang zwischen Lesefähigkeit und Lesegeschwindigkeit 
+% unterscheidet sich nicht je nach Wortfrequenz (oder umgekehrt).
+% 
+% <<echo = FALSE, out.width = '.8\\textwidth', fig.width = 4.3*1.1, fig.height = 4.1*1.1, fig.cap = "Wenn eine Interaktion zwischen Lesefähigkeit und Wortfrequenz auf Lesegeschwindigkeit vorliegt, dann unterscheidet sich der Effekt von Lesefähigkeit auf Lesegeschwindigkeit je nach Wortfrequenz. Umgekehrt gilt dann ebenfalls, dass sich der Effekt von Wortfrequenz auf Lesegeschwindigkeit je nach Lesefähigkeit unterscheidet. Dies zeigt sich in den nicht-parallelen Linien. (Die Einheiten entlang der $y$-Achse sind in diesem Beispiel arbiträr.)\\label{fig:interactions}">>=
+% par(mfrow = c(2, 2),
+%     mar = c(5.1, 4.1, 4.1, 2.1),
+%     oma = c(0, 0, 0, 0),
+%     cex = 0.6, cex.main = 1)
+% 
+% plot(1, 1, type ="n", xaxt = "n",
+%      xlim = c(0.4, 1.6),
+%      ylim = c(0, 10),
+%      xlab = "Lesefähigkeit", ylab = "Geschwindigkeit",
+%      main = "keine Interaktion\n(parallele Linien)")
+% axis(1, at = c(0.5, 1.5), labels = c("schlecht", "gut"))
+% points(c(0.5, 1.5), c(3, 4.5), type = "b", pch = 16, lty = 2)
+% points(c(0.5, 1.5), c(5, 6.5), type = "b", pch = 5, lty = 1)
+% legend("topleft",
+%        pch = c(5, 16),
+%        lty = c(1, 2),
+%        legend = c("hohe Frequenz", "niedrige Frequenz"),
+%        bty = "n")
+% 
+% plot(1, 1, type ="n", xaxt = "n",
+%      xlim = c(0.4, 1.6),
+%      ylim = c(0, 10),
+%      xlab = "Lesefähigkeit", ylab = "Geschwindigkeit",
+%      main = "Interaktion: stärkerer Fähigkeitseffekt\nfür frequente Wörter")
+% axis(1, at = c(0.5, 1.5), labels = c("schlecht", "gut"))
+% points(c(0.5, 1.5), c(3, 4.5), type = "b", pch = 16, lty = 2)
+% points(c(0.5, 1.5), c(5, 9), type = "b", pch = 5, lty = 1)
+% 
+% plot(1, 1, type ="n", xaxt = "n",
+%      xlim = c(0.4, 1.6),
+%      ylim = c(0, 10),
+%      xlab = "Lesefähigkeit", ylab = "Geschwindigkeit",
+%      main = "Interaktion: schwächerer Fähigkeitseffekt\nfür frequente Wörter")
+% axis(1, at = c(0.5, 1.5), labels = c("schlecht", "gut"))
+% points(c(0.5, 1.5), c(3, 6.5), type = "b", pch = 16, lty = 2)
+% points(c(0.5, 1.5), c(5, 6.5), type = "b", pch = 5, lty = 1)
+% 
+% plot(1, 1, type ="n", xaxt = "n",
+%      xlim = c(0.4, 1.6),
+%      ylim = c(0, 10),
+%      xlab = "Lesefähigkeit", ylab = "Geschwindigkeit",
+%      main = "Cross-over-Interaktion")
+% axis(1, at = c(0.5, 1.5), labels = c("schlecht", "gut"))
+% points(c(0.5, 1.5), c(6, 3), type = "b", pch = 16, lty = 2)
+% points(c(0.5, 1.5), c(2.5, 5.5), type = "b", pch = 5, lty = 1)
+% par(mfrow = c(1, 1))
+% @
+% 
+% Ein mit `Interaktion' verwandter Begriff ist \term{Haupteffekt}.
+% Ein Haupteffekt eines Prädiktors, z.B.\ Wortfrequenz, auf Lesegeschwindigkeit liegt dann vor,
+% wenn es, gemittelt über die Ausprägungen des anderen Prädiktors, z.B.\ Lesefähigkeit, einen
+% Effekt des ersten Prädiktors gibt.
+% In der Grafik links oben gibt es also einen Haupteffekt von Lesefähigkeit:
+% Gemittelt über die Ausprägungen von Wortfrequenz lesen beschlagene Lesende
+% schneller als schlechtere Lesende (gut: $\frac{4.5+6.5}{2}=5.5$; schlecht: $\frac{3+5}{2}=4$).
+% In dieser Grafik gibt es auch einen Haupteffekt von Wortfrequenz:
+% Gemittelt über die Ausprägungen von Lesefähigkeit
+% werden hochfrequente Wörter schneller gelesen als Wörter mit niedriger
+% Frequenz (hoch: $\frac{5+6.5}{2}=5.75$; niedrig: $\frac{3+4.5}{2}=3.75$).
+% 
+% Auch in der Grafik rechts oben gibt es Haupteffekte von sowohl Lesefähigkeit
+% (gut: $\frac{4.5+9}{2}=6.75$; schlecht: $\frac{3+5}{2}=4$)
+% als auch von Wortfrequenz auf Lesegeschwindigkeit
+% (hoch: $\frac{5+9}{2}=7$; niedrig: $\frac{3+4.5}{2}=3.75$).
+% Dies gilt auch für die Grafik links unten
+% (gut: $\frac{6.5+6.5}{2}=6.5$; schlecht: $\frac{3+5}{2}=4$;
+% hoch: $\frac{5+6.5}{2}=5.75$; niedrig: $\frac{3+6.5}{2}=4.75$).
+% 
+% In der letzten Grafik liegt ebenfalls einen Haupteffekt
+% von Wortfrequenz vor (hoch: $\frac{2.5+5.5}{2}=4$; niedrig: $\frac{6+3}{2}=4.5$).
+% Es gibt aber keinen Haupteffekt von Lesefähigkeit:
+% Wenn man über die beiden Ausprägungen von Wortfrequenz mittelt, zeigt sich ein Nulleffekt
+% (gut: $\frac{3+5.5}{2}=4.25$; schlecht: $\frac{2.5+6}{2}=4.25$).
+% Die letzte Grafik ist ebenfalls ein Beispiel einer \textbf{\textit{cross-over}}-Interaktion,
+% denn die Effektslinien kreuzen sich.
+% 
+% \section{Interaktionen zwischen zwei binären Prädiktoren}\label{sec:berthele2011b}
+% Eigentlich interessierte sich \citet{Berthele2011b} (Aufgaben letztes Kapitel)
+% eher für die Interaktion zwischen dem Vorkommen (oder nicht) von Codeswitches
+% und dem angeblichen Namen des Buben auf die Bewertungen seines akademischen Potenzials:
+% Werden Codeswitches als gravierender betrachtet,
+% wenn der Bub einen typischen Balkannamen hat als wenn er einen typischen
+% schweizerischen Namen hat?
+% 
+% \mypar{Aufgabe}
+% Lesen Sie den Datensatz \texttt{berthele2011.csv} in R ein und nennen Sie ihn \texttt{d}.
+% \parend
+% 
+% <<message = FALSE, warning = FALSE, echo = FALSE>>=
+% d <- read_csv(here("data", "berthele2011.csv"))
+% @
+% 
+% \subsection{Grafische Darstellung und beschreibende Statistik)}
+% Wir können wieder Boxplots zeichnen, um die Muster in den Daten zu veranschaulichen.
+% Mit \texttt{facet\_grid(rows = vars(CS))} wird die Grafik vertikal aufgespaltet,
+% und zwar in zwei Teile: 
+% einen für die Fälle, in denen Codeswitching vorlag, 
+% und einen für Fälle, in denen dies nicht der Fall war.
+% Wie Abbildung \ref{fig:berthelebp1} aber zeigt, 
+% dürften diese Daten etwas zu grobkörning sein,
+% um mit Boxplots dargestellt zu werden. Unten werden ein paar andere Grafiken
+% gezeichnet, aber um diese zu zeichnen, müssen wir die Daten zuerst numerisch zusammenfassen.
+% 
+% <<out.width = '.5\\textwidth', fig.width = 1.4*2.5, fig.height = 1.4*2.2, fig.cap = "Boxplots der Bewertungen des akademischen Potenzials des Sprechers je nach Vorkommen von Codeswitches (mit vs.\\ ohne) und seinem angeblichen Namen. Die Boxplots zeigen die Muster in den Daten hier nicht sehr deutlich, da die Daten nicht feinkörnig genug sind.\\label{fig:berthelebp1}">>=
+% ggplot(d,
+%        aes(x = Name,
+%            y = Potenzial)) +
+%   geom_boxplot(outlier.shape = NA) +
+%   geom_point(shape = 1,
+%              position = position_jitter(width = 0.2, height = 0)) +
+%   facet_grid(rows = vars(CS))
+% @
+% 
+% Mit \texttt{group\_by()} kann man problemlos den Datensatz
+% nach mehreren Variablen gruppieren, um so die Daten innerhalb
+% jeder \term{Zelle} des Designs zusammenzufassen.
+% Mit \texttt{.groups = ``drop''} wird die vorgenommene
+% Gruppierung wieder `vergessen', auch wenn das hier eigentlich
+% nicht wichtig ist; wenn Sie diesen Parameter weglassen, erhalten
+% Sie eine harmlose Mitteilung.
+% 
+% <<>>=
+% summary_berthele <- d |> 
+%   group_by(Name, CS) |> 
+%   summarise(n = n(),
+%             Mittel = mean(Potenzial),
+%             StdAb = sd(Potenzial),
+%             .groups = "drop")
+% summary_berthele
+% @
+% 
+% Abbildung \ref{fig:berthelebp2} stellt die soeben berechneten
+% Gruppenmittel in einem Liniendiagramm dar. Manche Forschende
+% mögen es nicht, wenn für kategorische Prädiktoren
+% Liniendiagramme gezeichnet werden, da diese implizieren würden,
+% dass die Prädiktoren (hier etwa \texttt{Name}) kontinuierlich
+% seien. Ich teile diese Meinung nicht: M.E.\ ist es klar, dass
+% es zwischen \texttt{Dragan} und \texttt{Luca} keine Gradierung
+% gibt. Die Zellenmittel selber werden ausserdem deutlich mit Punkten
+% oder anderen Symbolen dargestellt, was dies nochmals betont.
+% Die Linien, die diese Punkte verbinden, dienen nur der Deutlichkeit.
+% 
+% <<fig.width = 1.2*3, fig.height = 1.2*1.8, fig.cap = "Liniendiagramm mit den Mitteln der Bewertungen des akademischen Potenzials des Sprechers je nach Vorkommen von Codeswitches (mit vs.\\ ohne) und seinem angeblichen Namen. Die Muster sind hier deutlicher, aber dieser Grafik kann der Streuung der Daten nicht entnommen werden.\\label{fig:berthelebp2}", out.width = ".5\\textwidth">>=
+% ggplot(summary_berthele,
+%        aes(x = Name,
+%            y = Mittel,
+%            linetype = CS,  # unterschiedliche Linienarten je nach CS
+%            group = CS)) +  # Manchmal braucht ggplot ein bisschen Hilfe,
+%                            # um zu wissen, welche Punkte verknüpft werden
+%                            # sollten. 'group' verschafft diese Hilfe.
+%   geom_point() +
+%   geom_line() +
+%   ylab("Potenzial (Mittel)")
+% @
+% 
+% Es wäre jedoch nützlich, zusätzlich auch noch eine Idee über die Streuung der Daten
+% innerhalb der Gruppen zu erhalten. Für Abbildung \ref{fig:berthelebp3} wurden daher
+% die Datenpunkte selber dargestellt und kombiniert mit den Mitteln aus
+% \texttt{summary\_berthele}. Es ist also möglich, Angaben
+% aus unterschiedlichen Datensätzen in einer Grafik zu kombinieren.
+% 
+% <<fig.width = 1.4*2.5, fig.height = 1.4*2.2, fig.cap = "Bewertungen des akademischen Potenzials des Sprechers je nach Vorkommen von Codeswitches (mit vs.\\ ohne) und seinem angeblichen Namen. Die Sternchen stellen die Gruppenmittel dar.\\label{fig:berthelebp3}", out.width=".5\\textwidth">>=
+% ggplot(d,
+%        aes(x = Name,
+%            y = Potenzial)) +
+%   geom_point(shape = 1, colour = "grey50",
+%              position = position_jitter(width = 0.2, height = 0)) +
+%   geom_point(shape = 8, size = 3, colour = "blue",
+%              data = summary_berthele,     # Daten aus anderem Datensatz
+%              aes(x = Name, y = Mittel)) +
+%   geom_line(colour = "blue",
+%             data = summary_berthele,      # Daten aus anderem Datensatz
+%             aes(x = Name, y = Mittel, group = CS)) +
+%   facet_grid(rows = vars(CS))
+% @
+% 
+% \medskip
+% 
+% \begin{framed}
+% \noindent \textbf{Empfehlung: Probieren Sie mehrere Grafiken aus.} Für
+% Gruppenvergleiche sind Boxplots oft eine gute Wahl,
+% aber eben nicht immer. Wenn eine Grafik Ihrer Meinung
+% nach Verbesserungspotenzial hat, dann sollten Sie nicht
+% zögern, andere Varianten auszuprobieren.
+% 
+% Übrigens kostet es oft Zeit, eine gute grafische
+% Darstellung zu konstruieren. In diesem Skript finden
+% Sie das Endergebnis meiner Bemühungen, aber
+% insbesondere für die letzte Grafik hat es eine Weile
+% gedauert, bis ich herausgefunden habe, wie ich sie
+% am besten zeichne. Die Entscheidung, die Datenpunkte
+% grau zu färben, habe ich erst getroffen, nachdem ich
+% feststellte, dass schwarze Datenpunkte die Zellenmittel
+% nicht deutlich genug hervorhoben. 
+% Der Einstellung \texttt{size = 3} liegt eine ähnliche 
+% Beobachtung zu Grunde, usw.
+% \end{framed}
+% 
+% \subsection{Modellierung}
+% Die Abbildungen zeigen, dass es innerhalb den Gruppen zwar
+% ziemlich viel Variation gibt, aber dass der angebliche
+% Name mit dem Vorkommen von Codeswitching interagieren dürfte:
+% Liegen Codeswitches vor, dann wird das Potenzial von `Luca'
+% als besser eingestuft; liegen keine Codeswitches vor,
+% dann scheinen die Lehrpersonen eher von der Leistung von
+% Dragan als von jenen von Luca beeindruckt.
+% 
+% Mit der Modellierung möchten wir nicht nur die Fragen beantworten,
+% welchen Zusammenhang der Name (Luca vs.\ Dragan) mit den Beurteilungen
+% hat und welchen Zusammenhang Codeswitches mit ihnen haben, sondern auch
+% inwiefern sich das Ausmass dieser Zusammenhänge je nach dem anderen Prädiktor
+% unterscheidet. Dazu brauchen wir vier $\beta$-Parameter:
+% \begin{itemize}
+%  \item $\beta_0$, der Schnittpunkt, erfasst den Baseline der Beurteilungen.
+%  \item $\beta_1$ erfasst den Unterschied zwischen den Zellen je nach dem Namen (Dragan vs.\ Luca).
+%  \item $\beta_2$ erfasst den Unterschied zwischen den Zellen je nach dem Vorkommen von Codeswitches.
+%  \item $\beta_3$ passt $\beta_1$ und $\beta_2$ an: Wie viel grösser oder kleiner ist der Unterschied
+%  zwischen Dragan und Luca, wenn Codeswitches vorliegen als wenn keine vorliegen?
+% \end{itemize}
+% 
+% Mathematisch schaut die Modellgleichung so aus:
+% \[
+%   y_i = \beta_0 + \beta_1 \cdot x_{1,i} + \beta_2 \cdot x_{2,i} + \beta_3 \cdot (x_{1,i} \cdot x_{2,i}) + \varepsilon_i, ~~~~~ i = 1, \dots, n.
+% \]
+% \begin{itemize}
+%  \item $x_{1,i}$ zeigt, ob der $i$-ten Versuchsperson erzählt wurde, dass der Bub Dragan (1) oder Luca (0) heisst.
+%  \item $x_{2,i}$ zeigt, ob der $i$-ten Versuchsperson der Text mit (1) oder ohne (0) Codeswitches vorgespielt wurde.\footnote{Diese Notation
+% geht von treatment coding aus. Andere Kodierungssysteme sind möglich, aber schwieriger zu erklären.}
+%  \item Entsprechend ist $\beta_0$ die Durchschnittsbeurteilung von Versuchspersonen, die angeblich Luca (0) ohne Codeswitches (0) gehört haben.
+% \end{itemize}
+% 
+% Der Faktor $(x_{1,i} \cdot x_{2,i})$ mag erstaunen: Tatsächlich wird die Anpassung (Interaktion)
+% berechnet, indem eine neue Variable kreiert wird, die das Produkt der beiden Prädiktoren enthält.
+% Für die vier Zellen im Design ergibt dies die folgenden Werte:
+% \begin{itemize}
+%  \item Luca (0) ohne Codeswitches (0): $x_{1,i} \cdot x_{2,i} = 0 \cdot 0 = 0$.
+%  \item Luca (0) mit Codeswitches (1): $x_{1,i} \cdot x_{2,i} = 0 \cdot 1 = 0$.
+%  \item Dragan (1) ohne Codeswitches (0): $x_{1,i} \cdot x_{2,i} = 1 \cdot 0 = 0$.
+%  \item Dragan (1) mit Codeswitches (1): $x_{1,i} \cdot x_{2,i} = 1 \cdot 1 = 1$.
+% \end{itemize}
+% 
+% Die folgenden Befehle kreiern die Dummy-Variablen und berechnen ihr Produkt.
+% <<>>=
+% d$Dragan <- ifelse(d$Name == "Dragan", 1, 0)
+% d$MitCS <- ifelse(d$CS == "mit", 1, 0)
+% d$DraganMitCS <- d$Dragan * d$MitCS
+% 
+% # Kontrolle:
+% d |> slice_sample(n = 10)
+% @
+% 
+% Diese Variablen können dem allgemeinen linearen Modell
+% als Prädiktoren hinzugefügt werden:
+% <<>>=
+% potenzial.lm <- lm(Potenzial ~ Dragan + MitCS + DraganMitCS, data = d)
+% potenzial.lm
+% @
+% 
+% Mit den geschätzten Koeffizienten können die Gruppenmittel
+% rekonstruiert werden.\footnote{In den Summen wurden die Rundungsfehler korrigiert.
+% Die Klammern sind überflüssig, aber verdeutlichen die Struktur der Gleichungen.}
+% \begin{itemize}
+%  \item Nicht Dragan (also Luca), ohne Codeswitching:
+%   \[
+%     \widehat{y} = 3.09 + (0.53 \cdot 0) + (0.27 \cdot 0) + (-0.93 \cdot 0) = 3.09.
+%   \]
+% 
+%  \item Dragan, ohne Codeswitching:
+%   \[
+%     \widehat{y} = 3.09 + (0.53 \cdot 1) + (0.27 \cdot 0) + (-0.93 \cdot 0) = 3.63.
+%   \]
+% 
+%  \item Nicht Dragan (also Luca), mit Codeswitching:
+%   \[
+%     \widehat{y} = 3.09 + (0.53 \cdot 0) + (0.27 \cdot 1) + (-0.93 \cdot 0) = 3.36.
+%   \]
+% 
+%  \item Dragan, mit Codeswitching:
+%   \[
+%     \widehat{y} = 3.09 + (0.53 \cdot 1) + (0.27 \cdot 1) + (-0.93 \cdot 1) = 2.96.
+%   \]
+% \end{itemize}
+% 
+% Die nicht-numerischen Variablen können auch direkt dem Modell hinzugefügt werden.
+% Um die Interaktion zwischen ihnen zu modellieren, kann die \texttt{Name:CS}-Notation verwendet werden,
+% aber dann müssen die beiden Variablen auch noch einzeln eingetragen werden.
+% Eine alternative Schreibweise ist die \texttt{Name*CS}-Notation: Diese wird von R intern zu
+% \texttt{Name + CS + Name:CS} konvertiert.
+% <<>>=
+% potenzial.lm2 <- lm(Potenzial ~ Name + CS + Name:CS, data = d)
+% # Alternative Schreibweise
+% potenzial.lm2 <- lm(Potenzial ~ Name*CS, data = d)
+% potenzial.lm2
+% @
+% 
+% \mypar{Aufgabe} 
+% Warum sind die Parameterschätzungen im Modell \texttt{potenzial.lm2}
+% anders als diejenigen im Modell \texttt{potenzial.lm}?
+% \parend
+% 
+% \subsection{Unsicherheit einschätzen}\label{sec:dragan}
+% Die Unsicherheit in den Parameterschätzungen kann wiederum
+% mit \texttt{summary()} (für die Standardfehler) und mit
+% \texttt{confint()} (für die Konfidenzintervalle) abgerufen werden.
+% Die Konfidenzintervalle basieren wiederum auf $t$-Verteilungen
+% und setzen also im Prinzip voraus, dass die Restfehler aus
+% einer Normalverteilung stammen. In einem fakultativen Abschnitt
+% werden wir diese Konfidenzintervalle nochmals berechnen mit einer
+% Bootstrapmethode, die diese Voraussetzung nicht macht. Die Ergebnisse
+% unterscheiden sich dank der Datenmenge und -verteilung aber kaum.
+% <<>>=
+% summary(potenzial.lm)$coefficients
+% @
+% 
+% <<>>=
+% confint(potenzial.lm, level = 0.95)
+% @
+% Die Interpretation der Parameterschätzungen der Haupteffekte und ihre Unsicherheit
+% ist etwas heikel: Wegen des treatment codings bezieht 
+% sich die Schätzung von $0.53$ für \texttt{Dragan}
+% \emph{nur} auf Fälle, in denen kein Codeswitching vorliegt. Für die entsprechende Schätzung
+% für Fälle mit Codeswitching muss man eben die Interaktion berücksichtigen: $0.53 - 0.93 = -0.40$.
+% Analog bezieht sich die Schätzung von $0.27$ für \texttt{MitCS} sich nur auf Fälle,
+% in denen den Teilnehmenden gesagt wurde, die Aufnahme stamme von einem Buben namens Luca.
+% 
+% Die Interpretation der Interaktion und ihre Unsicherheit ist einfacher: Der Effekt von Codeswitching
+% ist wesentlich gravierender für Dragan als für Luca, nämlich um $0.93$ Punkte. Oder, äquivalent:
+% Der Effekt der Absenz von Codeswitching ist $0.93$ Punkte positiver für Dragan als für Luca.
+% Es gibt zwar ziemlich viel Unsicherheit über diesen Effekt, aber nach einer
+% saloppen Interpretation des Konfidenzintervalls (siehe Abschnitt \vref{sec:ci})
+% scheint die Richtung dieses Effekts klar zu sein, liegt das Intervall doch
+% komplett im negativen Bereich.
+% 
+% In Kapitel \ref{ch:simpleregression} haben wir die
+% Ergebnisse der Modellierung grafisch dargestellt
+% und die Unsicherheit mit einem Konfidenzband veranschaulicht.
+% Dies können wir für diese Modellierung (und übrigens
+% auch für die Modellierungen aus dem letzten Kapitel) machen.
+% Der nächste Abschnitt zeigt, wie man diesen fakultativen Schritt ausführen kann.
+% Überspringen Sie es bei der ersten Lektüre.
+% 
+% \subsection{Modelle visualisieren}
+% Die Idee ist, dass die vom Modell `vorhergesagten'
+% Werte ($\widehat{y}$) und die Unsicherheit um
+% diese Werte dargestellt werden. Es gibt zwar
+% ein paar R-Funktionen, mit denen man dies automatisch
+% machen kann \citep[siehe][]{Fox2003}, aber da es ein Ziel
+% dieses Kurses ist, Statistik zu demystifizieren, wird hier
+% gezeigt, wie man solche Grafiken selber erzeugen kann.
+% 
+% \paragraph{Schritt 1.}
+% Wir kreieren einen neuen Datensatz, der die
+% Kombinationen der Prädiktorwerte enthält, für die wir
+% die $\widehat{y}$-Werte zeichnen wollen.
+% Die \texttt{expand.grid()}-Funktion ist hierfür besonders
+% praktisch, denn sie kreiert einen Datensatz, in dem
+% alle Kombinationen der Prädiktorwerte vorkommen:
+% <<>>=
+% neue_daten <- expand.grid(Name = c("Dragan", "Luca"),
+%                           CS = c("mit", "ohne"))
+% neue_daten
+% @
+% 
+% \paragraph{Schritt 2.}
+% Im Modell arbeiten wir mit Dummy-Variablen. Diese
+% müssen wir dem neuen Datensatz hinzufügen. Geben Sie dabei
+% den Dummy-Variablen den gleichen Namen wie bei der Modellierung.
+% <<>>=
+% neue_daten$Dragan      <- ifelse(neue_daten$Name == "Dragan", 1, 0)
+% neue_daten$MitCS       <- ifelse(neue_daten$CS == "mit", 1, 0)
+% neue_daten$DraganMitCS <- neue_daten$Dragan * neue_daten$MitCS
+% neue_daten
+% @
+% 
+% \paragraph{Schritt 3.}
+% Mit der \texttt{predict()}-Funktion fügen wir diesem neuen Datensatz auch noch
+% die modellierten $\widehat{y}$-Werte hinzu. In diesem Fall
+% sind diese $\widehat{y}$-Werte den Zellenmitteln gleich.
+% <<>>=
+% neue_daten$Mittel <- predict(potenzial.lm, newdata = neue_daten)
+% neue_daten
+% @
+% 
+% \paragraph{Schritt 4.}
+% Mit der gleichen Funktion fügen wir diesem Datensatz auch noch
+% die Limiten des erwünschten Konfidenzintervalls hinzu. Dazu
+% muss man spezifizieren, dass man sich ein Konfidenzintervall
+% wünscht und das Konfidenzniveau spezifizieren. Wie Sie sehen,
+% generiert diese Funktion eine Matrix, deren zweite Spalte (\texttt{lwr})
+% die untere Grenze und deren dritte Spalte (\texttt{upr}) die obere
+% Grenze enthält:
+% <<>>=
+% ki_grenzen <- predict(potenzial.lm, newdata = neue_daten,
+%                       interval = "confidence", level = 0.95)
+% ki_grenzen
+% @
+% 
+% Diese Grenzen fügen wir dann \texttt{dummy\_data} hinzu:
+% <<>>=
+% neue_daten$KI_unten <- ki_grenzen[, 2]
+% neue_daten$KI_oben  <- ki_grenzen[, 3]
+% neue_daten
+% @
+% 
+% \paragraph{Schritt 5.}
+% Wir stellen die Werte in
+% \texttt{Mittel} als Punkte dar und zeichnen
+% anhand der Konfidenzlimiten Intervalle um sie, siehe
+% Abbildung \ref{fig:bertheleCI}.
+% Wenn Sie die vier \texttt{\#}-Zeichen entfernen,
+% werden auch noch die Rohdaten gezeichnet.
+% <<fig.width = 1.5*2.8, fig.height = 1.3*2.2, fig.cap = "Zellenmittel und modellbasierte 95\\%-Konfidenzintervalle.\\label{fig:bertheleCI}", out.width = ".5\\textwidth">>=
+% ggplot(neue_daten,
+%        aes(x = Name,
+%            y = Mittel)) +
+%   # geom_point(data = d,
+%   #            shape = 1, colour = "grey",
+%   #            aes(y = Potenzial),
+%   #            position = position_jitter(width = 0.2, height = 0)) +
+%   geom_point() +
+%   geom_linerange(aes(ymin = KI_unten,   # untere Limite
+%                      ymax = KI_oben)) + # obere Limite
+%   facet_grid(cols = vars(CS)) +
+%   ylab("Mittel Potenzial\n(95% Konfidenzintervall)")
+% @
+% 
+% \mypar{Bemerkung}
+% Wir hätten auch direkt auf der Basis der Zellenmittel und -standard\-ab\-weichungen
+% Konfidenzintervalle berechnen können, und zwar wie folgt:
+% <<>>=
+% summary_berthele <- summary_berthele |> 
+%   mutate(
+%     SE = StdAb / sqrt(n),
+%     KI_unten = Mittel + qt(0.025, df = n - 1) * SE,
+%     KI_oben = Mittel + qt(0.975, df = n - 1) * SE
+%   )
+% summary_berthele
+% @
+% 
+% Der Grund, weshalb die Konfidenzintervalle in \texttt{neue\_daten}
+% und in \texttt{summary\_berthele} nicht identisch sind,
+% ist, dass erstere von einem Modell hergeleitet wurden, 
+% das davon ausgeht, dass die Restfehler in jeder Zelle die gleiche
+% Streuung hat. 
+% Letztere wurden dahingegen direkt von den Standardabweichungen
+% in den Zellen hergeleitet: Die Streuung der Daten in einer Zelle
+% beeinflusst daher den geschätzten Standardfehler und die Konfidenzintervalle
+% um das Mittel einer anderen Zelle nicht.
+% Wenn der Restfehler in jeder Zelle
+% tatsächlich (in der Population) die gleiche Streuung hat, liefert
+% das Modell die besseren Konfidenzintervalle, da für die Schätzung
+% der Streuung der Restfehler alle Datenpunkte zur Verfügung berücksichtigt wurden.
+% Aber auch wenn sich der Restfehler zwischen den Zellen unterscheidet,
+% kann es durchaus der Fall sein, dass es sich lohnt, beim Konstruieren von
+% Konfidenzintervallen sämtliche Datenpunkte zu berücksichtigen.
+% Wann dieses Vorgehen die besseren Konfidenzintervalle liefert, hängt davon ab,
+% wie stark der Restfehler zwischen den Zellen variiert,
+% wie viele Datenpunkte es insgesamt gibt und wie viele Datenpunkte es pro Zelle gibt.
+% \parend
+% 
+% Weitere hoffentlich nützliche Links:
+% \begin{itemize}
+%  \item Blogeintrag \href{https://janhove.github.io/posts/2017-04-23-visualising-models-1/}{\textit{Tutorial: Plotting regression models}} (23.4.2017)
+%  \item Blogeintrag \href{https://janhove.github.io/posts/2017-05-12-visualising-models-2/}{\textit{Tutorial: Adding confidence bands to effect displays}} (12.5.2017)
+%   \item \url{https://socviz.co/modeling.html#get-model-based-graphics-right}
+%   \item \url{https://janhove.github.io/visualise_uncertainty/}
+% \end{itemize}
+% 
+% \section{Annahmen überprüfen}
+% Da auch das Modell, mit dem wir uns gerade amüsiert haben, 
+% ein Beispiel eines allgemeinen linearen Modells ist,
+% hat es die gleichen Annahmen wie die Modelle aus den letzten Kapiteln:
+% Unabhängigkeit, Normalität und Homoskedastizität. Die Beschreibung
+% von \citet{Berthele2011b} lässt vermuten, dass Unabhängigkeit gegeben ist.
+% Mit \texttt{plot(potenzial.lm)}
+% können diagnostische Plots erzeugt werden, mit denen die Normalitäts- und
+% Homoskedastizitätsannahmen eingeschätzt werden können, 
+% siehe Abbildung \ref{fig:diagnosticpotenzial}.
+% <<echo = FALSE, fig.width = 4*1.3, fig.height = 4*1.3, fig.cap = "Diagnostische Plots für das \\texttt{potenzial.lm}-Modell.\\label{fig:diagnosticpotenzial}", fig.pos="tp", out.width = ".7\\textwidth">>=
+% par(mfrow = c(2, 2), cex = 0.6, mar = c(4, 4, 2, 2))
+% plot(potenzial.lm)
+% par(mfrow = c(2, 2))
+% @
+% 
+% Die `Treppchen' in der Grafik rechts oben zeigen, was wir schon wussten,
+% nämlich dass die Potenzialbeurteilungen ziemlich grobkörnig sind.
+% Normalverteilte Variablen sind im Prinzip unendlich feinkörnig und können
+% ausserdem theoretisch von $-\infty$ bis $\infty$ reichen. Diese Daten
+% sind aber theoretisch beschränkt zwischen $1$ und $6$.
+% Erfahrungsgemäss weiss ich, dass solche Abweichungen von den theoretischen
+% Annahmen wenig ausmachen, wenn die Datenmenge ausreichend ist,
+% aber im Zweifelsfall können Sie die Konfidenzintervalle mit einer
+% Methode überprüfen, die andere Annahmen macht: dem Bootstrap.
+% Die nächste fakultative Bemerkung zeigt, wie das geht.
+% 
+% \mypar[Konfidenzintervalle mit dem Bootstrap überprüfen]{Bemerkung}
+% Das Prinzip hinter dem Bootstrap wurde bereits mehrmals erklärt.
+% Die letzten paar Male haben wir es erlaubt, dass Restfehler
+% aus der einen Zelle/Kondition in der Bootstrapstichprobe in der
+% anderen Zelle/Kondition auftauchen. Dies entsprach der Homoskedastizitäts\-annahme
+% des allgemeinen linearen Modells. Aber wir können dies auch verhindern,
+% indem wir die Bootstrapstichprobe so gestalten, dass Datenpunkte
+% in einer bestimmten Zelle nur in der gleichen Zelle `rezykliert' werden.
+% Jede Zelle sollte gleich gross sein wie in der ursprünglichen Stichprobe.
+% Dies entspricht dem Vorgehen aus Bemerkung \ref{bm:heterosk}.
+% <<>>=
+% # Zellengrössen in der eigentlichen Stichprobe
+% xtabs(~ Dragan + MitCS, data = d)
+% 
+% # Innerhalb jede Zelle bootstrappen
+% bs_dat <- d |> 
+%   group_by(Dragan, MitCS) |> 
+%   slice_sample(prop = 1, replace = TRUE)
+% 
+% # Zellengrössen in der Bootstrapstichprobe
+% xtabs(~ Dragan + MitCS, data = bs_dat)
+% @
+% 
+% Den Bootstrap können wir wie gehabt durchführen.
+% <<cache = TRUE>>=
+% # Anzahl Bootstrapstichproben definieren
+% runs <- 20000
+% 
+% # Matrix für Parameterschätzungen
+% bs_beta <- matrix(nrow = runs, ncol = 4)
+% 
+% # For-loop für Bootstraps
+% for (i in 1:runs) {
+%   bs_dat <- d |> 
+%     group_by(Dragan, MitCS) |> 
+%     slice_sample(prop = 1, replace = TRUE)
+% 
+%   bs_mod <- lm(Potenzial ~ Dragan + MitCS + DraganMitCS,
+%                data = bs_dat)
+% 
+%   # Zeile der Matrix füllen:
+%   # 1. Spalte = intercept; 2. Spalte, Dragan;
+%   # 3. Spalte = MitCS; 4. Spalte: Interaktion
+%   bs_beta[i, ] <- coef(bs_mod)
+% }
+% @
+% 
+% Die Verteilungen der Bootstrapschätzungen können grafisch dargestellt werden (Abbildung \ref{fig:bertheleBS});
+% siehe Seite \pageref{sec:histogrammebootstrapdekeyser} für eine Erklärung der Befehle.
+% Bemerken Sie, dass die Verteilung der Schätzungen für den Schnittpunkt Lücken aufzeigt: Der Schnittpunkt erfasst das Mittel der 32 Beurteilungen für Luca ohne Codeswitches. Da diese Beurteilungen aber grobkörnig sind, gibt es Werte, die gar kein Mittel dieser Beurteilungen sein können.
+% <<fig.width = 8, fig.height = 4, fig.cap="Bootstrapschätzungen der Variabilität der Modellparameter ohne Homoskedastizitätsannahme.\\label{fig:bertheleBS}", out.width = ".8\\textwidth">>=
+% bs_beta_tbl <- tibble(
+%   "B0: Schnittpunkt" = bs_beta[, 1],
+%   "B1: Dragan" = bs_beta[, 2],
+%   "B2: Codeswitches" = bs_beta[, 3],
+%   "B3: Interaktion" = bs_beta[, 4]
+% )
+% 
+% # Grafik zeichnen
+% bs_beta_tbl |> 
+%   pivot_longer(cols = everything(),
+%                names_to = "Parameter",
+%                values_to = "Estimate") |> 
+%   ggplot(aes(x = Estimate)) +
+%   geom_histogram(fill = "lightgrey", col = "black", bins = 50) +
+%   facet_wrap(vars(Parameter), scales = "free", ncol = 2) +
+%   xlab("Bootstrapschätzung") +
+%   ylab("Anzahl")
+% @
+% 
+% Auch ohne die Annahme, dass die Restfehler aus einer
+% Normalverteilung stammen und dass sie in jeder Zelle
+% die gleiche Streuung haben, erhalten wir ähnliche 
+% Konfidenzintervalle um die geschätzten Parameter
+% wie mit \texttt{confint(potenzial.lm, level = 0.95)};
+% <<>>=
+% apply(bs_beta, 2, quantile, probs = c(0.025, 0.975))
+% @
+% \parend
+% 
+% \section{Interaktionen mit einem kontinuierlichen Prädiktor}\label{sec:interactioncontinuous}
+% Manchmal stösst man auf Studien, in denen untersucht wird, ob der Zusammenhang
+% eines kontinuierlichen Prädiktors mit dem outcome von Gruppe zu Gruppe
+% variiert. Auch diese Art Fragestellung betrifft die Interaktion von zwei Variablen:
+% einer kontinuierlichen und einer kategorischen.
+% 
+% \mypar[lieber ein grösseres Modell als viele kleine]{Bemerkung}\label{bm:differencesignificant}
+% Um den Zusammenhang zwischen einem kontinuierlichen Prädiktor
+% und dem outcome in unterschiedlichen
+% Gruppen zu vergleichen, analysieren viele Forschende ihre Daten in separaten Modellen
+% (einem Modell pro Gruppe).
+% In der Regel ist es besser, die
+% unterschiedlichen Prädiktoren und ihre Interaktionen in \emph{einem}
+% Modell zu analysieren, denn so erhält man Parameterschätzungen für
+% die Interaktionen \emph{und} Indizien über die Unsicherheit dieser Schätzung.
+% Wenn man die Gruppen in separaten Modellen analysiert, erhält man keine
+% solchen Unsicherheitsmasse, und entsprechend wird die Unsicherheit über
+% die Interaktionen in solchen Fällen fast ausnahmslos unterschätzt.
+% Siehe hierzu noch \citet{Gelman2006} und \citet{Nieuwenhuis2011}.
+% \parend
+% 
+% Leider habe ich keinen Zugriff auf Datensätze, die eine solche Forschungsfrage
+% behandeln und sinnvoll mit dem allgemeinen linearen Modell analysiert werden
+% können. Um das Vorgehen zu illustrieren, versuche ich hier mit den Daten aus meiner
+% Diss (siehe Aufgabe \ref{ex:vanhove2014}) die etwas banale Frage,
+% ob gute Englischkenntnisse beim Erkennen von gesprochenen Kognaten
+% für Männer und Frauen unterschiedlich nützlich sind, zu beantworten.
+% 
+% <<warning = FALSE, message = FALSE>>=
+% # Daten einlesen und kombinieren; siehe Kapitel 8
+% cognates <- read_csv(here("data", "vanhove2014_cognates.csv"))
+% background <- read_csv(here("data", "vanhove2014_background.csv"))
+% d <- cognates |> 
+%   left_join(background)
+% head(d)
+% @
+% 
+% \subsection{Grafische Darstellung}
+% Abbildung \ref{fig:oops} hebt hervor, wieso man nie blind herumrechnen sollte:
+% Der Wert $-9999$ bei der Variablen \texttt{English.Overall} ist kein echter Wert,
+% sondern will lediglich heissen, dass diese Angaben nicht vorliegen.
+% Im Folgenden werden wir solche fehlenden Angaben einfach ignorieren.
+% 
+% <<fig.width = 1.2*4, fig.height = 1.2*1.8, fig.cap = "Ups.\\label{fig:oops}", out.width = ".7\\textwidth">>=
+% ggplot(d,
+%        aes(x = English.Overall,
+%            y = CorrectSpoken)) +
+%   geom_point(shape = 1) +
+%   facet_grid(cols = vars(Sex))
+% @
+% 
+% Abbildung \ref{fig:engl} zeigt, dass es sowohl für Männer als auch für Frauen
+% einen positiven Zusammenhang zwischen der Kognatübersetzungsleistung
+% und der Leistung beim Englischtest gibt.
+% 
+% <<out.width = ".7\\textwidth", fig.width = 1.2*4, fig.height = 1.2*1.8, fig.cap = "Für sowohl Männer als auch Frauen gibt es einen positiven Zusammenhang zwischen der Leistung beim Englischtest und bei der Kognatübersetzung.\\label{fig:engl}">>=
+% # Fehlende Daten löschen
+% d <- d |> 
+%   filter(English.Overall != -9999)
+% 
+% # Grafik zeichnen
+% ggplot(d,
+%        aes(x = English.Overall,
+%            y = CorrectSpoken)) +
+%   geom_point(shape = 1) +
+%   facet_grid(cols = vars(Sex)) +
+%   xlab("Leistung Englischtest") +
+%   ylab("Richtige Übersetzungen\n(gesprochene Kognate)")
+% @
+% 
+% \subsection{Modellierung}
+% Die Modellierung verläuft analog zur vorherigen.
+% Da es in der Stichprobe mehr Frauen als Männer gibt,
+% kodiere ich Frauen als 0 und Männer als 1, aber das macht
+% eigentlich nichts aus. Die
+% Variable \texttt{English.Overall} ist bereits zentriert
+% um 0, sodass wir dies nicht mehr machen müssen.
+% 
+% <<>>=
+% d$Mann <- ifelse(d$Sex == "male", 1, 0)
+% @
+% 
+% Auch in diesem Fall bezieht sich der geschätzte Parameter
+% für die Interaktion auf das Produkt der beiden Prädiktoren.
+% Aber R wird dies automatisch machen.
+% 
+% <<>>=
+% kognat.lm <- lm(CorrectSpoken ~ English.Overall * Mann,
+%                 data = d)
+% kognat.lm
+% @
+% 
+% Aus der allgemeinen Regressionsgleichung, der wir bereits mehrmals begegnet sind,
+% können wir herleiten, worauf sich diese Schätzungen beziehen:
+% 
+% \begin{itemize}
+%  \item $\widehat{\beta_0}$: Die (modellierte) durchschnittliche Kognatübersetzungsleistung einer Frau mit einem Englischergebnis von 0 (hier: dem Stichprobenmittel). (Etwa 17 Punkte.)
+%  \item $\widehat{\beta_1}$: Wie viel besser schneidet (laut dem Modell) eine Frau im Schnitt ab, wenn sie ein Englischergebnis von 1 statt von 0 hat? (Etwa 1.6 Punkte besser.)
+%  \item $\widehat{\beta_2}$: Wie viel besser schneidet (laut dem Modell) ein Mann im Schnitt ab, wenn er ein Englischergebnis von 0 hat, verglichen mit einer Frau mit dem gleichen Englischergebnis? (Etwa 1.5 Punkte schlechter.)
+%  \item $\widehat{\beta_3}$: Wie viel `nützlicher' ist ein Englischergebnis von 1 als eins von 0 für einen Mann als für eine Frau? (Etwa 0.1 Punkt beim Kognatsübersetzungstest nützlicher.)
+% \end{itemize}
+% 
+% \subsection{Unsicherheit einschätzen}\label{sec:kognat}
+% 
+% Die geschätzten Standardfehler sowie die Konfidenzintervalle können wir wie gehabt abfragen.
+% <<>>=
+% summary(kognat.lm)$coefficients
+% 
+% confint(kognat.lm, level = 0.9)
+% @
+% 
+% Hinsichtlich unserer banalen Frage zeigt das Konfidenzintervall
+% für die Interaktion, dass Englischkenntnisse in dieser Stichprobe
+% zwar nützlicher für Männer scheinen als für Frauen, aber
+% die Unsicherheit ist so gross, dass das Muster auch mit einem
+% negativen oder ungefähren Nullergebnis kompatibel ist.
+% 
+% \subsection{Annahmen überprüfen}
+% Die Annahmen werden auf die gleiche Art und Weise überprüft
+% als in den letzten Abschnitten und Kapiteln. Das Vorgehen
+% wird hier nicht gezeigt, da die Frage derartig banal ist und ich in
+% \citet{Vanhove2014} die Daten ohnehin in einem angemesseren
+% Modell analysiert habe (im Hinblick auf leicht weniger banale Fragen).
+% 
+% \subsection{Modell visualisieren}
+% Um das Modell zu visualisieren, kann die Technik, die oben erklärt wurde,
+% verwendet werden. Diese wird hier im
+% Telegrammstil wiederholt. Das Ergebnis ist Abbildung \ref{fig:effectkognat}.
+% 
+% <<out.width = ".7\\textwidth", fig.width = 5, fig.height = 2, fig.cap = "Visualisierung des \\texttt{kognat.lm}-Modells mit 80\\%- und 95\\%-Konfidenzbändern.\\label{fig:effectkognat}">>=
+% # Datensatz mit Prädiktorkombinationen generieren.
+% # Für English.Overall nehme ich einfach die einzelnen Werte,
+% # die in der Stichprobe beobachtet wurden (unique()).
+% neue_daten <- expand.grid(Sex = c("male", "female"),
+%                           English.Overall = unique(d$English.Overall))
+% # Der Datensatz wird nicht angezeigt, um Papier zu sparen.
+% # neue_daten
+% 
+% # Dummy-Variable kodieren
+% neue_daten$Mann <- ifelse(neue_daten$Sex == "male", 1, 0)
+% 
+% # y-hat-Werte hinzufügen
+% neue_daten$yhat <- predict(kognat.lm, newdata = neue_daten)
+% 
+% # Konfidenzlimiten hinzufügen: hier sowohl 80% als auch 95%
+% limiten80 <- predict(kognat.lm, newdata = neue_daten,
+%                      interval = "confidence", level = 0.80)
+% limiten95 <- predict(kognat.lm, newdata = neue_daten,
+%                      interval = "confidence", level = 0.95)
+% neue_daten$ki_unten80 <- limiten80[, 2]
+% neue_daten$ki_oben80  <- limiten80[, 3]
+% neue_daten$ki_unten95 <- limiten95[, 2]
+% neue_daten$ki_oben95  <- limiten95[, 3]
+% # Ergebnis inspizieren (nicht gezeigt)
+% # neue_daten |> slice_head(n = 4)
+% 
+% # Grafik zeichnen
+% ggplot(neue_daten,
+%        aes(x = English.Overall,
+%            y = yhat)) +
+%   geom_ribbon(aes(ymin = ki_unten95,
+%                   ymax = ki_oben95),
+%               fill = "lightgrey") +
+%   geom_ribbon(aes(ymin = ki_unten80,
+%                   ymax = ki_oben80),
+%               fill = "darkgrey") +
+%   geom_line() +
+%   ## Eventuell Datenpunkte hinzufügen
+%   # geom_point(data = d,
+%   #            shape = 1,
+%   #            aes(x = English.Overall,
+%   #                y = CorrectSpoken)) +
+%   facet_grid(cols = vars(Sex)) +
+%   xlab("Ergebnis Englischtest") +
+%   ylab("Durchschnittliche Leistung\nKognatübersetzen")
+% @
+% 
+% \section{Komplexere Interaktionen}
+% Im Prinzip ist es auch möglich, Interaktionen zwischen zwei
+% kontinuierlichen Prädiktoren dem Modell hinzuzufügen.
+% Diese Möglichkeit bespreche ich im Blogeintrag
+% \href{https://janhove.github.io/posts/2017-06-26-continuous-interactions/}{\textit{Interactions between continuous variables}} (26.6.2017). Für ein ausführlicheres Beispiel,
+% siehe \citet{Vanhove2017b}.
+% 
+% Auch Interaktionen zwischen drei oder mehr Prädiktoren
+% können modelliert werden. Solche Fälle werden hier nicht
+% behandelt, da ich erstens keinen Zugriff auf einen geeigneten
+% Datensatz habe und da solche dreifache, vierfache usw.\ Interaktionen
+% oft schwierig zu erklären sind, wenn man sich nicht bereits
+% mit der Forschungsliteratur auskennt. Für ein Beispiel
+% einer dreifachen Interaktion, siehe \citet{Bialystok2004}
+% (Interaktion zwischen Alter (jung--alt), Kongruenz (kongruent--inkongruent) und Sprachgruppe (monolingual--bilingual) auf Reaktionsgeschwindigkeit).\footnote{Wie \citet{Abelson1995} erklärt,
+% können Interaktionen oft weggerechnet werden. Zum Beispiel hätten \citet{Bialystok2004}
+% für jede Versuchsperson den Unterschied zwischen den kongruenten und inkongruenten
+% Reaktionszeiten berechnen können und dann die zweifachen Interaktion zwischen Alter und Sprachgruppe
+% untersuchen können. Das Ergebnis wäre genau gleich gewesen, aber die Analyse einfacher und wohl verständlicher.}
+% \citeauthor{Bialystok2004} analysierten ihre Daten übrigens nicht mit dem allgemeinen
+% linearen Modell, da es Abhängigkeiten in den Daten gab: Die Versuchspersonen wurden
+% sowohl in der kongruenten als auch in der inkongruenten Kondition getestet.
+% 
+% \section{Interaktionen und Haupteffekte interpretieren}
+% Es kann schwierig sein, Haupteffekte zu interpretieren, wenn eine Interaktion vorliegt;
+% am besten basiert man sich hierbei auf einer Grafik. Bei etwa dem
+% Datenmuster in Abbildung \ref{fig:maineffectinteraction} wäre es vorschnell zu sagen,
+% dass der outcome im Schnitt höher ist bei
+% $A$ als bei $B$ (Haupteffekt von $A$ vs.\ $B$) oder dass er höher ist bei $Y$ als bei $X$
+% (Haupteffekt von $X$ vs.\ $Y$), auch wenn das Modell beide Haupteffekte belegen würde:
+% Der Punkt ist ja dass es nur einen Unterschied zu geben scheint,
+% wenn $A$ und $Y$ \emph{gleichzeitig} vorkommen (Interaktion zwischen $AB$ und $XY$).
+% 
+% <<out.width = ".7\\textwidth", eval = TRUE, echo = FALSE, fig.width = 1.3*4, fig.height = 1.3*2, fig.cap = "In diesem simulierten Datensatz gibt es zwar Haupteffekte von A vs.\\ B und von X vs.\\ Y, aber eigentlich schneidet nur die Gruppe mit A \\emph{und} Y wesentlich besser als die anderen ab.\\label{fig:maineffectinteraction}">>=
+% set.seed(14-05-2015)
+%   F1 <- c(rnorm(40, 40, 20),
+%           rnorm(40, 60, 20),
+%           rnorm(40, 40, 20),
+%           rnorm(40, 40, 20))
+%   Sprachgruppe <- factor(c(rep("A", 80),
+%                            rep("B", 80)))
+%   Geschlecht <- factor(c(rep("X", 40),
+%                          rep("Y", 40),
+%                          rep("Y", 40),
+%                          rep("X", 40)))
+%   beispiel <- data.frame(F1, Sprachgruppe, Geschlecht)
+%   ggplot(beispiel, aes(x = Sprachgruppe, y = F1)) +
+%     facet_wrap(~ Geschlecht) +
+%     geom_boxplot(outlier.shape = NA) +
+%     geom_point(position = position_jitter(width = 0.3, height = 0), pch = 21, size = 0.8) +
+%     xlab("Kondition") + ylab("abhängige Variable")
+% @
+% 
+% Zur Interpretation von \textit{non-cross-over interactions} sei hier auf \citet{Wagenmakers2012}
+% verwiesen. Zusammengefasst:
+% Eine Interaktion in der gemessenen Variablen (z.B.\ Reaktionsgeschwindigkeit) muss nicht zwingend
+% darauf hindeuten, dass eine Interaktion im hinterliegenden Konstrukt (z.B.\ kognitiver
+% Kontrolle) vorliegt.
+% 
+% \begin{framed}
+% \noindent \textbf{Merksatz: Zur Bedeutung von Regressionsparameter.}
+% Das allgemeine lineare Modell ist in erster Linie eine Methode,
+% um die Parameter einer Regressionsgleichung zu schätzen.
+% Diese wiederum ist lediglich ein Hilfsmittel, um Muster in den Daten
+% numerisch zu erfassen. Die Parameter in dieser Gleichung
+% betrachten Sie daher am besten als Buchhaltungsmittel, nicht als
+% den numerischen Ausdruck irgendeiner linguistischen, psychologischen, soziologischen usw.\ Wahrheit.
+% Gerade bei Interaktionsparametern sollte man sich dessen bewusst sein,
+% dass die Tatsache, dass man in einem Regressionmodell eine Interaktion
+% zwischen zwei Variablen modellieren kann, \emph{nicht} heisst,
+% dass die Konstrukte, die hinter diesen Variablen stecken, miteinander
+% interagieren in der alltäglichen Bedeutung des Wortes.
+% \end{framed}
+% 
+% In diesem Kapitel gibt es keine praktischen Aufgaben,
+% aber Ihr neu angeeignetes Wissen über Interaktionen werden Sie in
+% Aufgabe \vref{aufgabe:mueller} anwenden.
+% Falls es Ihnen sonst langweilig werden sollte, empfehle ich statt
+% einer praktischen Übung die Lektüre von \citet{Wagenmakers2012}.

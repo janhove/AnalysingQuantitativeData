@@ -1,0 +1,111 @@
+\chapter{*Recommendations for self-study and tips}\label{ch:weiterbildung}
+
+\section{Books}
+Instead of repeating the reading recommendations from the last 300 pages, 
+I'll limit myself here to three book suggestions:
+\begin{itemize}
+ \item Bodo Winter's \textit{Statistics for linguists: An introduction using R} 
+       aligns well in philosophy with this script. 
+       \citet{Winter2019} also discusses the generalised linear model 
+       and mixed-effects models.
+       These are useful, for example, 
+       when analysing data from a study in which different participants 
+       respond to multiple stimuli.
+
+ \item \textit{Regression and other stories} by 
+ Andrew Gelman, Jennifer Hill and Aki Vehtari offers a comprehensive, 
+ accessible introduction to working with regression models. 
+ It does not shy away from more realistic but correspondingly more complex examples. 
+ The book is freely available at \url{https://avehtari.github.io/ROS-Examples/}
+ \citep{Gelman2020}.
+
+ \item Richard McElreath's 
+ \textit{Statistical rethinking: A Bayesian course with examples in R and Stan} (2nd edition) 
+ is an excellent introduction to so-called Bayesian statistics. 
+ In my view, it is particularly recommended 
+ if you already have some experience working with quantitative data 
+ \citep{McElreath2020}.
+\end{itemize}
+
+\section{Final tips}
+\begin{itemize}
+  \item Your first priority should be to formulate a clear research question 
+  or objective. 
+  Avoid technical terminology 
+  (e.g., `significance', `regression coefficient', `interaction', `correlation') 
+  that already presupposes a particular analytical method. 
+  Then develop a research design and choose an analytical method 
+  suited to answering your question. 
+  Ideally, you should already know in advance how you will answer the research question 
+  depending on the output of the analysis. 
+  In particular, you should know how the relationship or phenomenon of interest 
+  would be reflected in the data and in the analysis output, 
+  and how similar patterns might otherwise arise 
+  (e.g., influence of third variables, alternative theoretical explanations, etc.). 
+  See \url{https://www.the100.ci/2024/08/27/lets-do-statistics-the-other-way-around/} 
+  and the literature cited there.
+
+  \item Schedule regular time for self-study. 
+  Even if it is only two hours every other Friday afternoon, 
+  this will help you more 
+  than trying to learn statistics intensively 
+  in the last months of your doctorate. 
+  With the book recommendations above 
+  and the reading lists in the previous chapters, 
+  you will not run out of resources.
+
+  \item Statistical procedures often have misleading names. 
+  So-called causal models, for example, do not allow you to demonstrate causality; 
+  causality is an assumption of the model, not its result. 
+  Similarly, `confirmatory' factor analysis is probably used more often 
+  for exploratory than for confirmatory purposes in practice. 
+  And as we have already discussed, 
+  a `significant' finding can be entirely tautological or irrelevant. 
+  Do not let the names of methods guide your choice of tools too strongly.
+
+  \item Do \emph{not} assume 
+  that published analyses necessarily make sense. \textbf{(!!!)}  
+  In many articles, they do not. 
+  Moreover, many analyses are poorly reported. 
+  Too much irrelevant and distracting information is often included in the text, 
+  along with too many significance tests; see \citet{Vanhove2020b}. 
+  Consequently, you should not carry out or report analyses 
+  that are common in the literature 
+  if you judge them to add no value in the context of your study. 
+  Just because an analysis produces numbers 
+  does not mean all those numbers are relevant to you or your readership.
+
+  \item Be sparing with significance tests. 
+  Ideally, in my view, the statistical hypotheses you test 
+  should be so closely tailored to the scientific hypotheses underlying the work 
+  that at most one significance test is conducted and reported per hypothesis. 
+  These tests should ideally be preregistered; 
+  see \url{https://help.osf.io/article/330-welcome-to-registrations} 
+  and \url{https://datacolada.org/64}.
+
+  \item Use plenty of plots, and not only tables, 
+  both during analysis and in your reports. 
+  Aim to show the variability in your data 
+  (scatterplots, boxplots) 
+  as well as the uncertainty in your estimates 
+  (e.g., confidence intervals).
+
+  \item Make your data and R code available online whenever possible. 
+  On the one hand, this saves you from having to include details in the report 
+  that you consider irrelevant: 
+  interested readers can consult the appendix themselves. 
+  On the other hand, it is entirely possible that in the coming years 
+  new statistical methods will be developed 
+  that allow your data to be analysed more effectively. 
+  If your data are freely accessible, 
+  they can be reanalysed, 
+  helping to ensure your study does not become obsolete. 
+  A practical platform for sharing data and scripts is \url{https://osf.io/}.
+
+  \item Whether an analysis is justifiable 
+  depends primarily on whether it helps you answer your questions 
+  or learn something about the data. 
+  Do not follow a flowchart mechanically. 
+  Instead, think carefully about what you actually want to find out 
+  and whether the numbers in the output are relevant to that aim.
+\end{itemize}

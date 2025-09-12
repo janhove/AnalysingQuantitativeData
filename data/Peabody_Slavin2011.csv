@@ -1,0 +1,17 @@
+Grade,CourseType,Language,Learners,Mean,StDev
+1,TBE,English,130,74.98,14.68
+1,TBE,Spanish,130,99.85,13.99
+1,EI,English,117,79.9,12.21
+1,EI,Spanish,117,90.19,13.76
+2,TBE,English,121,80.4,13.07
+2,TBE,Spanish,121,92.94,16.51
+2,EI,English,111,81.13,13.96
+2,EI,Spanish,111,87.54,16.2
+3,TBE,English,110,84.76,13.13
+3,TBE,Spanish,110,92.86,17.59
+3,EI,English,97,85.45,14.43
+3,EI,Spanish,97,85.64,17.87
+4,TBE,English,60,88.07,13.27
+4,TBE,Spanish,60,91,18.79
+4,EI,English,55,90.36,14.68
+4,EI,Spanish,55,86.27,19.51

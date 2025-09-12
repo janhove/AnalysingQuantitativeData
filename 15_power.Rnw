@@ -1,0 +1,283 @@
+\chapter{*Calculating statistical power}\label{ch:poweranalysis}
+Even when there really is a difference between two groups
+or an association between certain variables at the population level,
+it is possible that a sample will fail to demonstrate this difference
+or association with a significance test.
+Similarly, in experiments with random allocation, 
+a genuinely existing intervention effect may go undetected.
+This fact is illustrated in Figure \vref{fig:power}.
+The probability that a significance test detects a true effect
+is called its power.
+When planning studies, it can be useful to take this power into account.
+This chapter therefore explains how the power of a test can be calculated.
+
+In the interest of honesty,
+I should add that I myself rarely conduct power analyses.
+The first reason is that, as you will see in this chapter,
+a meaningful power calculation requires already having 
+quite a lot of information about the problem at hand.
+The second reason is that power analyses are mainly useful if one’s
+conclusions are based primarily on $p$-values,
+which I increasingly try to avoid.
+
+<<cache = TRUE, echo = FALSE, out.width=".7\\textwidth", fig.pos = "tp", fig.width = 7, fig.height = 3.5, fig.cap = "Top: Two normal distribution with $\\sigma = 2$. The mean of the blue distribution is 0, that of the red is 0.7. Bottom: We draw three times two random samples with 32 observations each from these normal distributions. Even though there is a difference between the means of the distributions, there needn't be a significant difference between the sample means.\\label{fig:power}">>=
+set.seed(314)
+p1 <- ggplot(data.frame(x=c(0-6, 0.7+6)),
+                aes(x)) +
+  stat_function(fun = function(x) (dnorm(x, 0, sd = 2)), col = "blue") +
+  stat_function(fun = function(x) (dnorm(x, 0.7, sd = 2)), col = "red") +
+  geom_vline(xintercept = 0, linetype = 2, col = "blue") +
+  geom_vline(xintercept = 0.7, linetype = 2, col = "red") +
+  ylab("Density") +
+  ggtitle("Distributions in the population")
+
+df1 <- data.frame(
+  gruppe = factor(rep(c("blue", "red"), times = c(32, 32))),
+  x = c(rnorm(32, 0, sd = 2),
+        rnorm(32, 0.7, sd = 2))
+)
+df1p <- format(t.test(x ~ gruppe, df1, var.equal = TRUE)$p.value, digits = 2)
+
+df2 <- data.frame(
+  gruppe = factor(rep(c("blue", "red"), times = c(32, 32))),
+  x = c(rnorm(32, 0, sd = 2),
+        rnorm(32, 0.7, sd = 2))
+)
+df2p <- format(t.test(x ~ gruppe, df2, var.equal = TRUE)$p.value, digits = 2)
+
+df3 <- data.frame(
+  gruppe = factor(rep(c("blue", "red"), times = c(32, 32))),
+  x = c(rnorm(32, 0, sd = 2),
+        rnorm(32, 0.7, sd = 2))
+)
+df3p <- format(t.test(x ~ gruppe, df3, var.equal = TRUE)$p.value, digits = 2)
+
+p_a <- ggplot(df1,
+              aes(x = gruppe,
+                  y = x)) +
+  geom_boxplot(outlier.shape = NA,
+               colour = c("blue", "red")) +
+  geom_point(position = position_jitter(width = 0.2, height = 0), shape = 1) +
+  ggtitle(paste("p = ", df1p, sep = "")) +
+  xlab("Group")
+
+p_b <- ggplot(df2,
+              aes(x = gruppe,
+                  y = x)) +
+  geom_boxplot(outlier.shape = NA,
+               colour = c("blue", "red")) +
+  geom_point(position = position_jitter(width = 0.2, height = 0), shape = 1)+
+  ggtitle(paste("p = ", df2p, sep = ""))  +
+  xlab("Group")
+
+p_c <- ggplot(df3,
+              aes(x = gruppe,
+                  y = x)) +
+  geom_boxplot(outlier.shape = NA,
+               colour = c("blue", "red")) +
+  geom_point(position = position_jitter(width = 0.2, height = 0), shape = 1) +
+  ggtitle(paste("p = ", df3p, sep = "")) +
+  xlab("Group")
+
+lay <- rbind(c(1,1,1),
+             c(2, 3, 4))
+gridExtra::grid.arrange(p1, p_a + coord_flip(), p_b + coord_flip(), p_c + coord_flip(),
+                        layout_matrix = lay)
+@
+
+\section{Calculating power through simulations}
+To calculate the power of the scenario illustrated in Figure \ref{fig:power}, 
+we can write a simulation. 
+The simulation code below does the following:
+\begin{enumerate}
+ \item We define the standard deviation of the two populations.
+ In this simulation, the standard deviation is $\sigma = 2$ for both populations.
+ Both distributions are assumed to be normally distributed, 
+ since this is an assumption of the $t$-test used in the analysis.
+ (Here we assume random samples from populations; 
+ we could also design the simulation to mimic an experiment with random assignment, 
+ but in practice the differences are minimal.)
+ 
+ \item We define the difference between the means of the two 
+       normal distributions.
+       Here, $\mu_B - \mu_A = 0.7$.
+ 
+ \item We set the number of observations per sample. 
+       Here, $n_A = n_B = 32$.
+ 
+ \item We draw a sample from each population 20,000 times.
+ 
+ \item These samples are modelled with a general linear model,
+ and the $p$-value of the difference (based on a $t$-distribution) is stored.
+ For this last step one could also use the \texttt{t.test()} function,
+ but the current code is easier to adapt to more complex designs.
+ 
+ \item The distribution of the $p$-values is visualised 
+ (Figure \ref{fig:pwertesimulationpower}).
+ 
+ \item The proportion of significant $p$-values ($p \leq 0.05$) is calculated.
+\end{enumerate}
+
+<<>>=
+# Population parameters (play around with these!)
+sd_group <- 2
+difference <- 0.7
+
+# Sample sizes (play around with these!)
+n_groupA <- 32
+n_groupB <- 32
+group <- rep(c("A", "B"), times = c(n_groupA, n_groupB))
+
+# Simulation
+n_runs <- 20000
+p_values <- replicate(n_runs, {
+  score = c(rnorm(n = n_groupA, mean = 0, sd = sd_group),
+            rnorm(n = n_groupB, mean = difference, sd = sd_group))
+  mod.lm <- lm(score ~ group)
+  summary(mod.lm)$coefficients[2, 4]
+})
+
+# Proportion of significant tests
+mean(p_values <= 0.05)
+@
+
+<<echo = FALSE, fig.width = 3, fig.height = 2, fig.cap = "The distribution of the 20,000 $p$ values in the power simulation.\\label{fig:pwertesimulationpower}">>=
+tibble(p_values) |> 
+  ggplot(aes(x = p_values,
+             y = after_stat(density))) +
+  geom_histogram(breaks = seq(0, 1, by = 0.025), 
+                 color = "black", fill = "lightgrey") +
+  geom_vline(xintercept = 0.05, linetype = 2, col = "red") +
+  xlab("p-value") +
+  ylab("Density")
+@
+
+Conclusion:
+If the populations are normally distributed 
+with $\sigma = 2$ and there is a difference of $0.7$ between 
+their means, then there is (only) about a 27\% chance of finding 
+a significant difference when drawing random samples 
+of 32 observations each. 
+The significance test used here is a two-sided $t$-test 
+assuming equal variances.
+
+\mypar{Exercise}
+\begin{enumerate}
+  \item How does the power in the above example change 
+  if the normal distributions have standard deviations of $\sigma = 3$ 
+  instead of $\sigma = 2$?
+
+  \item How does the power change in this example 
+  if, instead of 32 observations in each sample, 
+  there are 54 observations in one sample and 10 in the other?
+
+  \item How much power would one have if 
+  the difference between the two populations were infinitesimal? 
+  Try to answer this question first without using a simulation. 
+  Then check your answer with a simulation 
+  (for instance with $\mu_B - \mu_A = 0.000001$). 
+  \parend
+\end{enumerate}
+
+\section{Analytical power calculation}
+For a few significance tests, including $t$-tests, 
+the power can also be calculated analytically. 
+The formulas for this are not shown here, 
+but they are implemented in the 
+\texttt{power.t.test()} function. 
+For a difference of 0.7 units between normal distributions 
+with $\sigma = 2$ and samples of 32 observations each, 
+the power can be calculated as follows:
+<<>>=
+power.t.test(n = 32, delta = 0.7, sd = 2)
+@
+
+The advantage of this function is that one can specify 
+the desired power, leave the number of observations blank, 
+and thereby learn how many observations per sample would be needed 
+to achieve the desired power:
+<<>>=
+power.t.test(delta = 0.7, sd = 2, power = 0.90)
+@
+
+So, one would need 173 observations per sample to have a 90\% chance 
+of finding a significant difference when the populations differ 
+by $0.7$ units and have a standard deviation of $2$.
+
+Other parameters can also be left unspecified:
+<<>>=
+power.t.test(n = 40, sd = 2, power = 0.75)
+@
+
+If you want to have 75\% power, have 40 observations per group, 
+and assume that the populations have a standard deviation of $2$, 
+then you must hope that the difference between the population means 
+is at least $1.2$ units.
+
+To conduct a power calculation, 
+you need to know three of the following four pieces of information:
+\begin{itemize}
+  \item The number of observations.
+  
+  \item The effect size in the population 
+  (here: the difference between population means). 
+  This may be the expected or hoped-for effect size, 
+  but it may also be the smallest effect size one considers 
+  practically relevant.
+  
+  \item The variability in the population 
+  (here: the standard deviation of the distributions).\footnote{In principle, 
+  only the ratio between the effect size and the variability is relevant; 
+  see \citet{Cohen1977,Cohen1992}.}
+ 
+  \item The desired power.
+\end{itemize}
+
+Figure \vref{fig:powerdeterminants} illustrates how these four factors interact.  
+In my view, it is not particularly meaningful to speak of \emph{the} power of a test:  
+it is more sensible to say that a test, under certain assumptions 
+(concerning the actual difference, the variability within groups, 
+and the distribution of the residuals), would have a certain power, 
+and under other assumptions a different one.  
+Figure \ref{fig:powerdeterminants} makes this point quite clearly.
+
+<<echo = TRUE, out.width = ".9\\textwidth", fig.width = 7, fig.height = 5.3, fig.cap = "The power of a significance test depends on the effect size (here: the difference between the population means), the error variance (shown here as the standard deviation of the error distribution), and the amount of data.\\label{fig:powerdeterminants}">>=
+# Combinations of sample sizes, differences and standard deviations
+# we want to compute the power for:
+power.df <- expand.grid(
+  sample_size = seq(from = 2, to = 100, by = 1),
+  delta = seq(0.3, 1.5, by = 0.3),
+  SD = c(0.5, 1, 1.5, 2)
+)
+
+# Compute power
+power.df$Power <- power.t.test(n     = power.df$sample_size,
+                               delta = power.df$delta,
+                               sd    = power.df$SD)$power
+
+# Add text
+power.df$SD <- paste("Standard deviation of error:\n", power.df$SD)
+
+# Plot
+ggplot(power.df,
+       aes(x = sample_size,
+           y = Power,
+           colour = factor(delta))) +
+  geom_line() +
+  ylim(0, 1) +
+  facet_wrap(vars(SD)) +
+  xlab("Sample size (per group)") +
+  scale_colour_discrete(name = "Difference between population means") +
+  theme(legend.position = "bottom")
+@
+
+\section{Further reading}
+\citet{Cohen1992} is a concise introduction into power computations.
+Another useful article is \citet{Kelley2003}.
+Two blog posts of mine on the subject of power are
+\href{https://janhove.github.io/posts/2017-07-14-OtherRoadsToPower/}{\textit{Abandoning standardised effect sizes and opening up other roads to power
+}} (14 July 2017)
+and
+\href{https://janhove.github.io/posts/2017-10-24-increasing-power-precision/}{\textit{Increasing power and precision using covariates}} (24 October 2017).
+A more advanced article, which is particularly relevant for experimental research
+in the language sciences, is \citet{Westfall2014}.

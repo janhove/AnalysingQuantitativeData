@@ -1,0 +1,149 @@
+\chapter{Goals and philosophy}
+This script aims to provide students and researchers in the humanities 
+and social sciences with foundational statistical knowledge. 
+It is intended to be useful both for reading quantitative research reports 
+and for designing and analysing your own studies.  
+Before we dive in, I'd like to explain the guiding principles 
+behind this script and what you can expect from it.  
+
+\paragraph{Current practice vs best practice}
+At least in applied linguistics, my own research area, 
+there is a substantial gap between how statistical analyses 
+are actually carried out and reported, and how they ideally should be.  
+Exactly what contributes to this gap is somewhat a matter of opinion. 
+Here is my tuppence-worth:
+\begin{itemize}
+  \item Many articles inundate readers with a flood of significance tests. 
+  Most of these are only marginally relevant to the research questions.
+  Readers must therefore separate the relevant from the irrelevant 
+  information---a responsibility that ought to lie with the authors.  
+  I suspect that this overabundance of trivial information stems from researchers
+  following a formulaic approach to data analysis. 
+  They often do not consider whether the calculations they perform 
+  and report actually make sense in the context of their study.
+  
+  \item Despite the large volume of numbers in research reports, 
+  readers often learn very little about the data themselves 
+  or the relationships between variables.  
+  The dangers of blind number crunching are illustrated 
+  in several exercises in this script.
+  
+  \item Outputs of statistical models are sometimes interpreted too eagerly 
+  in terms of the study's theories and hypotheses, 
+  without a clear understanding of what all these numbers \emph{literally} mean.  
+  Linking results to theory is desirable, of course. 
+  But without understanding the literal meaning of the model output, 
+  there is a high risk of self-deception.  
+  Accordingly, this script includes several exercises in which readers 
+  must explain the literal meaning of numbers in model output.
+  
+  \item Some researchers lose sight of their primary 
+  goal---answering a research question---when applying 
+  more complex statistical methods.
+  They may treat the application of the method itself as the goal.  
+  (Admittedly, I sometimes fall into this trap as well.)
+\end{itemize}
+
+This script will not dwell excessively on 
+common questionable or pointless practices.
+However, several exercises are designed as a safeguard against them.  
+Still, it is advisable to familiarise yourself with these practices at some point 
+(see Chapters \ref{ch:sinnlos} and \ref{ch:QRP} and the recommended reading).
+
+\paragraph{Curb your enthusiasm.}
+Many widespread questionable practices probably persist 
+because researchers in the humanities and social sciences overestimate 
+what statistical methods can achieve.  
+A seemingly sophisticated statistical analysis cannot rescue 
+poorly planned or executed data collection.  
+Therefore, foundational knowledge of research design is often more important 
+than purely statistical skills (see my other script, \href{https://github.com/janhove/QuantitativeMethodology}{\textit{Quantitative methodology: An introduction}}).  
+Do not expect that an elaborate statistical analysis 
+will provide a useful answer to a poorly formulated research question.
+
+\paragraph{Content.}
+Chapter \ref{ch:software} explains how to properly set up the software we will use (R and RStudio)
+and is intended as self-study.
+Experience shows that students often struggle to structure datasets for easy analysis. 
+Chapter \ref{ch:datasets} is devoted to these steps.  
+You will also learn several useful commands to import, rearrange, and merge datasets in R.
+
+Chapter \ref{ch:probability} imparts the fundamentals of probability theory,
+which is then applied in Chapters \ref{ch:univariate}, \ref{ch:samples}, and \ref{ch:uncertainty} 
+on descriptive statistics, parameter estimation, and the estimation of uncertainty,
+respectively.  
+Concepts such as sampling error and confidence intervals are illustrated primarily 
+through simulations and related methods.  
+I hope that this approach clarifies the concepts and makes 
+the underlying assumptions more transparent 
+than a purely mathematical explanation would.  
+That said, this script doesn't shy away from some of the more accessible mathematical proofs.
+The rationale for providing these proofs is to make it clear that the procedures
+discussed are the result of reason and not of decree.
+
+In Chapters \ref{ch:linmod} to \ref{ch:multimod}, 
+we examine a key tool in statistical practice: the general linear model.  
+Most statistical procedures you will encounter in 
+the social and humanities sciences are instances of this model or its generalisations.
+
+While I do not deny occasional usefulness of significance tests, 
+I consider them often overused.  
+To prevent readers from thinking that $p$-values are the be-all and end-all of analysis, 
+they aren't introduced until Chapter \ref{ch:logic}, alongside many caveats.
+
+Chapters \ref{ch:withinsubjects} to \ref{ch:weiterbildung} 
+provide recommendations for exploring more complex methods 
+that, in my view, do not belong to the basics.  
+Many procedures occasionally seen in social and humanities research 
+remain entirely unmentioned.  
+My hope is that readers who have worked through this script 
+will be able to acquire such methods independently from other introductions.
+
+The appendix
+contains explanations of common R error messages and an overview of the software versions used.
+
+\paragraph{Prerequisites.}
+I work in a Department of Multilingualism Research and Foreign Language Didactics. 
+Students in our programmes generally have minimal experience with quantitative data analysis.  
+This script assumes no prior knowledge in this area.  
+It does assume, however, that readers don't freeze up when confronted with
+with some mathematical notation. 
+Most equations are implemented in software commands, 
+which should make their meaning more transparent.
+
+\paragraph{Learning how to learn.}
+I assume a healthy dose of curiosity and initiative.  
+I have tried to explain most of the settings in software commands. 
+If a setting is unclear, 
+consult the command’s help page or experiment by changing it to see how the output changes.
+
+Curiosity and initiative are essential 
+because it is impossible to convey all relevant insights in a single script---even one of over 300 pages long.  
+The aim is to provide you with the foundations to acquire further knowledge independently.  
+You will find many literature recommendations throughout; 
+approach them as a reading programme over several years.  
+Many of the concepts discussed here are also featured on my blog, \url{https://janhove.github.io}.
+
+Simulations are an extremely useful tool for learning statistics.  
+We will analyse existing datasets and generate our own.  
+Simulations allow you to know exactly how the data were generated and see how this affects model output.  
+Experiment with and modify these simulations---you will learn a great deal from doing so.  
+When learning new techniques, 
+first apply them to simulated datasets to ensure you truly understand the output.
+
+\paragraph{Script under revision.}
+This script represents the latest iteration of a manuscript 
+I have worked on since 2012 and is likely not the last.  
+The previous versions were in German, but I decided to make use of the last
+round of revisions to translate the whole thing into English.
+I used ChatGPT to draft a translation for several of the chapters.
+
+I welcome any content- or language-related feedback.  
+Special thanks to Isabelle Udry,
+who pointed out numerous linguistic errors 
+and unclear passages in one of the more recent versions, 
+which I then promptly replaced by others.
+
+\bigskip
+
+Good luck, stay patient with yourself, and enjoy the process! :)

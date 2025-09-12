@@ -1,0 +1,1938 @@
+\chapter{Fundamentals of probability theory}\label{ch:probability}
+If you want to analyse quantitative data, 
+you need to know a thing or two about how probabilities work.
+This chapter introduces some concepts in probability theory that I think you need to know.
+Incidentally, I've chosen to include a few proofs of mathematical statements---not because
+you should be able to do such proofs yourself, but because I want to show
+that these statements are fairly straightforward consequences of the definitions
+introduced.
+For the statements that are more difficult to prove using high-school mathematics,
+illustrations rather than proofs are included.
+
+
+\section{Probability spaces}
+\subsection{Events and probabilities}
+\textit{Jass} is a family of Swiss card games that are played with a deck
+of 36 cards ranging from the 6 to the Ace in four suits 
+(hearts, spades, diamonds, and clubs).\footnote{More arcane ranks and suits 
+are used in some parts of Switzerland; we'll stick to an international deck.}
+We consider two simple \term{random experiments}:
+\begin{enumerate}
+  \item In the first experiment, we draw one random card from the deck.
+  \item In the second one, we draw two random cards from the deck, one after the other.
+        We make note of the order in which we draw the cards.
+\end{enumerate}
+The first experiment has 36 possible outcomes.
+The second one has $36 \cdot 35 = 1260$ possible outcomes
+as the first card drawn is one of 36 possible ones,
+whereas the second card drawn is one of the remaining 35.
+
+We can formulate yes--no questions about the outcomes of both experiments.
+For the first experiment, some possible yes--no questions are the following:
+\begin{itemize}
+  \item Is the card drawn the $7\clubsuit$?
+  \item Is the card drawn contained in the following list: $7\heartsuit, Q\diamondsuit, A\spadesuit$? (J = jack, Q = queen, K = king, A = ace.)
+  \item Does the card drawn represent an even number?
+  \item Does the card represent an even number or is it black ($\spadesuit, \clubsuit$)?
+\end{itemize}
+In probability theory, and throughout these lecture notes, 
+`or' is always intended inclusively. 
+That is, we'd also have to answer `yes' to the fourth question if the card drawn
+were, say, the $8\clubsuit$.
+For the exclusive `or', we'll use such expressions as `A or B, but not both'.
+
+For the second experiment, some possible yes--no questions are the following:
+\begin{itemize}
+  \item Is the first card drawn the $7\clubsuit$ and the second the $8\heartsuit$?
+  \item Is one of the two cards drawn black?
+  \item Is the rank of the first card lower than the rank of the second one?
+  \item Have we drawn two Aces?
+\end{itemize}
+
+If we answer `yes' to such a yes--no question,
+we say that the corresponding event occurred.
+In probability theory, 
+outcomes and events are defined in set-theoretical terms.
+
+\mypar[Outcomes and events]{Definition}
+  An \term{outcome} is a possible result of a random experiment.
+  (Here we don't further define what a random experiment is.)
+  
+  The set of all outcomes of a random experiment is called the \term{sample space}
+  of this random experiment.
+  This sample space is often written as $\Omega$.
+  
+  An \term{event} is a subset of the sample space.
+  In other words, an event is a set of outcomes.
+  This set doesn't have to contain all outcomes, nor does it have to contain any outcome at all.
+  The event that does not contain any outcomes is written as $\emptyset$ or as $\{\}$.
+  
+  An event of the form $\{\omega\}$, with $\omega \in \Omega$ being an outcome,
+  is known as an \term{elementary event} or as an \term{atomic event}.\footnote{The notation $x \in S$ means that $x$ is an element of the set $S$; $x \notin S$ means that $x$ is not an element of $S$. If $S, T$ are two sets, then $S \subset T$ means that each element of $S$ is also an element of $T$, and we say that $S$ is a subset of $T$. This includes the possibility that $S, T$ coindice.}
+\parend
+
+In our first experiment, the sample space $\Omega_1$ consists of 36 elements:
+\begin{align*}
+  \Omega_1 = \{&6\clubsuit, 7\clubsuit, 8\clubsuit, 9\clubsuit, 10\clubsuit, J\clubsuit, Q\clubsuit, K\clubsuit, A\clubsuit, \\
+               &6\diamondsuit, 7\diamondsuit, 8\diamondsuit, 9\diamondsuit, 10\diamondsuit, J\diamondsuit, Q\diamondsuit, K\diamondsuit, A\diamondsuit, \\
+               &6\heartsuit, 7\heartsuit, 8\heartsuit, 9\heartsuit, 10\heartsuit, J\heartsuit, Q\heartsuit, K\heartsuit, A\heartsuit, \\
+               &6\spadesuit, 7\spadesuit, 8\spadesuit, 9\spadesuit, 10\spadesuit, J\spadesuit, Q\spadesuit, K\spadesuit, A\spadesuit\}.
+\end{align*}
+The yes--no question \textit{Does the card represent an even number?}
+corresponds to the event
+\begin{align*}
+  A := \{6\clubsuit, 8\clubsuit, 10\clubsuit,
+        6\diamondsuit, 8\diamondsuit, 10\diamondsuit,
+        6\spadesuit, 8\spadesuit, 10\spadesuit,
+        6\heartsuit, 8\heartsuit, 10\heartsuit\},
+\end{align*}
+which contains 12 elements.
+The yes--no question \textit{Is the card black?} corresponds to the event
+\begin{align*}
+  B := \{6\clubsuit, 7\clubsuit, \dots, A\clubsuit,
+         6\spadesuit, 7\spadesuit, \dots, A\spadesuit\},
+\end{align*}
+which contains 18 elements.
+The yes--no question \textit{Does the card represent an even number or is it black?}
+corresponds to the set-theoretical \term{union} of $A$ and $B$;
+Figure \ref{fig:sets} depicts the set-theoretical operations we use here:
+\begin{align*}
+  A \cup B
+  &= \textrm{$A$ or $B$} \\
+  &= \{\omega \in \Omega_1 : \omega \in A \textrm{~or~} \omega \in B\} \\
+  &= \{6\clubsuit, 7\clubsuit, \dots, A\clubsuit,
+       6\spadesuit, 7\spadesuit, \dots, A\spadesuit,
+        6\diamondsuit, 8\diamondsuit, 10\diamondsuit,
+        6\heartsuit, 8\heartsuit, 10\heartsuit\}.
+\end{align*}
+The event $A \cup B$ contains 24 outcomes.
+By contrast, the yes--no question \textit{Does the card represent an even number \emph{and} is it black?}
+corresponds to the set-theoretical \term{intersection} of $A$ and $B$:
+\begin{align*}
+  A \cap B
+  &= \textrm{$A$ and $B$} \\
+  &= \{\omega \in \Omega_1 : \omega \in A \textrm{~and~} \omega \in B\} \\
+  &= \{6\clubsuit, 8\clubsuit, 10\clubsuit,
+       6\spadesuit, 8\spadesuit, 10\spadesuit\}.
+\end{align*}
+The yes--no question \textit{Does the card \emph{not} show an even number?}
+corresponds to the set-theoretical \term{complement} of $A$:
+\begin{align*}
+  A^c
+  &= \textrm{not $A$} \\
+  &= \{\omega \in \Omega_1 : \omega \notin A\}.
+\end{align*}
+We answer `yes' to such yes--no questions if and only if
+the observed outcome $\omega$ is contained in the event $E$ corresponding to this question,
+that is, if and only if $\omega \in E$.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=0.80]
+          % Omega
+          \draw[fill=blue!20] (0,0) ellipse (3.5cm and 2cm);
+          \node[above] at (3,1.5) {$\Omega$};
+          % Filling the area in Omega not part of A
+          \begin{scope}
+            \clip (-1,0) ellipse (1.8cm and 1.2cm);
+            \draw[fill=white] (0,0) ellipse (3.5cm and 2cm);
+          \end{scope}
+          % Set A
+          \draw[fill=none] (-1,0) ellipse (1.8cm and 1.2cm);
+          \node[below] at (-1.3,-1.2) {$A$};
+          % Set B
+          \draw[fill=none] (1,0) ellipse (1.8cm and 1.2cm);
+          \node[below] at (1.3,-1.2) {$B$};
+        \end{tikzpicture}
+        \caption{$A^c$.}
+        \label{fig:sub1}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.4\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=0.80]
+          \draw[fill=none] (0,0) ellipse (3.5cm and 2cm);
+          \draw[fill=blue!20] (-1,0) ellipse (1.8cm and 1.2cm);
+          \draw[fill=none] (1,0) ellipse (1.8cm and 1.2cm);
+
+          \begin{scope}
+              \clip (-1,0) ellipse (1.8cm and 1.2cm);
+              \clip (1,0) ellipse (1.8cm and 1.2cm);
+              \draw[fill=white] (0,0) ellipse (3.5cm and 2cm);
+          \end{scope}
+        
+          \node[below] at (-1.3,-1.2) {$A$};
+          \node[above] at (3,1.5) {$\Omega$};
+
+          \node[below] at (1.3,-1.2) {$B$};
+        \end{tikzpicture}
+        \caption{$A \setminus B$.}
+        \label{fig:sub2}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=0.80]
+          \draw[fill=none] (0,0) ellipse (3.5cm and 2cm);
+          \draw[fill=none] (-1,0) ellipse (1.8cm and 1.2cm);
+          \draw[fill=none] (1,0) ellipse (1.8cm and 1.2cm);
+
+          \begin{scope}
+              \clip (-1,0) ellipse (1.8cm and 1.2cm);
+              \clip (1,0) ellipse (1.8cm and 1.2cm);
+              \draw[fill=blue!20] (0,0) ellipse (3.5cm and 2cm);
+          \end{scope}
+        
+          \node[below] at (-1.3,-1.2) {$A$};
+          \node[above] at (3,1.5) {$\Omega$};
+
+          \node[below] at (1.3,-1.2) {$B$};
+        \end{tikzpicture}
+        \caption{$A \cap B$.}
+        \label{fig:sub3}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=0.80]
+     \fill[blue!20] (-1,0) ellipse (1.8cm and 1.2cm);
+      \node[below] at (-1.3,-1.2) {$A$};
+      
+      \draw[fill=blue!20] (1,0) ellipse (1.8cm and 1.2cm);
+      \node[below] at (1.3,-1.2) {$B$};
+      \draw[fill=none] (-1,0) ellipse (1.8cm and 1.2cm);
+      
+      % Draw Omega
+      \draw (0,0) ellipse (3.5cm and 2cm);
+      \node[above] at (3,1.5) {$\Omega$};
+        \end{tikzpicture}
+        \caption{$A \cup B$.}
+        \label{fig:sub4}
+    \end{subfigure}
+    \caption{The complement of $A$ (`not $A$', $A^c$); 
+    the relative complement of $B$ in $A$ (`$A$, but not $B$', $A \setminus B$); 
+    the intersection of $A$ and $B$ (`$A$ and $B$', $A \cap B$); 
+    and the union of $A$ and $B$ (`$A$ or $B$', $A \cup B$).}
+    \label{fig:sets}
+\end{figure}
+
+In the second random experiment, the sample space $\Omega_2$ consists of the 
+1,260 tuples that consist of two different cards.
+The yes--no question \textit{Have we drawn two Aces} then corresponds to the event
+\begin{align*}
+  C = \{&(A\clubsuit, A\diamondsuit), (A\clubsuit, A\heartsuit), (A\clubsuit, A\spadesuit),
+        (A\diamondsuit, A\clubsuit), (A\diamondsuit, A\heartsuit), (A\diamondsuit, A\spadesuit), \\
+        &(A\heartsuit, A\clubsuit), (A\heartsuit, A\diamondsuit), (A\heartsuit, A\spadesuit),
+        (A\spadesuit, A\clubsuit), (A\spadesuit, A\diamondsuit), (A\spadesuit, A\heartsuit)\}.
+\end{align*}
+
+\mypar[Countability]{Definition}
+  A set is \term{countable} if its elements can be enumerated in a finite or infinite list.
+  A set is \term{uncountable} if it is not countable.
+\parend
+
+\mypar{Example}
+  Sets with a finite number of elements are countable.
+  
+  The set of natural numbers
+  \[
+    \mathbb{N} = \{0, 1, 2, \dots\}
+  \]
+  is infinite but can be enumerated in an infinite list ($0, 1, 2, 3, \dots$).
+  Hence, the natural numbers are countable.
+  
+  The integers
+  \[
+    \mathbb{Z} = \{\dots, -2, -1, 0, 1, 2, \dots\}
+  \]
+  can similarly be enumerated ($0, -1, 1, -2, 2, \dots$) and are hence countable.
+  
+  Even the rational numbers
+  \[
+    \mathbb{Q} = \{a / b : a \in \mathbb{Z}, b \in \mathbb{N}, b \neq 0\}
+  \]
+  can be enumerated:
+  \begin{align*}
+    \mathbb{Q} = \{&0/1, 1/1, -1/1, 1/2, -1/2, 2/1, -2/1, 1/3, -1/3, 3/1, -3/1, \\
+                 &1/4, -1/4, 2/3, -2/3, 4/1, -4/1, 3/2, -3/2, \dots\}.
+  \end{align*}
+  
+  The real numbers $\mathbb{R}$, however, can provably not be enumerated
+  and are hence uncountable.
+\parend
+
+\mypar[Discrete probability space]{Definition}\label{def:discrete_prob_space}
+  A \term{discrete probability space} consists of a countable sample space $\Omega$
+  and a mapping (function) $\Prob$ that assigns to each event a number.
+  This map specifies the \term{probability} with which each event occurs.
+  To that end, it needs to fulfil the following criteria (axioms):
+  \begin{enumerate}
+  \item For each event $E$, we have $\Prob(E) \geq 0$.
+        That is, probabilities are non-negative.
+  \item $\Prob(\Omega) = 1$. That is, the probability of observing \emph{some} outcome is $1$.
+  \item Let $A_1, A_2, A_3, \dots$ be an enumeration of events.
+        If these events are pairwise disjunct, that is, if no outcome occurs in more than one of these events,
+        then, the probability that \emph{any} of the listed events occurs
+        is the sum of the probabilities of the individual events.
+        In symbols:
+        If for each $i \neq j$, we have $A_i \cap A_j = \emptyset$, then
+        \[
+          \Prob\left(\bigcup_{i = 1}^{\infty} A_i\right) = \sum_{i=1}^{\infty} \Prob(A_i).         \parendeq
+        \]
+\end{enumerate}
+
+\mypar[Calculating with probabilities]{Lemma}
+From the criteria that the map $\Prob$ has to satisfy,
+we can derive a few important rules for calculating with probabilities;
+refer to Figure \ref{fig:sets} for the set-theoretical operations referred to.
+\begin{enumerate}
+  \item For each event $A$, we have $A \cup A^c = \Omega$ and $A \cap A^c = \emptyset$.
+  Hence,
+  \[
+    1 = \Prob(\Omega) = \Prob(A \cup A^c) = \Prob(A) + \Prob(A^c).
+  \]
+  So
+  \[
+    \Prob(A^c) = 1 - \Prob(A).
+  \]
+  Since $\Omega^c = \emptyset$, we have in particular that $\Prob(\emptyset) = 0$.
+
+  \item For two events $A, B$, we denote by $A \setminus B$
+  the event consisting of the outcomes occurring in $A$ but not in $B$:
+  \[
+    A \setminus B = \{\omega \in \Omega: \omega \in A, \omega \notin B\}.
+  \]
+  We have
+  \[
+    A \cup B = (A \setminus B) \cup (B \setminus A) \cup (A \cap B),
+  \]
+  where $A \setminus B, B \setminus A, A \cap B$ are pairwise disjunct.
+  Hence,
+  \[
+    \Prob(A \cup B) = \Prob((A \setminus B) \cup (B \setminus A) \cup (A \cap B))
+                    = \Prob(A \setminus B) + \Prob(B \setminus A) + \Prob(A \cap B).
+  \]
+  Note that $A = (A \setminus B) \cup (A \cap B)$ and $B = (B \setminus A) \cup (A \cap B)$.
+  Consequently,
+  \begin{align*}
+    \Prob(A \cup B)
+    &= \Prob(A \setminus B) + \Prob(B \setminus A) + \Prob(A \cap B) \\
+    &= \Prob(A) - \Prob(A \cap B) + \Prob(B) - \Prob(A \cap B) + \Prob(A \cap B) \\
+    &= \Prob(A) + \Prob(B) - \Prob(A \cap B) \\
+    &\leq \Prob(A) + \Prob(B).
+  \end{align*}
+
+  \item In discrete probability spaces, each event can be written as the union
+  of elementary events.
+  These elementary events are pairwise disjunct.
+  As a result, the probability of each event is determined entirely by the
+  probabilities of the elementary events.
+  \parend
+\end{enumerate}
+
+\mypar[Discrete uniform distribution on $\Omega_1$]{Example}
+  Consider the first random experiment.
+  Assume that each card has the same probability of being drawn,
+  that is, $\Prob(\{\omega\}) = 1/36$ for each $\omega \in \Omega_1$.
+  In this case, we say that $\Prob$ is a \term{uniform distribution} on $\Omega_1$.
+  
+  Event $A$ (`The card show an even number') consists of 12 outcomes
+  and hence occurs with probability $12 \cdot 1/36 = 1/3$.
+  Event $B$ (`The card is black') consists of 18 outcomes,
+  so $\Prob(B) = 18/36 = 1/2$.
+  The intersection of both events, $A \cap B$, consists of 6 outcomes,
+  hence $\Prob(A \cap B) = 6/36 = 1/6$.
+  Consequently, $\Prob(A \cup B) = \Prob(A) + \Prob(B) - \Prob(A \cap B) = 2/3$.
+\parend
+
+\mypar[Zipf distibution]{Example} 
+  Consider a language with a finite vocabulary $\Omega$.
+  We denote the words in the language as $\omega_1, \omega_2, \dots, \omega_n$
+  in decreasing order of the frequency with which they occur.
+  We assume that these frequencies of occurrence are pairwise different.
+  According to the Zipf model, the relative frequency of occurrence of a 
+  word in this language is approximately inversely proportional to its frequency 
+  rank, that is,
+\[
+  \Prob(\{\omega_k\}) = C_n\frac{1}{k}
+\]
+  for some constant $C_n$ that depends on $n$, for all $k = 1, \dots, n$.
+  We can compute the constant $C_n$ as follows.
+  According to the axioms of probability, we require
+  \[
+    1 = \Prob(\Omega) = \Prob(\bigcup_{k = 1}^n \{\omega_k\}) = \sum_{k=1}^n C_n\frac{1}{k} = C_n \sum_{k=1}^n \frac{1}{k}.
+  \]
+  So
+\[
+  C_n = \frac{1}{\sum_{k=1}^n 1/k}.
+\]
+  
+  For $n = 10$, the Zipf model predicts the following relative frequencies:
+<<>>=
+n <- 10
+words <- 1:n
+Hn <- sum(1/words)
+tibble(Word = words,
+       rel.Frequency  = 1/Hn * 1/words)
+@
+  
+  Incidentally, we need to assume a finite vocabulary since
+  $\sum_{k=1}^{\infty}\frac{1}{k}$ diverges to infinity.
+  The Zipf model can be generalised to deal with infinite vocabularies, though.
+\parend
+
+\mypar[An infinite discrete probability space]{Example}\label{example:2k}
+  Imagine a random number generator that outputs
+  each number $k = 1, 2, 3, \dots$ with probability $1/2^k$.
+  The sample space consists of all positive natural numbers $k \geq 1$.
+  Since
+  \[
+    \sum_{k=1}^{\infty} \Prob(\{k\}) = \sum_{k=1}^{\infty} \frac{1}{2^k} = \frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \dots = 1,
+  \]
+  this is a permissible discrete probability space.
+  The probability of observing an even number is
+  \[
+    \sum_{k=1}^{\infty} \Prob(\{2k\}) = \sum_{k=1}^{\infty} \frac{1}{2^{2k}} = \sum_{k=1}^{\infty} \frac{1}{4^k} = \frac{1}{4} + \frac{1}{16} + \frac{1}{64} + \dots = \frac{1}{3}.\parendeq
+  \]
+
+Discrete probability spaces are fairly easy to describe
+as they are characterised completely by the elementary events and
+the probabilities assigned to these.
+For many applications, though, discrete probability spaces aren't suitable
+since it is more sensible to conceive of the sample space as the set of real numbers ($\mathbb{R}$),
+which is uncountable.
+When we're dealing with uncountable sample spaces, though,
+it turns out that we can no longer allow all sets of outcomes to be events
+that we can assign a probability to.\label{comment:measurable}
+We'd have to go into the weeds of the mathematical field of measure theory
+to explain the reasons why, which we won't do;
+interested readers can use the search terms `measurable set' and `$\sigma$-algebra'.
+
+In practical terms, fortunately, this problem isn't too serious:
+Sets of outcomes that don't represent permissible events
+are pretty difficult to construct, and they aren't relevant to us.
+For this reason, the following definition doesn't specify the criteria that needs to be fulfilled
+by the family of events to which we want to assign probabilities.
+
+\mypar[General probability spaces]{Definition}
+  A (general) \term{probability space} consists of
+  (1) a (countable or uncountable) sample space $\Omega$,
+  (2) a family of events to which probabilities are assigned,
+  and (3) a mapping $\Prob$ that assigns probabilities to these events.
+  The mapping $\Prob$ has the same properties as in Definition \ref{def:discrete_prob_space}.
+\parend
+
+\mypar[Continuous uniform distribution]{Example}\label{example:wheel}
+  Consider a fortune wheel, the boundary of which is labelled with numbers
+  between 0 and 360 (exclusive) as in Figure \ref{fig:wheel}.
+  Each time the arrow is turned, it points to a random spot along the fortune wheel's
+  circumference.
+  We assume that we can read off the number the wheel lands on with arbitrary precision.
+  
+  In this example, the sample space consists of all real numbers in the interval $[0, 360)$.
+  This set is uncountable.
+  Nonetheless, we can assign probabilities to all events to which we reasonably want to
+  assign probabilities.
+  For instance, the probability that the arrow lands somewhere between the numbers $a$ and
+  $b$, $0 \leq a \leq b < 360$, is proportional to the length of the interval
+  $[a, b)$, that is, to $b - a$.
+  Since $\Prob([0, 360)) = 1$ is required, 
+  it follows that
+  \[
+    \Prob([a, b)) = \frac{b - a}{360}.
+  \]
+  Thus, for instance, the probability that the arrow lands between 45 and 93
+  is $\frac{93 - 45}{360} \approx 0.133$.
+
+  Somewhat counterintuitively, perhaps, the probability that an arrow
+  lands \emph{exactly} on any specific value $a \in [0, 360)$ is exactly $0$.
+  This is true for all $a \in [0, 360)$.
+  The reason is that a single point has length $0$.
+  The third property of $\Prob$ now implies that the probability that
+  the arrow lands on \emph{any} point occurring in an infinite list
+  is also exactly $0$.
+  Thus, for instance,
+  \[
+    \Prob(\{1, \frac{1}{2}, \frac{1}{3}, \frac{1}{4}, \dots\}) = 0.
+  \]
+  This does not clash with the requirement that $\Prob([0, 360)) = 1$:
+  The interval $[0, 360)$ cannot be written as an infinite list.
+
+  A consequence of the fact that, in this example, individual points have
+  probability $0$, is that we may add or remove bounds to or from intervals
+  without any consequence:
+  \[
+    \Prob([a, b]) = \Prob((a, b)) = \Prob([a, b)) = \Prob((a, b]).\parendeq
+  \]
+
+\begin{figure}
+\begin{center}
+  \includegraphics[width = .33\textwidth]{figs/kreis}
+\caption{A fortune wheel.}
+\label{fig:wheel}
+\end{center}
+\end{figure}
+
+\subsection{Independence}
+\mypar[Independence (1)]{Definition}\label{def:indep1}
+  We say that two events $A, B$ are \term{independent} if
+\[
+  \Prob(A \cap B) = \Prob(A)\Prob(B).
+\]
+  Less formally, we can also say that $A, B$ are 
+  independent \emph{of each other} or 
+  that $A$ is independent of $B$ and vice versa.
+\parend
+
+\mypar{*Example}
+  The event $\emptyset$ is independent of all other events.
+  To see this, let $B$ be an arbitrary event.
+  Since $\emptyset \cap B = \emptyset$, it follows that
+  \[
+    \Prob(\emptyset \cap B) 
+    = \Prob(\emptyset) 
+    = 0 
+    = 0\cdot \Prob(B) 
+    = \Prob(\emptyset)\Prob(B).
+  \]
+  The event $\Omega$ is also independent of all other events:
+  Since for any event $B$, we have $\Omega \cap B = B$,
+  it follows that
+  \[
+    \Prob(\Omega \cap B) 
+    = \Prob(B) 
+    = 1\cdot \Prob(B) 
+    = \Prob(\Omega)\Prob(B).\parendeq
+  \]
+
+\mypar{Example}
+  The events $A$ (\textit{The card shows an even number.})
+  and $B$ (\textit{The card is of a black suit}) from the first random experiment
+  are independent
+  since
+  \[
+    \Prob(A \cap B) 
+    = \frac{6}{36} 
+    = \frac{12}{36} \cdot \frac{18}{36} 
+    = \Prob(A)\Prob(B).
+  \]
+  The events $A \cup B$ and $A \cap B$, by contrast, are not independent
+  since
+  \[
+    \Prob((A \cup B) \cap (A \cap B))
+    = \Prob(A \cap B)
+    = \frac{1}{6} 
+    \neq \frac{2}{3} \cdot \frac{1}{6}
+    = \Prob(A \cup B)\Prob(A \cap B).\parendeq
+  \]
+
+\mypar{Exercise}
+  Consider the second random experiment.
+  Are the events \textit{The first card is an Ace}
+  and \textit{The second card is an Ace} independent?
+  Justify your answer based on Definition \ref{def:indep1}.
+\parend
+
+\mypar{Exercise}
+  Let $F, G$ be some events with $\Prob(F) = 0.6, \Prob(G) = 0.2$
+  and $\Prob(F \cup G) = 0.72$.
+  Are $F, G$ independent?
+  Justify your answer based on Definition \ref{def:indep1}.
+\parend
+
+\mypar[Independence (2)]{Definition}\label{def:indep2} 
+  We say that $n$ events $A_1, \dots, A_n$
+  are \term{pairwise independent} if 
+  $A_i, A_j$ are independent for all $1 \leq i < j \leq n$.
+  
+  We say that $n$ events $A_1, \dots, A_n$ are
+  \term{independent} if, for each subset $I \subset \{1, \dots, n\}$, we have
+  \[
+    \Prob\left(\cap_{i \in I} A_i\right) = \prod_{i \in I}\Prob(A_i).
+  \]
+  In words: For \emph{every} choice of at most $n$ events from among the list,
+  the probability that all chosen events occur simultaneously equals
+  the product of the probabilities with which they occur individually.
+  Independence implies pairwise independence.
+  To see this, consider all subsets $I$ with two different events.
+\parend
+
+\mypar{*Example}
+  We define the probability space consisting of the sample space
+  \[
+    \Omega := \{(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0)\}
+  \]
+  and a discrete uniform distribution, i.e.,
+  $\Prob(\{\omega\}) = 1/4$ for all $\omega \in \Omega$. 
+  We consider the events
+  $A :=$ \textit{The first number is 1},
+  $B :=$ \textit{The second number is 1},
+  and $C :=$ \textit{The third number is 1}.
+  As you can verify, $A, B, C$ are pairwise independent.
+  Nonetheless,
+\[
+  \Prob(A \cap B \cap C) = 0 \neq \frac{1}{2} \cdot \frac{1}{2} \cdot \frac{1}{2} = \Prob(A)\Prob(B)\Prob(C).
+\]
+  Hence, $A,B,C$ are not independent.
+\parend
+
+We only need the next definition so that we can make sense of the
+hypotheses for the Central Limit Theorem, which we'll encounter at the
+end of this chapter.
+
+\mypar[Independence (3)]{Definition} 
+  A infinite family of events is \term{independent} if 
+  each of its finite subfamilies is independent as per Definition \ref{def:indep2}.
+\parend
+
+\subsection{Conditional probabilities}
+\mypar[Conditional probability]{Definition}\label{def:condprob}
+  Let $A, B$ be events such that $\Prob(B) > 0$.
+  We call
+  \[
+    \Prob(A | B) := \frac{\Prob(A \cap B)}{\Prob(B)}
+  \]
+  the \term{conditional probability of $A$ given $B$}.
+  The conditional probability of $A$ given $B$ expresses
+  the probability that $A$ occurs if you already know that $B$ has occurred.
+\parend
+
+\mypar{Remark} 
+  If $A, B$ are independent with $\Prob(B) > 0$, then
+  \begin{align*}
+    \Prob(A | B)
+    &= \frac{\Prob(A \cap B)}{\Prob(B)}   & [\textrm{Definition \ref{def:condprob}}] \\
+    &= \frac{\Prob(A)\Prob(B)}{\Prob(B)}  & [\textrm{Definition \ref{def:indep1}}] \\
+    &= \Prob(A).                          &
+  \end{align*}
+  This meshes with the intuition that if $A, B$ are independent, then
+  knowing whether $B$ has occurred or not doesn't tell you anything new
+  about whether $A$ will occur.
+\parend
+
+\mypar{Example}
+  In the fortune wheel example, we may wonder about the probability that
+  the arrow lands somewhere between 90 and 270 (`$A$') assuming that it
+  landed between 0 and 120 (`$B$').
+  We have $\Prob(B) = (120 - 0)/360 = 1/3$ and $\Prob(A \cap B) = (120 - 90)/(360) = 1/12$.
+  Hence
+  \[
+    \Prob(A | B) = \frac{\Prob(A \cap B)}{\Prob(B)} = \frac{1/12}{1/3} = \frac{1}{4}.
+  \]
+  Since $\Prob(A) = (270-90)/360 = 1/2$, $\Prob(A | B) \neq \Prob(A)$.
+  So $A,B$ are not independent.
+\parend
+
+The following theorem is useful for partioning a complex event into
+simpler events.
+
+\mypar[Total probability]{Theorem}\label{th:totprob}
+Let $E_1, E_2, \dots$ be pairwise disjunct events that together comprise $\Omega$, i.e.,
+$E_1 \cup E_2 \cup \dots = \Omega$.
+Assume that $\Prob(E_k) > 0$ for all $k = 1, 2, \dots$.
+Then, for each event $A$,
+\[
+  \Prob(A) = \sum_{k=1}^{\infty} \Prob(A | E_k) \Prob(E_k). \parendeq
+\]
+\begin{proof}
+  We have
+\begin{align*}
+  \Prob(A)
+  &= \Prob(A \cap \Omega)  \\
+  &= \Prob(A \cap \bigcup_{k=1}^\infty E_k) \\
+  &= \Prob\left(\bigcup_{k=1}^{\infty} (A \cap E_k)\right) \\
+  &= \sum_{k=1}^{\infty} \Prob(A \cap E_k) \\
+  &= \sum_{k=1}^{\infty} \Prob(A | E_k)\Prob(E_k).\qedhere
+\end{align*}
+\end{proof}
+
+The above theorem, with the same proof, is also true if the list of pairwise
+disjunct events is finite.
+
+
+\mypar{*Example}
+  Let's consider once more the second random experiment.
+  The discrete uniform distribution on $\Omega_2$ assigns probability $1/1260$
+  to each elementary event $\{(\omega_1, \omega_2)\}, (\omega_1, \omega_2) \in \Omega_2$.
+  The probability that the first card drawn is the $6\clubsuit$ and the second is not a 6 is
+  \[
+    \frac{1}{36} \cdot \frac{36-4}{35} \approx 0.0254.
+  \]
+  Consequently, the probability that the first card is a 6 and the second one isn't is
+  \[
+    4\left(\frac{1}{36} \cdot \frac{36-4}{35}\right) \approx 0.1016.
+  \]
+  Similarly, we may compute the probability that the first card is some 7 and
+  that the second's rank is greater than 7:
+  \[
+    4\left(\frac{1}{36} \cdot \frac{36-8}{35}\right) \approx 0.0889.
+  \]
+  The events \textit{The first card is a 6}, \textit{The first card is a 7}, \dots,
+  are pairwise disjunct and together comprise the entire sample space.
+  Hence, we may use the total probability theorem to compute the probability
+  that the first card's rank is lower than the second card's rank:
+  \begin{align*}
+    \sum_{k = 1}^{9} 4\left(\frac{1}{36} \cdot \frac{36-4k}{35}\right)
+    = \frac{4}{36\cdot 35} \sum_{k=1}^9 \left(36 - 4k\right)
+    = \frac{4}{36\cdot 35}(9\cdot 36 - (4+8+\dots+36)).
+  \end{align*}
+  We can calculate the result in R:
+<<>>=
+4/(36*35) * (9*36 - sum(4*seq(1, 9)))
+@
+That is, about 46\%.
+
+  There's a more elegant way to arrive at the same solution.
+  The probability that both cards have the same rank is $3/35$.
+  So the probability that the card differ in rank is $32/35$.
+  It is then clear that the probability that the first card is of
+  lower rank than the second equals the probability that the first card is
+  of greater rank that the second.
+  Hence, the probability that the first card is of lower rank than the second
+  rank is
+  $(32/35)/2 \approx 0.4571$.
+\parend
+
+\mypar[M\&Ms]{Exercise}\label{ex:mm}
+  M{\&}Ms come in six different colours;
+  Table \vref{tab:mandms} lists their relative frequencies.
+  When answering the following questions, 
+  assume that the M{\&}Ms are drawn independently from an infinite population of M{\&}Ms.
+\begin{enumerate}
+  \item What's the probability that a randomly drawn M{\&}M is red or orange?
+  \item What's the probability that, when you randomly draw two M{\&}Ms, both are red or orange?
+  (That is, that both are red, both are orange, or one of them is red and the other is orange.)
+  \item What's the probability that, when you randomly draw two M{\&M}s, one is red and the other orange?
+  \item What's the probability that, when you randomly draw 5 M{\&}Ms, all of them are blue?
+  \item What's the probability that, when you randomly draw 5 M{\&}Ms, none of them is blue?\parend
+\end{enumerate}
+
+\begin{table}
+\centering
+\caption{Relative frequencies of occurrence of M\&Ms by colour.}
+\label{tab:mandms}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Colour  & Relative frequency \\ \midrule
+Blue    & 23\%              \\
+Orange  & 23\%              \\
+Yellow  & 15\% \\
+Green   & 15\% \\
+Brown   & 12\% \\
+Red     & 12\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both in scientific and in societal discussions, the conditional probabilities
+$\Prob(A | B)$ and $\Prob(B | A)$ are, unfortunately, often conflated.
+The classic example below and the theorem following it tell you how 
+$\Prob(A | B)$ and $\Prob(B | A)$ can be converted into one another.
+
+\mypar[Medical screening]{Example}\label{example:medtest}
+  Imagine that all newly born infants are subjected to a medical test
+  that screens for a rare genetic disease.
+  This genetic disease is thought to affect about 0.01\% of newborns.
+  The test labels newborns affected with the disease as affected with probability 97\%.
+  However, 1\% of newborns that are not affected by the disease will also be labelled as affected with the disease.
+  If the test labels a newborn as affected by the disease, what's the probability that the newborn actually
+  is affected by the disease?
+  
+  To answer this question, we can consider a large number of newborns, for instance, one million of them.
+  Of these, about $0.0001 \cdot 10^6 = 100$ are expected to be affected by the disease;
+  the remaining 999,900 aren't affected.
+  Of these 100 affected children, 97 are expected to also be labelled as affected;
+  the disease won't be flagged immediately in the remaining three ones.
+  Of the 999,900 non-affected children, 
+  $0.01 \cdot 999900 = 9999$ are expected to be falsely labelled as affected.
+  If we randomly pick a child from the $97 + 9999 = 10096$ children that are expected to be labelled as affected,
+  the probability that this child does indeed carry the disease is only $97/10096 \approx 0.0096$,
+  that is, not even 1\%.
+\parend
+
+The procedure from the previous example can be applied generally,
+as the famous Bayes' theorem shows.
+
+\mypar[Bayes]{Theorem}
+Let $A, B$ be events with $\Prob(A), \Prob(B) > 0$. 
+Then 
+\[
+  \Prob(B | A)
+  = \frac{\Prob(A|B)\Prob(B)}{\Prob(A|B)\Prob(B) + \Prob(A|B^c)(1 - \Prob(B))}. \parendeq
+\]
+\begin{proof}
+We have
+\begin{align*}
+  \Prob(B | A)
+  &= \frac{\Prob(B \cap A)}{\Prob(A)}     & [\textrm{Definition \ref{def:condprob}}] \\
+  &= \frac{\Prob(A|B)\Prob(B)}{\Prob(A)}  & [\Prob(A|B)=\Prob(A \cap B)/\Prob(B)] \\
+  &= \frac{\Prob(A|B)\Prob(B)}{\Prob(A|B)\Prob(B) + \Prob(A|B^c)(1 - \Prob(B))}. & [\textrm{total probability}]
+\end{align*}
+\end{proof}
+
+In terms of Example \ref{example:medtest}, $B$ would be \textit{The child is affected}
+and $A$ \textit{The child is labelled as affected}.
+Then
+$\Prob(A|B) = 0.97, \Prob(B) = 0.0001, \Prob(A | B^c) = 0.01$.
+So, by Bayes' theorem,
+\[
+  \Prob(B | A) = \frac{0.97 \cdot 0.0001}{0.97 \cdot 0.0001 + 0.01 \cdot (1 - 0.0001)} \approx 0.0096.
+\]
+
+\section{Random variables}
+When analysing quantitative data, we often model these
+as observations of random variables.
+
+\mypar[Random variables]{Definition}
+  Let $\Omega$ be the sample space of a probability space.
+  A \term{random variable} $X$ maps each outcome $\omega \in \Omega$ to a real number.
+  
+  If the set of possible values of $X$ is countable, we call $X$
+  a \term{discrete random variable}.
+\parend
+
+\mypar{Example}\label{example:obenabe}
+  In \textit{Jass}, we can consider the random variable $X$
+  that maps each card to its point value in the \textit{Obenabe} mode of play,
+  that is,
+\begin{align*}
+X(\omega) :=
+\begin{cases}
+  11, & \textrm{if $\omega$ is an Ace,} \\
+  4,  & \textrm{if $\omega$ is a King,} \\
+  3,  & \textrm{if $\omega$ is a Queen,} \\
+  2,  & \textrm{if $\omega$ is a Jack,} \\
+  10, & \textrm{if $\omega$ is a 10,} \\
+  8,  & \textrm{if $\omega$ is an 8,} \\
+  0,  & \textrm{else}.
+\end{cases}
+\end{align*}
+This random variable is one of arbitrarily many you can define on $\Omega_1$.
+
+If we draw two cards, you could define a random variable that represents, for instance,
+the sum of the point values of both cards.
+\parend
+
+We can also consider the values that a random variable can take on as outcomes on their own.
+This way, we obtain a new sample space
+\[
+  \widetilde{\Omega} := \{X(\omega) : \omega \in \Omega\}.
+\]
+For the random variable $X$, we'd have
+\[
+  \widetilde{\Omega}_1 = \{0, 2, 3, 4, 8, 10, 11\}.
+\]
+The probability that $X = 11$ is $4/36 = 1/9$. We write $\Prob(X = 11) = 1/9$.
+Similarly, $\Prob(X = 0) = 1/3$.
+We can also discuss events, for instance $\Prob(X \geq 10) = 2/9$.
+
+Let's take a closer look at the most important representations and properties of
+random variables.
+
+\subsection{The distribution function and the quantile function}\label{sec:distributionfunction}
+Random variables can be characterised by their \term{distribution function}.
+
+\mypar[Distribution function]{Definition}
+  Let $X$ be a random variable.
+  The distribution function $F_X$ of $X$ is defined by
+  \[
+    F_X(r) := \Prob(X \leq r)
+  \]
+  for all real numbers $r$.
+\parend
+
+By way of example, consider random variable defined in Example \ref{example:obenabe}.
+We can construct the following table with cumulative probabilities:
+
+\begin{center}
+\begin{tabular}{l|lllllll}
+\hline
+Value                       & 0     & 2     & 3     & 4     & 8     & 10    & 11  \\
+Probability                 & 0.333 & 0.111 & 0.111 & 0.111 & 0.111 & 0.111 & 0.111 \\
+Cumulative probability      & 0.333 & 0.444 & 0.555 & 0.666 & 0.777 & 0.888 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+Thus, for instance, $F_X(-1) = 0, F_X(2.5) = 0.444$ and $F_X(12) = 1$.
+Figure \ref{fig:fx} shows the distribution function of $X$.
+
+<<echo = FALSE, fig.cap = "Distribution function of the point value of \\textit{Jass} cards in the \\textit{Obenabe} mode of play.\\label{fig:fx}", fig.width = 0.7*4, fig.height = 0.7*3, out.width=".4\\textwidth">>=
+plot(1, 1, type = "n", xlim = c(-2, 13), ylim = c(0, 1),
+     xlab = "r", ylab = bquote(F[x](r)), xaxt = "n")
+axis(1, at = c(0, 2, 3, 4, 8, 10, 11))
+segments(-3, 0, 0)
+segments(0, 1/3, 2)
+segments(2, 1/3 + 1/9, 3)
+segments(3, 1/3 + 1/9 + 1/9, 4)
+segments(4, 1/3 + 1/9 + 1/9 + 1/9, 8)
+segments(8, 1/3 + 1/9 + 1/9 + 1/9 + 1/9, 10)
+segments(10, 1/3 + 1/9 + 1/9 + 1/9 + 1/9 + 1/9, 11)
+segments(11, 1/3 + 1/9 + 1/9 + 1/9 + 1/9 + 1/9 + 1/9, 14)
+points(0, 1/3, pch = 16)
+points(2, 1/3 + 1/9, pch = 16)
+points(3, 1/3 + 1/9 + 1/9, pch = 16)
+points(4, 1/3 + 1/9 + 1/9 + 1/9, pch = 16)
+points(8, 1/3 + 1/9 + 1/9 + 1/9 + 1/9, pch = 16)
+points(10, 1/3+1/9+1/9+1/9 + 1/9 + 1/9,pch = 16)
+points(11, 1/3+1/9+1/9+1/9 + 1/9 + 1/9 + 1/9,pch = 16)
+@
+
+If we know the distribution function of a random variable,
+we can compute the probability that the random variable lies in some interval:
+\begin{align*}
+  \Prob(X \in (-\infty, b]) = \Prob(X \leq b) = F_X(b), \\
+  \Prob(X \notin (-\infty, a]) = \Prob(X > a) = 1 - F_X(a).
+\end{align*}
+So
+\[
+  \Prob(X \in (a, b]) = F_X(b) - F_X(a).
+\]
+We need to be somewhat more cautious when making probability claims
+about intervals of the form $[a, b], [a, b)$ and $(a,b)$.
+The reason is that the end points of such intervals may have some positive probability.
+We therefore define a further function:
+\[
+  F_X(r-) := \Prob(X \in (-\infty, r)) = F_X(r) - \Prob(X = r).
+\]
+Consequently,
+\begin{align*}
+  \Prob(X \in [a, b]) &= F_X(b) - F_X(a-) = F_X(b) - F_X(a) + \Prob(X = a), \\
+  \Prob(X \in [a, b)) &= F_X(b-) - F_X(a-) = F_X(b) - F_X(a) - \Prob(X = b) + \Prob(X = a), \\
+  \Prob(X \in (a, b)) &= F_X(b-) - F_X(a) = F_X(b) - F(X)(a) - \Prob(X = b).
+\end{align*}
+
+Whereas the distribution function $F_X$ tells us the probability that a random
+value assumes a value no larger than some number $r$, 
+the \term{quantile function} $F^{-1}_X$ tells us the inverse:
+Given some number $p \in (0,1)$, what is the lowest value $q$ such that
+$F_X(q) \geq p$?
+
+\mypar[Quantile function]{Definition}
+  Let $X$ be a random variable.
+  Its quantile function $F_X^{-1}$ is defined as
+  \[
+    F^{-1}_X(p) := \min\{q \in \mathbb{R} : F_X(q) \geq p\}. \parendeq
+  \]
+
+From Figure \ref{fig:fx}, we may, for instance, glean that
+$F_X^{-1}(0.4) = 2$ and $F_X^{-1}(7/9) = 8$.
+
+\mypar[Continuous uniform distribution]{Example}
+  Consider the fortune wheel from Example \ref{example:wheel}.
+  We define the random variable $X$ that quite simply tells us the 
+  value the arrow points to.
+  The distribution function of this random variable, shown in Figure \ref{fig:contuniform},
+  is \term{continuous} (without jumps).
+  The 0.3 quantile of this variable's distribution is $F^{-1}_{X}(0.3) = 108$.
+\parend
+
+<<echo = FALSE, fig.cap = "Distribution function of a random variable with a continuous uniform distribution on $[0, 360)$.\\label{fig:contuniform}",  fig.width = 0.8*4, fig.height =0.8*3, out.width=".4\\textwidth">>=
+curve(punif(x, 0, 360), from = -50, to = 410, xlab = "r", ylab = bquote(F[X](r)))
+segments(-100, 0.3, qunif(0.3, 0, 360), col = "blue", lty = "dashed")
+segments( qunif(0.3, 0, 360), 0.3, y1=0, col = "blue", lty = "dashed")
+@
+
+\subsection{Probability density functions}\label{sec:density}
+The distribution of some random variables $X$ can be represented
+by means of a \term{probability density function} $f_X$.
+Let us get the formal definition out of the way before discussing what the
+underlying idea is.
+
+\mypar[Probability density function]{Definition}
+  Let $X$ be a random variable and $F_X$ its distribution function.
+  If there exists a non-negative function $f_X$ such that
+  \[
+    F_X(b) - F_X(a) = \int_a^b f_X(t) \df t
+  \]
+  for all real numbers $a, b$,
+  then $f_X$ is a probability density function of $X$.
+\parend
+
+Figure \ref{fig:wheeldensity} shows what the idea is.
+We want to represent the distribution of $X$ in such a way
+that the probability that $X$ falls in a certain interval
+corresponds to the area underneath the probability density function
+over this interval.
+
+<<fig.cap = "Probability density function of a variable following a continuous uniform distribution from 0 to 360. The probability of observing a value between 45 and 93 corresponds to the area underneath the density over this interval.\\label{fig:wheeldensity}", echo = FALSE, fig.height = 0.8*2.8, fig.width = 0.8*4, message = FALSE, warning = FALSE, out.width="0.4\\textwidth">>=
+op <- par(no.readonly = TRUE)
+par(mar = c(3,4.1,2,1))
+plot(0, 0, type = "n", xlab = "r", ylab = "", ylim = c(0, 1/360 + 1/900),
+     xlim = c(-50, 410))
+mtext(bquote(F[X](r)), side = 2, line = 3, las = 0, cex = 0.8)
+segments(-100, 0, 0)
+segments(0, 1/360, 360)
+segments(360, 0, 500)
+polygon(c(45, 45, 93, 93), c(0, 1/360, 1/360, 0), col = "lightgrey")
+par(op)
+@
+
+For a random variable $X$ with a continuous uniform distribution on $[0, 360)$,
+one possible probability density function is
+\[
+  f_X(x) =
+  \begin{cases}
+    \frac{1}{360}, & \textrm{if $x \in [0, 360)$}, \\
+    0, & \textrm{else.}
+  \end{cases}
+\]
+As you may recall from school, the area underneath a curve over an interval is given
+by the integral of the function over this interval.
+Indeed, we have
+\[
+  \Prob(X \in [45, 93]) = \int_{45}^{93} f_X(t) \df t = \int_{45}^{93} \frac{1}{360} \df t = \frac{93 - 45}{360}.
+\]
+
+\mypar{Remark}
+  Not all random variables have a probability density function.
+  If a random variable has a probability density function,
+  then its distribution function is continuous.
+  That said, it is possible for a random variable to have a continuous
+  distribution function but no probability density function.
+  Such random variables are difficult to construct, though.
+\parend
+
+\mypar{*Remark}  
+  If a random variable has \emph{a} probability
+  density function, then it has an infinite number of them:
+  Given a suitable probability density function $f_X$, we may define
+  another one by changing the value of $f_X$ at one single arbitrary point.
+  This doesn't affect the integral.
+  That said, if the distribution function $F_X$ is not only continuous
+  but also differentiable,
+  then the derivative of $F_X$ is a probability density function of $X$
+  and is considered the canonical one.
+\parend
+
+\mypar{Definition}
+  If a random variable has a probability density function,
+  we call it \term{(absolutely) continuous}.
+\parend
+
+We'll have a look at some examples of continuous probability distributions
+in Section \ref{sec:continuousdists}.
+
+\mypar{*Remark}
+  An absolutely continuous random variable cannot be discrete and vice versa:
+  If $X$ has a probability density function $f_X$, then
+  \[
+    \Prob(X = r) = \int_r^r f_X(t) \df t = 0
+  \]
+  for all real numbers $r$. 
+  If $X$ is discrete, however, there must be some $r$ such that $\Prob(X = r) > 0$.
+  
+  However, random variables can be neither absolutely continuous nor discrete.
+  One example would the amount of precipitation on a given day in a given area.
+  It's possible that there's a 70\% chance of no precipitation ($\Prob(X = 0) = 0.7$),
+  but that, if there is some precipitation, then the amount of precipitation is
+  absolutely continuous.
+\parend
+
+\subsection{The expected value and the variance}
+Before we have a closer look at some classic probability distributions,
+let's introduce the two most commonly used numeric properties of random variables
+(or of their probability distributions).
+The first property is the \term{expected value} (also called \term{expectation}
+or \term{mean}), which expresses which value the random variable takes on on average.
+The expected value generalises the arithmetic mean, which can straightforwardly
+be computed if you have a finite number of values, to sample spaces of arbitrary size.
+
+If $X$ is a discrete random variable on a sample space $\Omega$,
+then its expected value $\E(X)$ can be computed as
+\[
+  \E(X) = \sum_{x \in \Omega} x\Prob(X = x),
+\]
+if this sum is a well-defined real number.\footnote{It is possible for the sum to depend
+on the order in which we enumerate $\Omega$, in which case it isn't well-defined.
+It's also possible for this sum to diverge to $-\infty$ or $\infty$,
+in which case it isn't a real number. We won't deal with such pathological distributions, though.}
+In the \textit{Obenabe} example (Example \ref{example:obenabe}), we hence have
+\begin{align*}
+  \E(X) = 0\cdot \frac{1}{3} + 2 \cdot \frac{1}{9} + 3 \cdot \frac{1}{9}
+          + 4 \cdot \frac{1}{9} + 8 \cdot \frac{1}{9} + 10 \cdot \frac{1}{9}
+          + 11 \cdot \frac{1}{9}
+        = 4.22.
+\end{align*}
+As a further example consider the random variable $G$ generated by the random number
+generator from Example \ref{example:2k}.
+Its expectation is\label{expectation_2k}
+\[
+  \E(G) = \sum_{k=1}^{\infty} k\Prob(G = k) = \sum_{k=1}^{\infty}\frac{k}{2^k} = 2.
+\]
+For this course, you don't have to be able to compute expected values for 
+distributions with infinite sample spaces. 
+The idea here is merely to show that the arithmetic mean can be generalised
+to cases with an infinite number of values.
+
+Incidentally, and more generally, it holds that
+\[
+  \E(g(X)) = \sum_{x \in X(\Omega)} g(x)\Prob(X = x)
+\]
+for each function $g$, if this sum is a well-defined real number.
+
+If the random variable $X$ has a probability density function $f_X$,
+then its expectation can be computed as
+\[
+  \E(X) = \int_{-\infty}^{\infty} xf_X(x) \df x,
+\]
+if this integral is a well-defined real number.
+In the fortune wheel example, for instance,
+\begin{align*}
+  \E(W)
+  &= \int_{-\infty}^{\infty} x f_X(x) \df x \\
+  &= \int_{0}^{360} \frac{x}{360} \df x \\
+  &= \frac{1}{360} \left.\left[\frac{1}{2}x^2\right]\right|_0^{360} \\
+  &= \frac{360^2}{2\cdot 360} \\
+  &= 180.
+\end{align*}
+
+More generally,
+\[
+  \E(g(X)) = \int_{-\infty}^{\infty} g(x)f_X(x) \df x,
+\]
+for (essentially) each function $g$, if this integral is a well-defined real number.\footnote{Regarding `essentially': It is possible
+to construct so-called non-measurable functions $g$ that cannot be integrated.}
+
+If a probability distribution is neither absolutely continuous nor discrete,
+one can compute the expectations of its continuous and its discrete parts separately
+and then combine them using a suitable weighting.
+We'll only discuss discrete and absolutely continuous distributions, though.
+
+\mypar[Properties of the expected value]{Lemma}
+  Let $X, Y$ be random variables.
+  If $X$ is constant, that is, $X \equiv c$, then $\E(X) = c$.
+  
+  The expected value is \term{linear}.
+  This means that $\E(aX + bY) = a\E(X) + b\E(Y)$ for constants $a, b$, 
+  if $\E(X)$ and $\E(Y)$ exist in the first place.
+  This property follows from the linearity of finite and infinite sums
+  as well as from the linearity of integrals.
+\parend
+
+The expected value expresses which value the random variable takes on on average.
+But it would be useful to also have some numerical measure that expresses
+how large the discrepancies between individual instantiations of this random
+variable and its expected value are expected to be.
+At first blush, it would seem to make sense to compute the expected value
+of these discrepancies, that is,
+\[
+  \E(X - \E(X)).
+\]
+By linearity of the expected value, however,
+\[
+  \E(X - \E(X)) = \E(X) - \E(\E(X)) = \E(X) - \E(X) = 0
+\]
+for each random variable $X$ that has an expected value.
+So this measure doesn't carry any information.
+A more useful measure is the expected value of the absolute discrepancies, that is,
+\[
+  \E(|X - \E(X)|).
+\]
+While this measure is sometimes used, it's cumbersome to use.
+Instead, one usually works with the expected value of the squared discrepancies,
+that is,
+\[
+  \E((X - \E(X))^2).
+\]
+If $X$ is a random variable such that this measure exists,
+we call $\Var(X) := \E((X - \E(X))^2)$ the \term{variance} of $X$.\footnote{Not all random variables have
+a variance. This includes all random variable that do not have an expected value.}
+
+\mypar{Lemma}\label{lemma:steiner}
+  If $X$ is a random variable such that $\Var(X)$ exists, then
+  \[
+    \Var(X) = \E(X^2) - \E(X)^2. \parendeq
+  \]
+\begin{proof}
+  We expand the expression in the definition and then apply properties of the expected value:
+\begin{align*}
+  \Var(X)
+  &= \E((X - \E(X))^2)                  & [\textrm{Definition}]\\
+  &= \E(X^2 - 2X\E(X) + \E(X)^2)        & [\textrm{$(a-b)^2 = a^2 - 2ab + b^2$}] \\
+  &= \E(X^2) - 2\E(X(\E(X))) + \E(X)^2  & [\textrm{Linearity of $\E$}] \\
+  &= \E(X^2) - 2\E(X)^2 + \E(X)^2       & [\textrm{$\E(X)$ is constant}]\\
+  &= \E(X^2) - \E(X)^2.                 & 
+\end{align*}
+\end{proof}
+
+If a random variable is expressed in some unit (e.g., seconds),
+then its variance is expressed in the square of this unit (e.g., squared seconds).
+By taking the root of the variance, we get rid of these squared units.
+The numerical property so obtained is called the random variable's \term{standard deviation}:
+$\sqrt{\Var(X)} =: \Std(X)$.
+
+\mypar{Example}
+  Lemma \ref{lemma:steiner} allows us to compute variances quite straightforwardly.
+  In the \textit{Obenabe} example, we have
+\begin{align*}
+  \E(X^2) = 0^2\cdot \frac{1}{3} + 2^2 \cdot \frac{1}{9} + 3^2 \cdot \frac{1}{9}
+          + 4^2 \cdot \frac{1}{9} + 8^2 \cdot \frac{1}{9} + 10^2 \cdot \frac{1}{9}
+          + 11^2 \cdot \frac{1}{9}
+        = 34.89.
+\end{align*}
+  Hence, the variance of the random variable in the \textit{Obenabe} example is
+  \[
+    \E(X^2) - \E(X)^2 = 34.89 - 4.22^2 = 17.08.
+  \]
+  So its standard deviation is $\sqrt{17.08} \approx 4.13$.
+
+  For the random number generator in Example \ref{example:2k}, we have
+  \[
+    \E(G^2) = \sum_{k=1}^{\infty} \frac{k^2}{2^k} = 6.
+  \]
+  (This computation is not obvious; for the purposes of this course,
+  we may consider the result as given.)
+  Hence, the variance of $G$ is
+  \[
+    \Var(G) = \E(G^2) - \E(G)^2 = 6 - 2^2 = 2.
+  \]
+  So its standard deviation is $\sqrt{2}$.
+
+  In the fortune wheel example, we have
+  \[
+    \E(W^2) = \int_{0}^{360}\frac{t^2}{360} \df t = \frac{360^3}{3\cdot 360} = 43200.
+  \]
+  So the variance of $W$ is
+  \[
+    \E(W^2) - \E(W)^2 = 43200 - 180^2 = 10800.
+  \]
+  So its standard deviation is $\sqrt{10800} \approx 103.9$.
+\parend
+
+Lemma \ref{lemma:steiner} can be used to prove the first claim of the following lemma.
+
+\mypar[Properties of the variance]{Lemma}\label{properties_variance}
+  Let $X$ be a random variable such that $\Var{Var}(X)$ exists
+  and let $a, b$ be constants.
+  Then
+  \[
+    \Var(aX + b) = a^2\Var(X).
+  \]
+  
+  In general, though, it is \emph{not} the case that $\Var(X + Y) = \Var(X) + \Var(Y)$.
+  If $X, Y$ are independent (with independence of random variables being defined in the next section),
+  however, it \emph{is} true that $\Var(X + Y) = \Var(X) + \Var(Y)$.
+\parend
+
+\mypar{Example}
+  Based on the random variable $G$ from Example \ref{example:2k},
+  we define the random variable $\widetilde{G} := 3G + 4$.
+  By the properties of the expected value and the variance, we obtain
+  \[
+    \E(\widetilde{G}) = \E(3G + 4) = 3\E(G) + 4 = 10
+  \]
+  and
+  \[
+    \Var(\widetilde{G}) = \Var(3G + 4) = 3^2\Var(G) = 18.\parendeq
+  \]
+
+\mypar[Variance of a sum $\neq$ sum of the variances]{Example}
+  Based on the random variable $G$ from Example \ref{example:2k},
+  we define the random variable $\overline{G} := -G$.
+  Then $G + \overline{G} = G - G = 0$.
+  So
+  \[
+    \Var(G + \overline{G}) = 0 \neq 4 = \Var(G) + \Var(\overline{G}).
+  \]
+  It's intuitively clear that $G, \overline G$ are not independent.
+  This intuition is formalised in the next section.
+\parend
+
+\subsection{Independence}
+\mypar[Independence of random variables]{Definition}\label{def:indep_rv}
+  Let $X, Y$ be random variables.
+  We say that $X, Y$ are \term{independent} if, for any set of numbers $E_1, E_2$
+  about which it's possible to make probabilistic claims (cf.\ the comment on page \pageref{comment:measurable}),
+  it is the case that
+  \[
+    \Prob(X \in E_1, Y \in E_2) = \Prob(X \in E_1)\Prob(Y \in E_2).
+  \]
+  This definition for the independence of two random variables
+  can be generalised to the definition of multiple and of an infinite number
+  of random variables in the same way that the definition of independence
+  of two events was generalised.
+\parend
+
+Conceptually, independence of $X, Y$ means that knowing the value that
+$X$ takes on doesn't provide any information as to the value of $Y$, and vice versa.
+If random variables are independent, the sum of their variances can easily
+be computed, as per the next lemma, which is presented without proof.
+
+\mypar{Lemma}
+  Let $X, Y$ be independent random variables with existing variance.
+  Then
+  \[
+    \Var(X + Y) = \Var(X) + \Var(Y). \parendeq
+  \]
+
+\section{Examples of discrete probability distributions}
+
+\subsection{The discrete uniform distribution}
+Let $n$ be a natural number and 
+$\Omega := \{1, \dots, n\}$.
+Let $X$ be the random variable defined by $X(k) = k$ for each $k \in \Omega$.
+If, for each $k \in \Omega$, $\Prob(X = k) = 1/n$, then $X$ has a
+\term{discrete uniform distribution} on $\Omega$.
+We write $X \sim \textrm{Unif}(\Omega)$.
+
+The classic example for such a discrete uniform distribution is a throw
+with a fair six-sided dice.
+In this example, we have $\Prob(X = k) = 1/6$ for $k \in \{1, 2, 3, 4, 5, 6\}$
+and $\Prob(X = k) = 0$ for all $k \notin \{1, \dots, 6\}$.
+
+The expected value of a random variable $X$ with a discrete uniform distribution
+over the sample space $\{1, 2, \dots, n\}$ is
+\[
+  \E(X) = \frac{1}{n}(1 + 2 + \dots + n) = \frac{n(1+n)}{2n} = \frac{1+n}{2},
+\]
+which should make sense intuitively.
+Its variance is
+\[
+  \Var(X) = \frac{n^2 - 1}{12},
+\]
+which we won't derive ourselves.
+
+More generally, let $X$ be a random variable with a discrete uniform distribution over
+\[
+  \Omega := \{a, a + 1, a + 2, \dots, b - 2, b - 1, b\}.
+\]
+Then
+\[
+  \E(X) = \frac{a + b}{2}, \Var(X) = \frac{(b - a + 1)^2 - 1}{12}.
+\]
+
+\mypar{*Exercise}
+  Let $X$ be a random variable with a discrete uniform distribution over
+  \[
+    \{1, 2, \dots, n-2, n-1\}.
+  \]
+  Define $Y := X/2 + 1/2$.
+  Then $Y$ has a discrete uniform distribution over
+  \[
+    \{1, 1.5, 2, \dots, n/2\}.
+  \]
+  Use the properties of the expected value and the variance to determine
+  $\E(Y), \Var(Y)$.
+\parend
+
+\mypar[Generating data from a discrete uniform distribution]{Remark}
+  In the upcoming sections and chapters, we'll try to get a handle on concepts by
+  means of simulations.
+  These will require us to generate data from certain distributions.
+  The following snippet shows how we can generate \texttt{n\_obs} independent
+  data points from a discrete uniform distribution on $\{1, \dots, n\}$.
+<<>>=
+# Define sample space
+n <- 6
+Omega <- 1:n
+# Generate n_obs observations discrete unif. dist. on sample space
+n_obs <- 20
+observations <- sample(Omega, n_obs, replace = TRUE)
+observations
+@
+\parend
+
+\subsection{The Bernoulli distribution}\label{sec:bernoulli}
+The \term{Bernoulli distribution} models the outcome $X$ of a random experiment
+with two possible outcomes, which are labelled $0$ (`failure') and $1$ (`success').
+It has a parameter $p \in [0,1]$, where $\Prob(X = 1) = p$ and $\Prob(X = 0) = 1-p$.
+If a random variable $X$ follows a Bernoulli distribution with parameter $p$,
+we write $X \sim \textrm{Bernoulli}(p)$.
+
+The expected value of a $\textrm{Bernoulli}(p)$-distributed random variable $X$
+is easily computed:
+\[
+  \E(X) = 0\cdot(1-p) + 1\cdot p = p.
+\]
+Similarly,
+\[
+  \E(X^2) = 0^2\cdot(1-p) + 1^2\cdot p = p.
+\]
+Hence,
+\[
+  \Var(X) = p - p^2 = p(1-p).
+\]
+
+\mypar{Example}
+  We draw a random card from a deck of 36 \textit{Jass} cards.
+  Th probability that we've drawn an Ace is $p = 4/36 = 1/9$.
+  We can thus model the random experiment `Drawing an Ace' as a Bernoulli
+  experiment with parameter $p = 1/9$,
+  where we label the outcome of the experiment as 1 if we draw an Ace
+  and 0 otherwise.
+\parend
+
+\subsection{The binomial distribution}\label{sec:binomial}
+Let $X_1, \dots, X_n$ be independent random variables that all
+follow a $\textrm{Bernoulli}(p)$ distribution.
+Then $X := X_1 + \dots + X_n$ is said to follow a \term{binomial distribution}
+with parameters $n$ and $p$.
+We write $X \sim \textrm{Binomial}(n, p)$.
+In words, the binomial distribution models the number of $n$ independent and
+identical Bernoulli experiments that have successful outcomes.
+
+By the linearity of the expected value,
+\[
+  \E(X) = \E(X_1) + \dots + \E(X_n) = np.
+\]
+By the independence of $X_1, \dots, X_n$,
+\[
+  \Var(X) = \Var(X_1) + \dots + \Var(X_n) = np(1-p).
+\]
+
+
+The probability that precisely the first $k$ of $n$ independent and identical
+Bernoulli experiments produce a success is
+\[
+  \Prob(X_1 = 1)\Prob(X_2 = 1) \cdots \Prob(X_k = 1)\Prob(X_{k+1} = 0)\cdots\Prob(X_n = 0) = p^k(1-p)^{n-k}.
+\]
+There are $n \cdot (n-1) \cdot \dots \cdot 1 = n!$ possibilities to reorder 
+these Bernoulli experiments.
+Since neither the outcomes of the first $k$ of these experiments
+nor the outcomes of the last $n-k$ ones can be distinguished from one another,
+there are
+\[
+  \frac{n!}{k!(n-k)!} =: \binom{n}{k}
+\]
+different possible orders in which these outcomes can be observed.
+Hence, the probability that exactly $k$ of $n$ independent and identical
+Bernoulli experiments produce a success is
+\[
+  \Prob(X = k) = \binom{n}{k}p^k(1-p)^{n-k}.
+\]
+The number $\binom{n}{k}$ is called the \term{binomial coefficient} of $n$ and $k$.
+We also say `$n$ choose $k$'.
+For $k < 0$ or $k > n$, we define $\binom{n}{k} = 0$.
+Consequently, the distribution function of a Binomial($n$, $p$) distribution is
+\[
+  F(r) = \sum_{k = 0}^{\lfloor r \rfloor} \binom{n}{k}p^k(1-p)^{n-k}.
+\]
+
+The binomial coefficient $\binom{n}{k}$ can be calculated using the
+R command \texttt{choose(n, k)}.
+R also features some functions that can be used to retrieve information
+about the binomial distribution and that can generate data from a binomial
+distribution.
+As an example, imagine that we throw a 6-sided dice ten times and count
+how often we've thrown a 6.
+This outcome can be modelled by means of a Binomial($10$, $1/6$) distribution.
+The function \texttt{dbinom()} allows us compute $\Prob(X = k)$.
+For instance, the probability that we throw exactly five sixes is about 1.3\%:
+<<>>=
+dbinom(5, 10, 1/6)
+@
+Figure \ref{fig:dbinom} shows $\Prob(X = k)$ for
+$X \sim \textrm{Binomial}(10, 1/6)$ and $k = 0, \dots, 10$.
+
+<<echo = FALSE, fig.cap = "Left: Probability of the number of successes in a Binomial($10$, $1/6$) distribution. Right: Distribution function of the same distribution.\\label{fig:dbinom}", fig.width = 7, fig.height = 3.3, out.width=".8\\textwidth">>=
+k <- 0:10
+par(mfrow = c(1, 2))
+plot(k, dbinom(k, 10, 1/6), pch = 16,
+     xlab = "k", ylab = "Prob(X = k)")
+plot(k, pbinom(k, 10, 1/6), pch = 16, ylim = c(0, 1),
+     xlab = "k", ylab = "Prob(X ≤ k)")
+segments(k, pbinom(k, 10, 1/6), k + 1)
+par(op)
+@
+
+The function \texttt{pbinom()} can be used to retrieve $\Prob(X \leq k)$.
+For instance, the probability that we throw no more than two sixes is about 78\%:
+<<>>=
+pbinom(2, 10, 1/6)
+@
+The probability that we throw more than two sixes is hence about 22\%.
+Similarly, the probability that we throw at least two sixes is about 52\%:
+<<>>=
+1 - pbinom(1, 10, 1/6)
+pbinom(1, 10, 1/6, lower.tail = FALSE)
+@
+
+The \texttt{qbinom()} function retrieves the quantiles of the Binomial($n$, $p$)
+distribution:
+<<>>=
+qbinom(0.70, 10, 1/6)
+qbinom(0.75, 10, 1/6)
+qbinom(0.80, 10, 1/6)
+@
+In other words, if lots of people were to throw a dice ten times each,
+at least 70\% of them would throw at most two sixes.
+In fact, at least 75\% of them would throw at most two sixes.
+At least 80\% of them would throw at most three sixes.
+In fact, about 77.5\% of them would throw at most two sixes,
+as we can compute using \texttt{pbinom()}:
+<<>>=
+k <- 0:10
+tibble(k = k,
+       "Prob(X <= k)" = pbinom(k, 10, 1/6))
+@
+
+The function \texttt{rbinom()} can be used to generate independent
+observations from a binomial distribution. Let's say that we wanted
+to simulate the number of sixes produced by each of twenty people throwing
+the dice 10 times:
+<<>>=
+rbinom(20, 10, 1/6)
+@
+
+The Bernoulli($p$) distribution is the same as the Binomial($1$, $p$) distribution.
+
+\section{Examples of continuous probability distributions}\label{sec:continuousdists}
+\subsection{The continuous uniform distribution}
+We've already encountered the continuous uniform distribution in the 
+fortune wheel example.
+More generally, we denote as $\textrm{Unif}([a,b])$ the continuous
+uniform distribution on the interval $[a, b], a < b$.
+The endpoints can be included or left out at will; 
+the distribution doesn't change as a a result.
+For $X \sim \textrm{Unif}([a,b])$, we have
+\[
+  \E(X) = \frac{b-a}{2}
+\]
+and
+\[
+  \Var(X) = \frac{(b-a)^2}{12}.
+\]
+A density function for a continuous uniform distribution on $[a,b]$ is
+\[
+  f_U(x) =
+  \begin{cases}
+    \frac{1}{b-a}, & \textrm{if $x \in [a, b]$}, \\
+    0, &\textrm{otherwise}.
+  \end{cases}
+\]
+The distribution function is
+\[
+  F_U(r) =
+  \begin{cases}
+    0, & \textrm{if $r < a$}, \\
+    \frac{r - a}{b-a}, & \textrm{if $r \in [a,b]$}, \\
+    1, & \textrm{if $r > b$}.
+  \end{cases}
+\]
+
+We can evaluate a valid density function at a given point using 
+\texttt{dunif()}. For instance, for a continuous uniform distribution on
+$[-\pi, \pi]$, we find
+<<>>=
+dunif(2, -pi, pi) # = 1/(2*pi)
+dunif(4, -pi, pi)
+@
+The distribution function is implemented in \texttt{punif()}:
+<<>>=
+punif(2, -pi, pi)
+@
+That is, if $X \sim \textrm{Unif}([-\pi, \pi])$,
+then $\Prob(X \leq 2) \approx 82\%$.
+Using \texttt{qunif()}, we can obtain the quantiles of this distibution;
+using \texttt{runif()}, we can generate independent observations from it:
+<<>>=
+runif(10, -pi, pi)
+@
+
+\subsection{The normal distribution}
+The \term{normal distribution} occupies a central space in the theory and practice
+of probability theory, statistics, and data analysis.
+The normal distribution has two parameters:
+its expected value $\mu$, and its variance $\sigma^2$.
+If a random variable $X$ follows 
+a normal distribution with parameters $\mu, \sigma^2$,
+we can write $X \sim \textrm{Normal}(\mu, \sigma^2)$ or $X \sim \mathcal{N}(\mu, \sigma^2)$.
+Figure \ref{fig:dnorm} shows density functions for normal distributions with
+four different parameter combinations.
+The plot in the top left shows the \term{standard normal distribution},
+that is, the normal distribution with mean 0 and variance 1.
+
+
+<<echo = FALSE, fig.cap = "Density functions of four normal distributions.\\label{fig:dnorm}", fig.width = 6, fig.height = 5, out.width=".6\\textwidth">>=
+op <- par(no.readonly = TRUE)
+par(mfrow = c(2, 2))
+curve(dnorm(x), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(0, 1)")
+curve(dnorm(x, mean = 2), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(2, 1)")
+curve(dnorm(x, sd = sqrt(3)), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(1, 3)")
+curve(dnorm(x, mean = 2, sd = sqrt(3)), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(2, 3)")
+par(op)
+@
+
+The canonical density function $f$ of a  $\mathcal{N}(\mu, \sigma^2)$ distribution
+is 
+\[
+  f(x) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left\{\frac{-(x-\mu)^2}{2\sigma}\right\},
+\]
+where $\exp\{\cdot\}$ is the exponential function.
+This formula isn't too important for us.
+It suffices to appreciate that $\mu$ determines the central tendency of the
+normal distribution, whereas $\sigma^2$ determines how tall and how wide it is.
+The distribution function of a normal distribution cannot be represented analytically.
+
+The R functions \texttt{dnorm()}, \texttt{pnorm()}, and \texttt{rnorm()}
+can be used to evalute the density and distribution functions, and to 
+generate independent observations from normal distributions.
+Importantly, R parametrises normal distributions using their standard deviation
+rather than using their variance.
+For instance, consider $X \sim \mathcal{N}(3, 16)$. 
+Then we can compute $\Prob(X \leq 0)$ as follows; also see Figure \ref{fig:dnormex}:
+<<>>=
+pnorm(0, mean = 3, sd = sqrt(16))
+@
+
+<<echo = FALSE, fig.cap = "The $\\mathcal{N}(3, 16)$ distribution. Left: The probability of observing a value lower than 0 corresponds to the area under the curve up till 0. Right: We can compute this probability using the distribution function.\\label{fig:dnormex}", fig.width = 4*7/4, fig.height = 2.8*7/8, out.width=".8\\textwidth">>=
+library(RColorBrewer)
+plot_dnorm <- ggplot(data.frame(x = c(-12, 18)),
+             aes(x)) +
+  stat_function(fun = function(x) dnorm(x, mean = 3, sd = sqrt(16))) +
+  ylab("f(x)") +
+  stat_function(fun = function(x) {
+    y <- dnorm(x, 3, sqrt(16))
+    y[x > 0] <- NA
+    return(y)
+  }, geom = "area", fill = "blue", alpha = 0.2)
+
+plot_pnorm <- ggplot(data.frame(x = c(-12, 18)),
+             aes(x)) +
+  stat_function(fun = function(x) pnorm(x, mean = 3, sd = sqrt(16))) +
+  ylab("F(x)") +
+  geom_segment(x = 0, xend = 0, y = 0, yend = pnorm(0, 3, sqrt(16)),
+               linetype = "dashed", colour = "blue") +
+  geom_segment(x = -20, xend = 0, y = pnorm(0, 3, sqrt(16)), yend = pnorm(0, 3, sqrt(16)),
+               linetype = "dashed", colour = "blue")
+gridExtra::grid.arrange(plot_dnorm, plot_pnorm, ncol = 2)
+@
+
+
+\mypar[IQ]{Exercise} 
+  The distribution of IQ scores in a population can be modelled
+  as a $\mathcal{N}(100, 15^2)$ distribution.
+  Use the \texttt{pnorm()} und \texttt{qnorm()} functions
+  in order to answer the questions below.
+  For the last three questions, you may want to also use
+  the binomial distribution, but you don't have to.
+\begin{enumerate}
+\item What's the probability that a randomly picked person has an IQ lower than 90?
+\item What's the probability that a randomly picked person has an IQ higher than 85?
+\item What's the probability that a randomly picked person has an IQ between 110 and 120?
+\item What's the probability that a randomly picked person has an IQ that lies
+at least a standard deviation away from the mean?
+\item For which IQ score is it the case that 25\% of the population has a lower IQ
+score and 75\% of the population has a higher IQ score?
+\item A person is `of average intelligence' if their IQ score belongs to the 
+      middle 45\% of the population.
+      Between which two IQ scores does average intelligence fall?
+\item You randomly pick two people and obtain their IQ scores.
+      What's the probability that none of them has an IQ higher than 105?
+\item You randomly pick three people and obtain their IQ scores.
+      What's the probability that exactly one of them has an IQ below 90?
+\item You randomly pick three people and obtain their IQ scores.
+      What's the probability that at least one of them has an IQ below 90? \parend
+\end{enumerate}
+ 
+\mypar{*Remark}
+  If $X$ has a continuous distribution function,
+  then the $p$-th quantile $q := F_X^{-1}(p)$ satisfies
+  $F_X(q) = p, p \in (0,1)$.
+  If $X$ does not have a continuous distribution function,
+  then it is possible that $F_X(q) > p$.
+\parend
+
+\section{The sampling distribution of the sample mean}\label{sec:clt}
+Let $X_1, \dots, X_n$ be independent and identically distributed
+random variables with an existing expected value and variance.
+We define the arithmetic mean of these random variables as
+\[
+  \overline X := \frac{X_1 + \dots + X_n}{n}.
+\]
+Can we make any sensible claims about $\overline X$?
+
+The answer is `yes'.
+First, due to the linearity of the expected value, we have
+\begin{align*}
+  \E(\overline{X})
+  &= \E\left(\frac{X_1 + \dots + X_n}{n}\right) \\
+  &= \frac{1}{n}\E(X_1 + \dots + X_n) \\
+  &= \frac{1}{n}(\E(X_1) + \dots + \E(X_n)) \\
+  &= \frac{n}{n}\E(X_1) \\
+  &= \E(X_1).
+\end{align*}
+In words, the mean of $n$ identical random variables has the same expectation
+as the individual random variables.
+Independence is not required for this claim.
+
+Second, thanks to the independence of the random variables, we have
+\begin{align*}
+  \Var(\overline{X})
+  &= \Var\left(\frac{X_1 + \dots + X_n}{n}\right) \\
+  &= \frac{1}{n^2}\Var(X_1 + \dots + X_n) \\
+  &= \frac{1}{n^2}(\Var(X_1) + \dots + \Var(X_n)) \\
+  &= \frac{n}{n^2}\Var(X_1) \\
+  &= \frac{\Var(X_1)}{n}.
+\end{align*}
+Hence, the standard deviation of the mean is
+\[
+  \Std(\overline X) = \sqrt{\Var(\overline X)} = \frac{\Var(X_1)}{\sqrt{n}}.
+\]
+Hence, the larger the sample size $n$, 
+the less individual sample means deviate from their expected value.
+
+Finally, the celebrated \term{Central Limit Theorem} (\clt) allows us to say something
+about the shape of the distribution of the sample mean.
+
+\mypar[Central Limit Theorem]{Theorem}
+  Let $X_1, \dots, X_n$ be independent observations drawn at random
+  from a distribution with expectation $\mu$ and finite variance $\sigma^2 < \infty$.
+  Then the distribution of the statistic
+  \begin{equation}\label{eq:clt}
+    \frac{\overline X - \mu}{\sigma / \sqrt{n}},
+  \end{equation}
+  where $\overline X := (X_1 + \dots + X_n)/n$, converges to a
+  standard normal distribution (i.e., to $\mathcal{N}(0, 1)$).
+\parend
+
+We won't prove this theorem, 
+but the examples will illustrate what this theorem says and doesn't say.
+Incidentally, the theorem is about a limit (that is, about an asymptotic finding)
+and it is central (that is, of key importance) to probability, hence the name.
+It's not a theorem about `central limits', which don't exist.
+
+\mypar{Remark}
+  Let $a,b$ be real numbers.
+  If $Z \sim \mathcal{N}(0, 1)$, then $a + bZ \sim \mathcal{N}(a, b^2)$.
+  Hence, if the statistic in (\ref{eq:clt}) is approximately 
+  $\mathcal{N}(0, 1)$ for a given sample size $n$,
+  then 
+  \[
+  \overline X = \mu + \frac{\sigma}{\sqrt{n}}\left(\frac{\overline X - \mu}{\sigma / \sqrt{n}}\right) \sim \mathcal{N}(\mu, \sigma^2 / n)
+  \]
+   approximately, allowing us to use the normal distribution as an 
+   approximation to the distribution of the sample mean.
+\parend
+
+\mypar{Example}\label{example:clt_rng2k}
+  Consider the random number generator from Example \ref{example:2k}.
+  Let us generate 5 independent observations $G_1, \dots, G_{5}$ using this
+  random number generator.
+  In the previous sections, we found out that $\E(G_1) = \Var(G_1) = 2$.
+  Hence, the mean $\overline G = (G_1 + \dots + G_{5})/5$ also has expectation
+  $\E(\overline G) = \E(G_1) = 2$
+  and standard deviation
+  \[
+    \Std(\overline G) = \sqrt{\frac{2}{5}} \approx 0.632.
+  \]
+  The \clt\ suggests that we could approximate the distribution of $\overline G$
+  as $\mathcal{N}(2, \sqrt{2/5})$.
+  
+  Let's see how good this approximation actually is.
+  The file \texttt{rng\_2k.R} in the \texttt{functions} subdirectory
+  contains a function (\texttt{rrng\_2k()}) 
+  for actually generating random numbers from this distribution.\footnote{This distribution is a special case of the \term{geometric distribution}, which wasn't discussed in this script. The functions in \texttt{rng\_2k.R} are simple wrappers around the functions documented on \texttt{?Geometric}.}
+  Using \texttt{source()}, we read it in.
+  Then, we simulate the scenario above 50,000 times, ending up with 
+  50,000 sample means of five observations each.
+  This is easily done using \texttt{replicate()}.
+<<cache = FALSE>>=
+source(here("functions", "rng_2k.R"))
+M <- 50000
+n <- 5
+means <- replicate(M, {
+  rrng_2k(n) |> mean()
+})
+@
+  
+  The mean of these 50,000 sample means corresponds closely to
+  the value of $\E(\overline G)$ we computed.
+  Similarly, the standard deviation of the 50,000 sample means corresponds
+  closely to the theoretical value of $\Std(\overline G)$.
+  Indeed, any difference between these numbers and their theoretical value is due solely to our
+  having simulated `only' 50,000 samples.
+  
+<<>>=
+mean(means)
+sqrt(mean((means - mean(means))^2)) # standard deviation of sample means
+@
+
+  
+  Let's take a look at the shape of the distribution of the sample means.
+  The left panel in Figure \ref{fig:clt_rng2k} shows, in black, the 
+  \term{empirical cumulative distribution function} of these sample means.
+  In essence, this is the distribution function you'd obtain if you treated
+  the 50,000 observations of $\overline G$ as their own finite distribution.
+  The blue line shows the distribution function of 
+  the $\mathcal{N}(2, \sqrt{2/5})$ distribution.
+  
+  The right panel in the same figure shows a \term{histogram} of the same 
+  50,000 observations of $\overline G$, which provides an estimate of the 
+  density.
+  The blue line shows the density function of the $\mathcal{N}(2, \sqrt{2/5})$ distribution.
+<<echo = TRUE, fig.cap = "The distribution of $\\overline G$ in 50,000 simulations for $n = 5$. The blue curves show the normal approximation.\\label{fig:clt_rng2k}", fig.width = 9, fig.height = 4, out.width=".8\\textwidth">>=
+par(mfrow = c(1, 2)) # plots side by side
+plot(ecdf(means), xlab = "Sample mean", ylab = "Cumulative frequency",
+     main = paste0("n = ", n))
+curve(pnorm(x, mean = 2, sd = sqrt(2/n)), 
+      add = TRUE, col = "steelblue1", lwd = 2)
+
+hist(means, xlab = "Sample mean", ylab = "Density", 
+     xlim = c(-0.5, max(means)), freq = FALSE, 
+     col = "grey", breaks = 30, main = paste0("n = ", n))
+curve(dnorm(x, mean = 2, sd = sqrt(2/n)), 
+      add = TRUE, col = "steelblue", lwd = 2)
+par(mfrow = c(1, 1)) # normal plotting from here on
+@
+
+  For $n = 5$, the \clt-based normal approximation is pretty poor.
+  Indeed, if we compute $\Prob(\overline G < 1)$ under the assumption 
+  that $\overline G \sim \mathcal{N}(2, \sqrt{2/5})$, we obtain
+  an estimate of about 5.7\%.
+<<>>=
+pnorm(1, mean = 2, sd = sqrt(2/n))
+@
+  But since the random number generator only generates values of 1 or larger,
+  the actual probability is $\Prob(\overline G < 1) = 0$.
+  Overestimates also occur, e.g., for $\Prob(2 < \overline G < 2.5)$.
+<<>>=
+pnorm(2.5, mean = 2, sd = sqrt(2/n)) - pnorm(2, mean = 2, sd = sqrt(2/n))
+@
+  A better estimate is obtained by querying the simulated means:
+<<>>=
+mean(means < 2.5 & means > 2)
+@
+  
+  What the \clt\ tells us, however, is that the normal approximation 
+  will become arbitrarily good if we increase $n$.
+  To see this, increase the sample size to $n = 10, 30, 150$,
+  redraw the plots, and run the computations above again.
+  As you'll observe, the approximation becomes ever better,
+  without ever being perfect.
+\parend
+
+\mypar{Example}
+  We can do the same computations and run a similar simulation for
+  the fortune wheel example.
+  Let us generate two independent observations from the fortune wheel,
+  $W_1, W_2$, and compute their mean $\overline W = (W_1 + W_2) / 2$.
+  Since $\E(W_1) = 180$, we have $\E(\overline W) = 180$ as well.
+  Further, since $\Var(W_1) = 10800$,
+  \[
+    \Std(\overline W) = \sqrt{\frac{10800}{2}} \approx 73.48.
+  \]
+  The simulation below ends up with similar values.
+<<cache = TRUE>>=
+n <- 2
+M <- 50000
+means <- replicate(M, {
+  runif(n, 0, 360) |> mean()
+})
+mean(means)
+sqrt(mean((means - mean(means))^2)) # standard deviation
+@
+  
+  Figure \ref{fig:clt_wheel} shows the empirical cumulative distribution function
+  and a histogram of these 50,000 sample means, with the normal approximation
+  in blue.
+  Compared to the previous example, the normal approximation already looks
+  much more useful even for $n = 2$.
+  
+<<echo = TRUE, fig.cap = "The distribution of $\\overline W$ in 50,000 simulations for $n = 2$.\\label{fig:clt_wheel}", fig.width = 9, fig.height = 4, out.width=".8\\textwidth">>=
+par(mfrow = c(1, 2))
+plot(ecdf(means), xlab = "Sample mean", ylab = "Cumulative frequency",
+     main = paste0("n = ", n))
+curve(pnorm(x, mean = 180, sd = sqrt(10800/n)),
+      add = TRUE, col = "steelblue1", lwd = 2)
+
+hist(means, xlab = "Sample mean", ylab = "Density", freq = FALSE,
+     col = "grey", breaks = 30, main = paste0("n = ", n),
+     xlim = c(-20, 380))
+curve(dnorm(x, mean = 180, sd = sqrt(10800/n)),
+      add = TRUE, col = "steelblue", lwd = 2)
+par(mfrow = c(1, 1))
+@
+
+  That said, it is still an imperfect approximation.
+  To appreciate this, let's estimate $\Prob(0 < \overline W < 50)$
+  using the normal approximation:
+<<>>=
+pnorm(50, mean = 180, sd = sqrt(10800/n)) - 
+  pnorm(0, mean = 180, sd = sqrt(10800/n))
+@
+  That is, about 3.1\%.
+  The simulation, however, shows that the actual probability is closer to
+  4\%.\footnote{The true actual probability in this particular example is $\int_0^50 x/180^2 \df x = 25/648$.}
+<<>>=
+mean(means < 50 & means > 0)
+@
+  Again increase the sample size---say, to $n = 3, 5, 10$.
+  You'll observe that the normal approximation is excellent even for
+  lower values of $n$.
+\parend
+
+Comparing these two examples, we find that the \clt-based normal approximation
+is more useful more quickly for a continuous, bounded, symmetric distribution
+such as the continuous uniform distribution than it is for
+the discrete, unbounded, skewed distribution generated by our random number generator.
+It's important to appreciate that there is no magic sample size
+where the \clt\ magically `kicks in'.
+The \clt\ offers an \emph{approximation}.
+Whether this approximation is sufficiently good, depends on what you consider
+sufficiently good, on the sample size, and on the shape of the distribution
+from which the observations stem.\footnote{The facts that
+$\E(\overline X) = \E(X_1)$ and $\Var(\overline X) = \Var(X_1) / n$
+do \emph{not} depend on $n$ or on the shape of the distribution from which
+the sample is drawn, though.}
+
+\mypar{*Activity}
+  Finally, let's turn to the \textit{Obenabe} example.
+  The random variable $V$ that represents the point value of cards
+  in the \textit{Obenabe} mode of play takes on
+  the values 10, 4 3, 2, 10, and 8, each with probability 1/9,
+  and the value 0 with probability 1/3.
+  The function \texttt{jass\_one\_run()} generates \texttt{n}
+  independent observations from this distribution and computes their mean $\overline V$.
+
+<<eval = FALSE>>=
+jass_one_run <- function(n) {
+  values <- c(11,    4,   3,   2,  10,   8,   0)
+  probs  <- c(1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/3)
+  sample(values, n, replace = TRUE, prob = probs) |> mean()
+}
+@
+
+  Again using \texttt{replicate()}, we can quickly generate 50,000 observations
+  of $\overline V$, for instance for $n = 2$:
+<<eval = FALSE>>=
+n <- 2
+M <- 50000
+means <- replicate(M, {
+  jass_one_run(n = n)
+})
+@
+ The empirical cumulative distribution function and a histogram can be drawn like so.
+<<eval = FALSE>>=
+par(mfrow = c(1, 2))
+plot(ecdf(means), xlab = "Sample mean", ylab = "Cumulative frequency",
+     main = paste0("n = ", n))
+curve(pnorm(x, mean = 4.22, sd = 4.13/sqrt(n)),
+      add = TRUE, col = "steelblue1", lwd = 2)
+
+hist(means, xlab = "Sample mean", ylab = "Density",
+     freq = FALSE,
+     col = "grey", breaks = 30, main = paste0("n = ", n),
+     xlim = c(0, 11))
+curve(dnorm(x, mean = 4.22, sd = 4.13/sqrt(n)),
+      add = TRUE, col = "steelblue1", lwd = 2)
+par(mfrow = c(1, 1))
+@
+
+  Run the code snippets above for increasing values of $n$
+  (e.g., $n = 2, 3, 5, 10, 25$) 
+  and observe the shape of the distribution of $\overline V$
+  compared to its normal approximation.
+\parend
+
+If you know the distribution from which the samples are drawn,
+generating thousands of samples and computing their means
+is the more reliable method for making claims about the 
+sampling distribution of the sample mean.
+The added value of the \clt\ is that we only need to know
+the expected value and the variance of the distribution
+from which the samples are drawn in order to make
+approximate statements about the sampling distribution of the
+sample mean.

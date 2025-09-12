@@ -1,0 +1,1613 @@
+\chapter{Working with datasets}\label{ch:datasets}
+It's often said that 80\% of data analysis is getting the data in a shape
+in which it can be analysed.
+The goal of this chapter is to furnish you with the 
+basic tools and skills to organise, transform, and query datasets in research contexts. 
+We'll work with the \texttt{tidyverse} suite throughout.
+
+\section{Organising datasets}
+Let's say we've run a study in which speakers of German read a couple
+of words in Swedish and were asked to guess what these words might mean.
+An excerpt from the raw data might look like this, with the words having
+been shown to the participants in the order in which they are listed:
+
+\begin{itemize}
+\item Participant 1034. Woman, 51 years.
+\begin{itemize}
+\item Word: \textit{söka}. Translation: \textit{Socken} (incorrect).
+\item Word: \textit{försiktig}. Translation: \textit{vorsichtig} (correct).
+\item Word: \textit{mjölk}. Translation: \textit{Milch} (correct).
+\item Word: \textit{behärska}. No translation provided.
+\item Word: \textit{fiende}. Translation: \textit{finden} (incorrect).
+\end{itemize}
+
+\item Participant 2384. Woman, 27 years.
+\begin{itemize}
+\item Word: \textit{fiende}. No translation provided.
+\item Word: \textit{behärska}. No translation provided.
+\item Word: \textit{försiktig}. Translation: \textit{vorsichtig} (correct).
+\item Word: \textit{mjölk}. Translation: \textit{Milch} (correct).
+\item Word: \textit{söka}. Translation: \textit{Socke} (incorrect).
+\end{itemize}
+
+\item Participant 8667. Woman, 27 years.
+\begin{itemize}
+\item Word: \textit{mjölk}. Translation: \textit{Milch} (correct).
+\item Word: \textit{behärska}. No translation provided.
+\item Word: \textit{fiende}. Translation: \textit{finden} (incorrect).
+\item Word: \textit{söka}. Translation: \textit{suchen} (correct).
+\item Word: \textit{försiktig}. Translation: \textit{vorsichtig} (correct).
+\end{itemize}
+
+\item Participant 5901. Man, 15 years.
+\begin{itemize}
+\item Word: \textit{behärska}. Translation: \textit{beherrschen} (correct).
+\item Word: \textit{mjölk}. Translation: \textit{milch} (sic.) (correct).
+\item Word: \textit{försiktig}. Translation: \textit{vorsichtig} (correct).
+\item Word: \textit{fiende}. Translation: \textit{feinde} (sic.) (correct; actually \textit{Feind}).
+\item Word: \textit{söka}. Translation: \textit{socken} (sic.) (incorrect).
+\end{itemize}
+\end{itemize}
+
+There are lots of ways in which we could represent these data in a spreadsheet.
+Let's look at a few rules of thumb.
+
+% 
+% \mypar[Kostenloses Spread\-sheetprogramm]{Bemerkung}
+% \href{http://libreoffice.org}{LibreOffice.org} ist eine
+% kostenlose Applikationssuite, die---wie Microsoft Office---aus
+% einem Textbearbeitungsprogramm (Write), einem Spread\-sheetprogramm
+% (Calc), einem Präsentationsprogramm (Impress) usw., besteht.
+% Selber finde ich LibreOffice Calc nützlicher als MS Excel,
+% weil man beim Speichern von Spread\-sheets gewisse Einstellungen
+% viel einfacher ändern kann. Darauf werden wir später zurückkommen. \parend
+
+\subsection{Wide vs.\ long formats}
+We'll concern ourselves strictly with \term{rectangular} datasets.
+These are datasets in which the information is laid out in rows and columns
+and in which all columns have the same length, and all rows have the same width.
+Examples of non-rectangular data formats are JSON and XML---see \url{https://json.org/example.html}.
+
+Broadly speaking, we can organise our data in a \term{wide} format or in a \term{long} format.
+In a wide format, all pieces of information related to a \term{unit of data collection}
+are organised in a single row. 
+For instance, we could think of each participant in the study as a unit of data collection, 
+in which case we could lay out the data as in Figure \ref{fig:wide_data_subject}. 
+Note that the spreadsheet contains a column for each word that indicates the position 
+in which it was presented to the participants.
+Alternatively, we could think of each word as a unit of data collection and organise
+the data like in Figure \ref{fig:wide_data_item}.
+
+\begin{figure}
+  \includegraphics[width = \textwidth]{figs/wide_data_subject.png}
+  \caption{A wide dataset with one row per participant.}
+  \label{fig:wide_data_subject}
+\end{figure}
+
+\begin{figure}
+  \includegraphics[width = \textwidth]{figs/wide_data_item.png}
+  \caption{A wide dataset with one row per word.}
+  \label{fig:wide_data_item}
+\end{figure}
+
+In a long format, all pieces of information pertaining to an \term{observational unit} 
+are organised in a single row. 
+It's difficult to precisely define what units of data collection and observational units are, 
+and it wouldn't be too useful to have a precise definition, anyway. 
+But in the present example, the observational units would be the individual responses, 
+i.e., the individual translations. 
+Figure \ref{fig:long_data} shows what the same data look like when organised in a long format.
+
+\begin{figure}
+  \includegraphics[width = \textwidth]{figs/long_data.png}
+  \caption{A long dataset with one row per word per participant. Long datasets tend to be easier to manage and to analyse than wide ones.} 
+  \label{fig:long_data}
+\end{figure}
+
+It's usually easier to work with data in a long-ish format compared to
+data in a wide-ish format. 
+Moreover, when you do need your data in a wide-ish format for a particular analysis, 
+converting a longer dataset to a wider one is typically easier than vice versa.
+We will, of course, illustrate how you can carry out such conversions.
+
+\mypar{Tip}
+  When in doubt, arrange your data in a long-ish format.
+\parend
+
+Make sure that all rows can be interpreted independently of one another.
+What we want to avoid is that we can't make sense of the data in some row
+because we need data from another row to do so, and this other row was
+deleted, or the order of the rows has changed, etc.
+For instance, in Figure \ref{fig:long_data}, we also have a column with the \texttt{Position}s,
+even though we could have derived this information from the ordering of the rows.
+But once a row gets deleted or once the order of the rows gets permuted,
+we'd lose this piece of information.
+So don't organise the data like in Figure \ref{fig:leere_zellen}.
+
+\begin{figure}
+  \includegraphics[width = \textwidth]{figs/long_data_nicht_so.png}
+  \caption{Not like this! In this dataset, several cells are left empty as their contents can be derived from other cells. But this will result in difficulties when analysing the data. Moreover, deleting some rows or changing their order would make it impossible to reconstruct the intended contents of these empty cells.}
+  \label{fig:leere_zellen}
+\end{figure}
+
+Furthermore, the dataset needs to be rectangular.
+Figure \ref{fig:berechnungen_im_Spreadsheet} shows what \emph{not} to do: 
+The additional rows reporting
+some averages don't fit in with the rest of the dataset 
+(``Prozent Männer:'' is not the ID of a \texttt{Versuchsperson}, 
+and ``30'' is not a \texttt{Geschlecht}).
+
+\begin{figure}
+\includegraphics[width = \textwidth]{figs/datensatz_schlecht.png}
+\caption{Not like this! This dataset is not rectangular.}
+\label{fig:berechnungen_im_Spreadsheet}
+\end{figure}
+
+\subsection{Naming variables}
+Make your life during the data analysis easier by using 
+short but descriptive labels for variables or values in the spreadsheet.
+By doing so, you avoid that you constantly need to look up in the project's codebook 
+what the labels mean, thereby reducing the likelihood that you'll make errors.
+Moreover, you save yourself some typing.
+
+A few examples:
+\begin{itemize}
+  \item When working with questionnaire data, don't simply label the columns with the
+        number of the question in the questionnaire (e.g., \texttt{Q3} or \texttt{Question17}).
+        Instead, use more descriptive labels such as \texttt{DegreeFather} or \texttt{DialectUse}.
+  \item If you have a column labelled \texttt{Sex} that is filled with 1s and 0s, 
+        you'll constantly have to look up if the 1s refer to men or to women. 
+        Instead, either fill the column with \texttt{m(an)} and \texttt{w(oman)} values, 
+        or rename the column \texttt{Man}, 
+        so that you know that the 1s refer to men.
+  \item Try to strike a balance between descriptive power and length. 
+        For instance, a variable named \texttt{HowOftenDoYouSpeakStandardGerman} 
+        will get on your nerves before long; \texttt{SpeakStandard} could be sufficient.
+\end{itemize}
+
+\mypar[Use a codebook]{Tip}
+  Having short and descriptive variable names is not an excuse for not maintaining  
+  a codebook that spells out precisely what each variable in the dataset refers to.
+  See \url{https://osf.io/d9gnh} for an example of a codebook.
+\parend
+ 
+\subsection{Labelling missing values}
+In Figure \ref{fig:long_data}, I left some of the translation cells empty.
+From this, I can deduce that the word was presented to the participant
+but that he or she did not translate the word.
+However, in other situations, it could be the case that some participants were inadvertently 
+never shown a particular word (e.g., due to a programming error)
+or that some of the participants' answers were irretrievably lost.
+We should enable ourselves to distinguish between these cases, 
+for instance by marking the latter cases using \texttt{NA} (\textit{not available}).
+Alternatively, we could explicitly label cases where the participant did
+not translate the word with \texttt{[no response]} or something similar.
+
+If you want to be able to tell apart different reasons for missing data
+(such as data loss, programming errors, participants' refusal to answer a certain
+question, participants' being absent from a data collection etc.),
+it's probably easiest to just write \texttt{NA} in the column and add another column
+with comments detailing the reasons for the missingness.
+
+Be aware that some data logging applications use $-99$ or $-9999$ to encode missingness.
+The problem with this is that, sometimes, 
+$-99$ or $-9999$ don't immediately stand out as conspicuous values.
+
+\subsection{Using several smaller datasets}
+The spreadsheet above contains several repeated pieces of information.
+For instance, for all five translations provided by participant 1034,
+we indicated that they were provided by a woman aged 51.
+We can eliminate this source of redundancy by managing a handful
+of smaller datasets rather than just a single large one.
+More specifically, we can manage a dataset that contains all information
+that depends \emph{just} on the participants, 
+see Figure \ref{fig:versuchspersonen}.
+Each participant has a unique ID (here: \texttt{Versuchsperson}),
+and the dataset contains contains a single row for each participant.
+If we need to correct an entry related to, say, some participant's age,
+we just need to change it here---once---rather than five times in
+the larger dataset.
+
+\begin{figure}
+  \centering
+  \includegraphics[width = 0.7\textwidth]{figs/versuchspersonen.png}
+  \caption{The first smaller dataset only contains information concerning the participants.}
+  \label{fig:versuchspersonen}
+\end{figure}
+
+By the same token, we can put all information that depends \emph{just}
+on the stimuli used in a separate dataset, see Figure \ref{fig:woerter}.
+Here, too, each stimulus has a unique ID (here: \texttt{Wort}).
+
+\begin{figure}
+  \centering
+  \includegraphics[width = 0.7\textwidth]{figs/woerter.png}
+  \caption{The second smaller dataset only contains information concerning the words.}
+  \label{fig:woerter}
+\end{figure}
+
+The third dataset then only contains information that depends
+on the \emph{combination} of a particular participant and a particular word.
+As shown in Figure \ref{fig:uebersetzungen}, each row in this dataset contains
+the IDs of both the participant and the stimulus that the response is related to.
+But any other information related to just the word or to just the participant
+is left out of this dataset.
+As we'll see shortly, we can easily add the information related to the participants
+or to the words to this dataset from the other two datasets.
+
+\begin{figure}
+  \centering
+  \includegraphics[width = 0.7\textwidth]{figs/uebersetzungen.png}
+  \caption{The third dataset only contains the translations.}
+  \label{fig:uebersetzungen}
+\end{figure}
+
+\subsection{Miscellaneous tips}
+\begin{itemize}
+  \item Mind capitalisation. 
+        For some programs and computer languages (e.g., SQL), \texttt{Frau} and \texttt{frau}
+        are the same value; for others (including R), they are not.
+  \item Mind trailing spaces. \texttt{Mann␣} (with a trailing space) and \texttt{Mann} 
+        (without a trailing space) are different values to a computer.
+  \item Special symbols, including the Umlaut, sometimes lead to problems, especially when
+        collaborating with people whose localisation settings differ from yours.
+  \item Format dates in the YYYY/MM/DD format. 
+        This way, if you sort the data alphabetically, they're already in chronological order.
+  \item Don't use colour-coding in your spreadsheet. 
+        Or if you do use it, be aware that you'll lose this information 
+        once you import your data into your statistics program.
+  \item Work as little as possible in the spreadsheet.
+        After you've entered your data into a spreadsheet, all further steps in 
+        your analysis should be carried out in R (or Python, or Julia, or what-have-you).
+        Don't calculate, sort, copy, paste, move, reshape, draw graphs etc.\ in 
+        Excel or whatever spreadsheet program you prefer. 
+        Treat your finished spreadsheet as the \emph{immutable} source of data from which
+        your results will be obtained, so that when in doubt, it's clear which 
+        file you should go back to.
+
+        When using R (or Python, or Julia, or whatever), use (a) script(s) to read in
+        the original dataset and convert the data in it to a format more amenable to
+        analysis, but whatever you do, don't overwrite the original file.
+
+  \item Use data validation.
+        When entering data in a spreadsheet program, you can use the data validation functions
+        to minimise the chances that you enter faulty data. For instance, if you know
+        that the possible responses to a certain question are either integers from
+        0 to 5 or \texttt{NA},
+        make a data validation rule that prevents you from entering impossible data.
+
+        Also see the blog post 
+        \href{https://janhove.github.io/posts/2018-07-06-data-entry-failsafes/}{\textit{A data entry form with failsafes}} 
+        (6 July 2018).
+\end{itemize}
+
+\section{Reading in datasets}
+We'll work with the \texttt{here} and \texttt{tidyverse} packages 
+you've installed in the previous chapter.
+Even if you've already installed these, you still need to \emph{load} 
+these packages in every R session in which you use them. 
+To do so, include the following lines in your R script and execute them:
+
+<<warning = TRUE, message = TRUE>>=
+library(here)
+library(tidyverse)
+@
+
+If you run these commands, they will output a few messages.
+The output of the \texttt{library(here)} command tells you the path relative to which
+the \texttt{here()} function in the \texttt{here} package will look for files etc.
+The messages generated by the \texttt{library(tidyverse)} command tell you 
+which of the packages that make up the tidyverse suite are loaded by default.
+Some of the functions in these packages have the same name as functions
+that are part of packages that are loaded automatically whenever you start up
+R. 
+What this means is that, if you want to use, say, the \texttt{filter()} function
+from the \texttt{stats} package, 
+you need to use the notation \texttt{stats::filter()} 
+instead of just \texttt{filter()}.
+
+Incidentally, you don't need to install these packages every time you need them,
+but you do need to load them every time you need them in a new session.
+I recommend including all of the packages you need in a script at the top
+of your script.
+This way, everyone reading your script knows at the outset which packages they'll
+have to install to reproduce your analysis.
+Remove any \texttt{library()} commands for packages you ended up  not using in the script.
+
+With all that out of the way, let's get started.
+We'll focus on reading in two kinds of spreadsheets:
+Excel spreadsheets in the XLS(X) format, and CSV files.
+
+\subsection{Excel files}
+In order to read in XLS(X) files, we need the \texttt{readxl} package.
+This package is part of the \texttt{tidyverse} suite, but it does not get loaded
+automatically as you load the \texttt{tidyverse} suite. So we load it separately:
+
+<<>>=
+library(readxl)
+@
+
+Assuming the file \texttt{uebersetzungen.xlsx} is located in the \texttt{data} 
+subdirectory of your R project directory, we can read it into R as follows.
+
+<<>>=
+translations <- read_excel(here("data", "uebersetzungen.xlsx"))
+@
+
+The dataset is now loaded as a so-called \emph{tibble} named \texttt{translations}.
+We can display it by simply typing its name at the prompt:
+<<>>=
+translations
+@
+
+\mypar[Type, don't copy-paste---at home]{Tip}
+  You're going to take away much more from this course
+  if you copy the code snippets by \emph{typing} them rather
+  than by copy-pasting them.
+  Do this at home and not during the lecture as you'll inevitably
+  make some typos, causing you to lose track of the lecture.
+\parend
+
+\mypar[Assignment operators]{Remark}
+  The symbol combination \texttt{<-} is the \textit{assignment operator}.
+  It creates a new object in the working memory or overwrites an existing
+  one with the same name.
+  This object is referred to by the name to the left of the assignment
+  operator.
+  
+  You'll often see that the equality sign (\texttt{=}) is used as
+  the assignment operator.
+  But it is also used to assign values to function parameters.
+  I've tried to adhere to the \textit{one form, one function}
+  principle throughout and only use \texttt{<-} as the assignment operator.
+\parend
+
+\mypar[Data frames and tibbles]{Remark}
+  Rectangular data sets are referred to as \textit{data frames} in R.
+  The \texttt{tidyverse} slightly changes their functionality, 
+  mostly in order to allow for prettier displaying, and refers to them as \textit{tibbles}.
+\parend
+
+\mypar{Remark}
+  Empty cells (for instance, the \texttt{Übersetzung} value in the fourth row) 
+  are automatically interpreted as missing data (\texttt{<NA>}).
+  The documentation of the \texttt{read\_excel()} function, 
+  which you can access by typing \texttt{?read\_excel} at the R prompt, 
+  suggests that we can override this behaviour,
+  but \href{https://github.com/tidyverse/readxl/issues/572}{we can't}.
+\parend
+
+If, instead of printing the entire tibble at the prompt, 
+we just want to display the first few rows, we can use \texttt{slide\_head()}:
+<<>>=
+slice_head(translations, n = 4)
+@
+
+\texttt{slice\_tail()} works similarly. 
+If you want to display a random selection of rows, you can use \texttt{slice\_sample()}:
+<<>>=
+slice_sample(translations, n = 5)
+@
+
+Again, for details, you can check the documentation of these functions that is available
+at \texttt{?slice\_head}.
+
+\mypar{Exercise}
+  The file \texttt{VanDenBroek2018.xlsx} contains the data from
+  three experiments reported by \citet{VanDenBroek2018}.
+  Using the \texttt{read\_xlsx()} function, read in the data from the second experiment.
+
+  Hint: Inspect the Excel file and then consult 
+  the help page of \texttt{read\_xlsx()} by means of \texttt{?read\_xlsx}.
+\parend
+
+\subsection{CSV files}
+A popular format for storing spreadsheets is the CSV format.
+CSV is short for \textit{comma-separated values}:
+Cells on the same row are separated by commas, see Figure \ref{fig:csv}.
+Sometimes, text strings are additionally surrounded by quotation marks.
+
+\begin{figure}
+  \centering
+  \includegraphics[width = 0.6\textwidth]{figs/csv.png}
+  \caption{A spreadsheet stored as comma-separated values.}
+  \label{fig:csv}
+\end{figure}
+
+To read in CSV files, we can use the \texttt{read\_csv()} function, 
+which is part of the \texttt{readr} package, 
+which in turn is automatically loaded when the \texttt{tidyverse} suit is loaded:
+
+<<>>=
+translations <- read_csv(here("data", "uebersetzungen.csv"))
+translations
+@
+
+Running this command produces a number of messages,
+which I haven't included in these lecture notes.
+These messages show that the \texttt{read\_csv()} function correctly recognised that
+the columns \texttt{Wort} and \texttt{Übersetzung} contain text (`chr', character) strings,
+whereas \texttt{Versuchsperson}, \texttt{Position} and \texttt{Richtig} contain numbers
+(`dbl' for `double', a number format).
+
+\mypar{Remark}
+With \texttt{read\_csv()}, we can specify that only cells containing \texttt{NA} 
+are marked as missing data:
+
+<<>>=
+translations2 <- read_csv(here("data", "uebersetzungen.csv"), na = "NA")
+translations2
+@
+
+Note that the \texttt{Übersetzung} value in row 4 is just empty, not \texttt{NA}.
+\parend
+
+Let's also read in the datasets containing the information pertaining
+to the participants and items:
+
+<<>>=
+participants <- read_csv(here("data", "versuchspersonen.csv"))
+items <- read_csv(here("data", "woerter.csv"))
+@
+
+\mypar[Different CSV formats]{Remark}
+  If you save an Excel spreadsheet as a CSV file on a French- or German-language
+  computer system, the cells will be separated using semicolons rather than using
+  commas. The reason is that commas are used as decimal separators in French
+  and German. To read in `CSV' files that use semicolons as cell separators,
+  you can use the \texttt{read\_csv2()} function.
+  
+  Incidentally, if you use 
+  \href{https://www.libreoffice.org/}{LibreOffice.org Calc} instead of Excel, 
+  you can choose which cell separator gets used 
+  if you export a spreadsheet as a CSV file.
+\parend
+
+\mypar[\texttt{read\_csv()} vs.\ \texttt{read.csv()}]{Remark}
+  More seasoned R users are probably already familiar with the \texttt{read.csv()} function
+  (with a dot rather than an underscore). 
+  The \texttt{read\_csv()} function is merely the
+  tidyverse counterpart to this function.
+  The main difference between them is that \texttt{read\_csv()} creates
+  tibbles, whereas \texttt{read.csv()} creates dataframes.
+\parend
+
+
+\subsection{Other formats}
+Some people prefer to use tabs or spaces to separate cells rather than commas or semicolons.
+Consult the help page for the \texttt{read\_tsv()} and \texttt{read\_delim()} functions 
+to see how you can read in data using other separators. 
+Particularly the \texttt{delim} and \texttt{quote} arguments are relevant.
+
+For reading in data from Google Sheets, see \href{https://googlesheets4.tidyverse.org/}{\texttt{googlesheets4}}.
+
+For interacting with Google Drive, see \href{https://googledrive.tidyverse.org/}{\texttt{googledrive}}.
+
+For reading in SPSS, Stata and SAS files, see \href{https://haven.tidyverse.org}{\texttt{haven}}.
+
+\section{Joining datasets}
+Having read in our three datasets as 
+\texttt{translations}, \texttt{participants}, and \texttt{items},
+we want to merge these datasets into one large dataset. 
+The most useful function for this is \texttt{left\_join()}, 
+which takes the dataset passed as its \texttt{x} argument
+and adds to this the corresponding rows from the \texttt{y} dataset:
+<<>>=
+all_data <- left_join(x = translations, y = participants)
+@
+
+Note that the \texttt{left\_join()} function recognises that the variable shared
+between both datasets is called \texttt{Versuchsperson}. 
+Hence, the information related to participant 1034 
+contained in \texttt{participants} is added to each row in 
+\texttt{translations} where the \texttt{Versuchsperson} value is 1034,
+and similarly for the other participants:
+<<>>=
+all_data
+@
+
+If you don't want the \texttt{left\_join()} function to figure out 
+what the shared variable is, you can specify it explicitly:
+<<eval = FALSE>>=
+all_data <- left_join(x = translations, y = participants, 
+                      by = "Versuchsperson")
+@
+
+If the shared variable has different names in the different datasets, 
+you can use something like
+<<eval = FALSE>>=
+new <- left_join(x = left_dataset, y = right_dataset, 
+                 by = join_by(var_left == var_right))
+@
+See \texttt{?join\_by} for more information.
+
+If there are values in the shared variable that occur in the \texttt{x} dataset
+that don't occur in the \texttt{y} dataset, 
+the values in the added columns will read \texttt{NA} for these rows.
+
+Further join functions are the following, see \texttt{?join} for details:
+\begin{itemize}
+  \item \texttt{right\_join(x, y)}: Keep all entries in \texttt{y}. 
+        Add corresponding entries in \texttt{x} to it.
+        
+  \item \texttt{full\_join(x, y)}: Keep all entries in both \texttt{x} and \texttt{y}. 
+        Add \texttt{NA}s if there is no corresponding entry in the other dataset.
+        
+  \item \texttt{inner\_join(x, y)}: Only keep entries in \texttt{x} for which
+         there is a corresponding entry in \texttt{y}. Add these corresponding entries.
+
+  \item \texttt{semi\_join(x, y)}:  Only keep entries in \texttt{x} for which 
+         there is a corresponding entry in \texttt{y}. Don't add these corresponding entries.
+
+  \item \texttt{anti\_join(x, y)}: Only keep entries in \texttt{x} for which 
+         there are \emph{no} corresponding entries in \texttt{y}.
+\end{itemize}
+
+In the current example, \texttt{left\_join()}, \texttt{full\_join()} and 
+\texttt{inner\_join()} would all yield the same result.
+But this isn't always the case.
+
+Let's also add the information pertaining to the words:
+<<>>=
+all_data <- left_join(all_data, items)
+@
+
+\mypar[Join functions]{Exercise}
+\begin{enumerate}
+  \item Use the following code to generate two tibbles called \texttt{left} and \texttt{right},
+        and to inspect them:
+<<eval = FALSE>>=
+left <- tibble(A = c("a", "b", "c", NA),
+               B = c(1, 2, NA, 4))
+right <- tibble(B = c(1, 3, 4, 4),
+                C = c(10, NA, 12, 7))
+left
+right
+@
+
+  \item \emph{Without running the following commands}, 
+        predict what their output will look like:
+<<eval = FALSE>>=
+left_join(x = left, y = right)
+right_join(x = left, y = right)
+full_join(x = left, y = right)
+inner_join(x = left, y = right)
+semi_join(x = left, y = right)
+semi_join(x = right, y = left) # !
+anti_join(x = left, y = right)
+anti_join(x = right, y = left) # !
+@
+        
+  \item Now run the commands above to verify your predictions.
+
+  \item Create two new tibbles using the code below:
+<<eval = FALSE>>=
+left <- tibble(A = c("a", "b"),
+               B = c(1, NA))
+right <- tibble(B = c(1, NA, NA),
+                C = c(0, 1, 2))
+left
+right
+@
+
+  \item Consult the help page for \texttt{left\_join()} and look up the \texttt{na\_matches}
+        parameter under `Arguments'. 
+        Predict what the output of the following two commands will look like,
+        and only then check your answer.
+<<eval = FALSE>>=
+left_join(left, right)
+left_join(left, right, na_matches = "never")
+@
+\parend
+\end{enumerate}
+
+\section{Queries}
+\subsection{Selecting by row number}
+We can select the third row of a dataset like so:
+<<>>=
+slice(all_data, 3)
+@
+
+Alternatively, we can write this command as follows.
+The symbol combination \texttt{|>} allows us to take an object 
+(here: \texttt{all\_data})
+and pass it to a function as its first argument.
+As we'll later see, we can use \texttt{|>} to string together a host of function calls
+without creating illegible code.
+<<>>=
+all_data |> 
+  slice(3)
+@
+Use \textsc{ctrl + shift + m} (Windows, Linux) or \textsc{cmd + shift + m} (macOS)
+to insert \texttt{|>} at the current text cursor position.
+
+We can also select multiple rows:
+<<>>=
+# Rows 5 and 7
+all_data |> 
+  slice(c(5, 7))
+# Rows 5 to (and including) 7
+all_data |> 
+  slice(5:7)
+@
+
+The results of such actions can be stored as separate objects, for instance, like so:
+<<>>=
+rows7_12 <- all_data |> 
+  slice(7:12)
+rows7_12
+@
+
+We can export this new object as a CSV file like so:
+<<>>=
+write_csv(rows7_12, here("data", "rows7_12.csv"))
+@
+
+\subsection{Selecting rows by values}
+Selecting rows by their number isn't too useful.
+But selecting rows satisfying some set of conditions is very useful.
+Here are a few examples:
+<<>>=
+# All data corresponding to the word 'fiende'
+all_data |> 
+  filter(Wort == "fiende")
+# Note: use '!=' for 'not equal to'.
+
+# All data corresponding to participants older than 30
+all_data |> 
+  filter(Alter > 30)
+# Note: use '>=' for 'at least as old as', 
+#           '<=' for 'no older than', 
+#        and '<' for 'younger than'.
+@
+
+We can use \texttt{is.na()} to check for missing values. 
+Note the use of \texttt{!} to negate a condition.
+<<>>=
+all_data |> 
+  filter(is.na(Übersetzung))
+all_data |> 
+  filter(!is.na(Übersetzung))
+@
+
+We can string together multiple \texttt{filter()} calls:
+<<>>=
+# incorrect translations to first word
+all_data |> 
+  filter(Position == 1) |> 
+  filter(Richtig == 0)
+@
+
+An alternative way of writing this is as follows:
+<<>>=
+all_data |> 
+  filter(Position == 1 & Richtig == 0)
+@
+
+`or' conditions can be created using \texttt{|}:
+<<>>=
+# translations to first word or incorrect translations
+all_data |> 
+  filter(Position == 1 | Richtig == 0)
+@
+
+Note that in logic, `or' is always inclusive.
+Exclusive `or' (`xor') can be obtained as follows:
+<<>>=
+# translations to first word or incorrect translations, but not both
+all_data |> 
+  filter(Position == 1 | Richtig == 0) |> 
+  filter(!(Position == 1 & Richtig == 0))
+@
+
+Alternatively,
+<<>>=
+all_data |> 
+  filter(xor(Position == 1, Richtig == 0)) 
+@
+
+\mypar[Filtering]{Exercise}
+\begin{enumerate}
+  \item Run the following commands:
+<<>>=
+d1 <- all_data |> 
+  filter(Übersetzung == "vorsichtig")
+d2 <- all_data |> 
+  filter(Übersetzung != "vorsichtig")
+@
+
+  \item Explain what both commands achieve.
+
+  \item How many rows are there in \texttt{d1}? 
+        How many in \texttt{d2}? 
+        How many in \texttt{all\_data}?
+        Explain.
+
+  \item Create a tibble \texttt{d3} that contains only those rows in \texttt{all\_data} 
+        where the participants did not translate the word as \textit{vorsichtig}.\parend
+\end{enumerate}
+
+\mypar[String detection]{Remark}
+It is also possible to perform more complex string-based queries.
+For instance, the \texttt{stringr} package, which is loaded automatically as part
+of the tidyverse, contains the function \texttt{str\_detect()}. 
+As its name suggests, this function can be used to detect if a string contains a 
+particular combination of symbols:
+<<>>=
+# all rows with an Übersetzung containing "ch"
+all_data |> 
+  filter(str_detect(Übersetzung, "ch"))
+@
+
+Related functions are \texttt{str\_starts()} and \texttt{str\_ends()}
+for checking if a string starts or ends with a particular combination of
+symbols, as well as \texttt{str\_sub()}for extracting substrings based on their position
+in the string. 
+As the examples below illustrate, these queries are case-sensitive:
+
+<<>>=
+# Übersetzung starts with an "s" (lowercase!)
+all_data |> 
+  filter(str_starts(Übersetzung, "s"))
+# Übersetzung starts with an "S" (uppercase!)
+all_data |> 
+  filter(str_starts(Übersetzung, "S"))
+# Übersetzung starts with an "s" or an "S"
+all_data |> 
+  filter(str_starts(Übersetzung, "[sS]"))
+# Übersetzung ends with "en"
+all_data |> 
+  filter(str_ends(Übersetzung, "en"))
+# The third symbol in Übersetzung is "c"
+all_data |> 
+  filter(str_sub(Übersetzung, start = 3, end = 3) == "c")
+@
+
+
+More complicated queries are possible through the use of so-called
+regular expressions, which we'll touch on later. 
+For more information about the \texttt{str\_*()} functions, see the 
+\href{https://stringr.tidyverse.org/}{\texttt{stringr} documentation}.
+
+\subsection{Selecting columns}
+Sometimes, a dataset is too cumbersome to handle because it contains a lot
+of irrelevant columns. 
+Using \texttt{select()}, we can select those columns that are of interest.
+For instance,
+<<>>=
+all_data |> 
+  select(Wort, RichtigeÜbersetzung, Übersetzung) |> 
+  slice_head(n = 5)
+@
+
+There are a couple of auxiliary functions that make it easier
+to select columns. 
+These are especially useful when working with large datasets.
+Examples are \texttt{contains()} and \texttt{starts\_with()}:
+<<>>=
+all_data |> 
+  select(contains("Übersetzung"))
+
+all_data |> 
+  select(starts_with("Richt"))
+@
+
+See the \href{https://tidyselect.r-lib.org/reference/language.html}{\texttt{tidyselect} documentation} for further functions.
+
+\subsection{Further examples}
+We can string together different types of commands
+using the pipe (\texttt{|>}):
+<<>>=
+# All translations for 'fiende'
+all_data |>
+  filter(Wort == "fiende") |>
+  select(Übersetzung)
+
+# All *distinct* translations for 'behärska':
+all_data |>
+  filter(Wort == "behärska") |>
+  select(Übersetzung) |>
+  distinct()
+@
+
+Without the pipe, 
+these commands become difficult to read:
+<<>>=
+distinct(select(filter(all_data, Wort == "behärska"), Übersetzung))
+@
+
+\section{Pivoting}
+In the course of an analysis, it is often necessary to convert a
+long-ish dataset to a wider one, and vice versa. This process is known
+as \term{pivoting}. 
+To illustrate pivoting, we'll make use of a more realistic---and 
+more complicated---dataset derived from a longitudinal project on the
+development of reading and writing skills in Portuguese--French and
+Portuguese--German bilingual children \citep{Lambelet_HELASCOT_writing,Pestana_HELASCOT_reading}.
+We read in the dataset \texttt{helascot\_skills.csv} as \texttt{skills}:
+<<>>=
+skills <- read_csv(here("data", "helascot_skills.csv"))
+skills
+@
+
+For each participant (\texttt{Subject}) at each \texttt{Time} (T1, T2, T3) 
+and for each \texttt{LanguageTested} (Portuguese, French, German),
+we have up to three scores (\texttt{Reading}, \texttt{Argumentation}, and \texttt{Narration}), 
+arranged next to each other. 
+But let's say we wanted to compute, for each participant,
+their progress on each task in each language from T1 to T2 and from T2 to T3.
+The way the data are laid out at present, this would at best be pretty difficult to do.
+But it would be easy if only the data were arranged differently, namely with
+all three measurements per participant and task next to each other.
+We can convert this dataset to the desired format in two steps.
+
+First, we make the dataset longer by stacking the different scores underneath each other
+rather than next to each other. 
+To this end, we use the function \texttt{pivot\_longer()} and specify 
+that we want to stack the values in the \texttt{Reading}, \texttt{Argumentation}, and \texttt{Narration} columns under each other, 
+that we want to call the resulting column \texttt{Score}, 
+and that we want to put the column names in a new column called \texttt{Skill}:
+<<>>=
+skills_longer <- skills |> 
+  pivot_longer(cols = c("Reading", "Argumentation", "Narration"),
+               names_to = "Skill", values_to = "Score")
+skills_longer
+@
+
+Then, we make this tibble wider by putting the three measurements
+per skill and language next to each other using \texttt{pivot\_wider()}.
+We also prefix the \texttt{Time} values with a \texttt{T}.
+<<>>=
+skills_wider_time <- skills_longer |> 
+  pivot_wider(names_from = Time, values_from = Score,
+              names_prefix = "T")
+skills_wider_time
+@
+
+
+Using \texttt{mutate()}, 
+we can now easily compute the differences between \texttt{T1} and \texttt{T2} 
+and between \texttt{T2} and \texttt{T3}:
+<<>>=
+skills_wider_time |> 
+  mutate(ProgressT1_T2 = T2 - T1,
+         ProgressT2_T3 = T3 - T2) |> 
+  select(Subject, LanguageTested, Skill, ProgressT1_T2, ProgressT2_T3)
+@
+
+\mypar[First longer, then wider]{Tip}
+  The two-step approach shown above is one that I've found generally useful.
+  First convert the tibble to a format that is longer than needed,
+  then pivot it to the wider format desired.
+\parend
+
+Now imagine that we wanted to compute, for each participant in each skill at each data collection,
+the difference between the Portuguese score and the German/French score. 
+The first step is the same, resulting in \texttt{skills\_longer}. 
+The second step is now similar, but we put the different languages next to each other:
+<<>>=
+skills_wider_language <- skills_longer |> 
+  pivot_wider(names_from = LanguageTested, values_from = Score)
+skills_wider_language
+@
+
+Incidentally, not all values for \texttt{German} are \texttt{NA}. 
+It's just that the first couple of children were tested in French and Portuguese, not in German.
+We can check this like so:
+<<>>=
+skills_wider_language |> 
+  filter(!is.na(German)) |> 
+  slice_sample(n = 10)
+@
+
+If we needed to, we could make this dataset wider still:
+<<>>=
+skills_wider_time_language <- skills_longer |> 
+  pivot_wider(names_from = c(LanguageTested, Time), # combo of Language, Time
+              values_from = Score)
+skills_wider_time_language
+@
+
+We could reconvert this tibble to a long one using the code snippet below.
+The code becomes a bit more complex:
+\begin{itemize}
+  \item The notation \texttt{French\_1:German\_3} selects all columns between 
+        \texttt{French\_1} and \texttt{German\_3} (including). 
+        Alternatively, we could have used \texttt{starts\_with(c("French", "Portuguese", "German"))}
+        to select the relevant columns.
+  \item A so-called \href{https://regexr.com}{\term{regular expression}} (regex) 
+        is used to split up these column names into a \texttt{Language} bit and into a \texttt{Time} bit. 
+        The split happens at the first underscore (\texttt{\_}) encountered.
+\end{itemize}
+<<>>=
+skills_wider_time_language |> 
+  pivot_longer(cols = French_1:German_3,
+               names_to = c("Language", "Time"),
+               names_pattern = "(.*)_(.*)",
+               values_to = "Score")
+@
+
+For the present example, we don't need this code snippet since we already have
+the tibble \texttt{skills\_longer}. 
+But I wanted to illustrate that such conversions are possible.
+If you ever need to convert a similar dataset to a longer format, 
+you now know that you can look up the details on the help page of \texttt{pivot\_longer()}
+(\texttt{?pivot\_longer}) and take it from there.
+
+\mypar[About regex]{Tip}
+With regular expressions, 
+it's less important to \emph{know} them than to know \emph{about} them. 
+Any time a string is comprised of several pieces of information in a more
+or less predictable way, 
+regular expressions can be used to extract these pieces.
+That said, compiling regular expressions that actually do the job is pretty difficult.
+But once you're aware that they exist and can be used to such ends,
+you can enlist the help of AI tools to construct them.
+\parend
+
+Incidentally, the regex used above (\texttt{(.*)\_(.*)}) matches any two groups of characters
+(\texttt{(.*)}) preceding and following an underscore (\texttt{\_}).
+
+\section{Summaries}
+Using the \texttt{summarise()} function, we can easily summarise large tibbles.
+For instance, we can compute the average (mean) narration and argumentation
+scores in the \texttt{skills} tibble like so:
+<<>>=
+skills |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE))
+@
+
+We set the \texttt{na.rm} parameter in the \texttt{mean()} call to \texttt{TRUE} 
+since there are several missing observations in both the \texttt{Narration} and \texttt{Argumentation} variable.
+If we didn't set \texttt{na.rm} to \texttt{TRUE}, the result of both computations would be \texttt{NA}.
+By setting \texttt{na.rm} to \texttt{TRUE}, missing observations are ignored.
+
+\texttt{summarise()} is often used in conjuction with \texttt{group\_by()}, 
+which splits up a tibble into subgroups. 
+This way, we can straightforwardly compute summaries for different subgroups. 
+For instance, if we wanted to compute the mean narration and argumentation scores 
+for each time of data collection and each language tested,
+we could use the following code snippet:
+<<>>=
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE),
+            .groups = "drop")
+@
+
+By setting \texttt{.groups = "drop"}, 
+we make sure that the grouping applied to \texttt{skills} 
+doesn't apply to the summary tibble any more. 
+For instance, compare the outcomes of these commands:
+<<>>=
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE),
+            .groups = "drop") |> 
+  summarise(grand_mean_narr = mean(mean_narr))
+
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE)) |> 
+  summarise(grand_mean_narr = mean(mean_narr))
+@
+
+We can treat these summary tibbles like ordinary tibbles and apply all of the other commands
+to them:
+<<>>=
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            .groups = "drop") |> 
+  pivot_wider(names_from = "Time", names_prefix = "T", 
+              values_from = "mean_narr")
+@
+
+We'll encounter several other functions that can meaningfully be used 
+to summarise data in the chapters to come.
+
+\mypar[Computing proportions and counts]{Remark}
+The \texttt{mean()} function can also be used to compute proportions.
+Consider the following example.
+The \texttt{is.na()} function checks if a value is \texttt{NA} 
+(in which case it returns \texttt{TRUE}) or not (\texttt{FALSE}). 
+If we compute the \texttt{mean()} of a bunch of \texttt{TRUE/FALSE} values, 
+we obtain the proportion of values that are \texttt{TRUE}. 
+Similarly, the \texttt{sum()} of a bunch of \texttt{TRUE/FALSE} values
+is the number of \texttt{TRUE} values. 
+Hence, we can quickly obtain the proportion, and number, of the missing \texttt{Narration} scores for each 
+combination of \texttt{Time} and \texttt{LanguageTested}:
+<<>>=
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(
+    prop_narr_NA = mean(is.na(Narration)),
+    nr_narr_NA = sum(is.na(Narration)),
+    n = n(),
+    .groups = "drop"
+  )
+@
+\parend
+
+\section{String manipulation}\label{sec:strings}
+It often happens that a single cell in a dataset contains 
+different pieces of information. So, too, it is the case 
+in our current example. 
+The first participant in the dataset is referred to as \texttt{A\_PLF\_1}:
+\begin{itemize}
+  \item The \texttt{A} in this ID refers to their class.
+  \item The \texttt{PLF} tells us that this participant resided in French-speaking
+        Switzerland (\texttt{F}), had a Portuguese background (\texttt{P}) and took
+        Portuguese heritage and language courses (\texttt{L}). 
+        
+        Other abbreviations in the dataset are \texttt{CD}, \texttt{CF}, and \texttt{CP} 
+        for comparison groups in German-speaking Switzerland, 
+        French-speaking Switzerland, and Portugal, respectively,
+        \texttt{PLD} for participants residing in German-speaking Switzerland with a 
+        Portuguese background that attended a Portuguese course,
+        as well as \texttt{PND} and \texttt{PNF} for participants in German- and French-speaking
+        Switzerland, respectively, with a Portuguese background that did not
+        take Portuguese classes.
+
+  \item The \texttt{1} uniquely identifies this participant within their class.
+\end{itemize}
+
+It could make sense to split up the information contained in this one
+cell into multiple cells. 
+Thankfully, the strings in \texttt{Subject} are structured 
+logically and consistently: the different pieces of information
+are separated using underscores. 
+We can hence split these strings at the underscores and 
+retrieve the first and second pieces like so, 
+obviating the need for more complicated regular expressions:
+<<>>=
+skills_wider_language <- skills_wider_language |> 
+  mutate(
+    Class = str_split_i(Subject, "_", 1),
+    Group = str_split_i(Subject, "_", 2)
+  )
+# check:
+skills_wider_language |> 
+  select(Subject, Class, Group) |> 
+  sample_n(10)
+@
+
+Refer to the \href{https://stringr.tidyverse.org/}{\texttt{stringr} documentation} 
+for further guidance.
+
+We can now further break down the information contained in the new \texttt{Group} column,
+for instance as follows:
+<<>>=
+skills_wider_language <- skills_wider_language |> 
+  mutate(language_group = case_when(
+    Group == "CP" ~ "Portuguese control",
+    Group == "CF" ~ "French control",
+    Group == "CD" ~ "German control",
+    Group %in% c("PLF", "PNF") ~ "French-Portuguese",
+    Group %in% c("PLD", "PND") ~ "German-Portuguese",
+    .default =  "other"
+  )) |> 
+  mutate(heritage_course = case_when(
+    Group %in% c("PLF", "PLD") ~ 1,
+    .default =  0
+  )) |> 
+  mutate(has_German = case_when(
+    Group %in% c("CD", "PLD", "PND") ~ 1,
+    .default =  0
+  )) |> 
+  mutate(has_French = case_when(
+    Group %in% c("CF", "PLF", "PNF") ~ 1,
+    .default =  0
+  )) |> 
+  mutate(has_Portuguese = case_when(
+    Group %in% c("CF", "CD") ~ 0,
+    .default =  1
+  ))
+
+# check:
+skills_wider_language |> 
+  select(Subject, language_group, heritage_course, 
+         has_German, has_French, has_Portuguese) |> 
+  sample_n(10)
+@
+
+\section{A full-fledged example}
+We had the children in the French/German/Portuguese project write
+short narrative and argumentative texts in each of their languages
+at three points in time. 
+The quality of these texts was scored
+using a grid \citep{Lambelet_HELASCOT_writing}; 
+it is these scores that are listed in the \texttt{skills} tibble
+we worked with above.
+In addition, 3,060 of these texts were rated for their lexical richness
+by between two and eighteen naïve (i.e., non-instructed) raters each
+using a 1-to-9 scale \citep{Vanhove2019}.
+The individual ratings are available in the file \texttt{helascot\_ratings.csv}.
+Furthermore, we computed a bunch of lexical metrics for each text,
+such as the number of tokens\footnote{The number of tokens in a text is the total number of words it contains, counting repetitions. The number of types in a text is the number of distinct words, i.e., not counting repetitions.}, the mean corpus frequency of the words
+occurring in the text, etc.
+These metrics are available in the file \texttt{helascot\_metrics.csv};
+see \citet{Vanhove_lexrich_TR} for details.
+
+We'll use these datasets to answer three questions:
+\begin{itemize}
+\item What's the relation between the average lexical richness ratings 
+      per text and the text's Guiraud index? 
+      (The Guiraud index is the ratio of the number of types in a 
+      text and the square root of the number of tokens in that text.)
+\item What's the relation between the average lexical richness ratings per text 
+      and the mean corpus frequency of the words occuring in the texts?
+\item What's the relation between the grid-based ratings and the lexical richness ratings?
+\end{itemize}
+
+In doing so, we'll need to make use of some of the tools introduced earlier.
+
+\subsection{Reading in the data}
+Let's start from a clean slate and read in the three datasets:
+<<>>=
+skills <- read_csv(here("data", "helascot_skills.csv"))
+metrics <- read_csv(here("data", "helascot_metrics.csv"))
+ratings <- read_csv(here("data", "helascot_ratings.csv"))
+@
+
+Inspect the structure of these three datasets.
+Note that
+\begin{itemize}
+  \item \texttt{skills} contains one row per combination of \texttt{Subject}, \texttt{Time}, and \texttt{LanguageTested};
+  \item \texttt{metrics} contains one row per text, 
+        i.e., one row per combination of \texttt{Subject}, \texttt{Text\_Language}, \texttt{Text\_Type}, and \texttt{Time};
+  \item \texttt{ratings} contains one row per rating, i.e., one row per combination of \texttt{Rater} and \texttt{Text}.
+\end{itemize}
+
+These datasets are already pretty clean and a lot of work (partly manual, partly using R,
+partly using other tools) went into creating them.
+See the technical report as well as the R code available from \url{https://osf.io/vw4pc/}.
+
+There are many ways to skin a cat.
+But it seems to me that the following course of action is reasonable:
+\begin{enumerate}
+  \item Using \texttt{ratings}, compute the average \texttt{Rating} per text.
+  \item Add these average ratings to \texttt{metrics} and draw some plots.
+  \item Make \texttt{skills} longer and add the average ratings to it. 
+        Then draw some more plots.
+\end{enumerate}
+
+\subsection{Average rating per text}
+<<>>=
+rating_per_text <- ratings |> 
+  group_by(Text, Subject, Text_Language, Text_Type, Time) |> 
+  summarise(mean_rating = mean(Rating),
+            n_ratings = n(),
+            .groups = "drop")
+@
+
+\mypar[Filtering out bilingual raters]{Exercise}
+Some of the raters consider themselves native speakers of several languages (\texttt{bi-French} etc.), 
+others consider themselves monolingual native speakers (\texttt{mono-French} etc.):
+<<>>=
+table(ratings$Rater_NativeLanguage)
+@
+
+Compute the average text ratings based only on the ratings 
+provided by monolingual French speakers.
+\parend
+
+\subsection{Add to \texttt{metrics}}
+The tibbles \texttt{metrics} and \texttt{rating\_per\_text} share a variable 
+(\texttt{Text}),
+so the average ratings can easily be added to \texttt{metrics}:
+<<>>=
+metrics_ratings <- metrics |> 
+  left_join(rating_per_text)
+@
+
+We'll encounter some useful ways of plotting data
+throughout these lecture notes, but here's
+one way of visualising the relationship between \texttt{Guiraud} and \texttt{mean\_rating};
+see Figure \ref{fig:guiraudmean} for the result.
+
+<<out.width = "0.7\\textwidth", fig.width = 6, fig.height = 4.5, fig.cap = "Association between the texts' Guiraud values and their average lexical richness ratings.\\label{fig:guiraudmean}">>=
+metrics_ratings |>
+  ggplot(aes(x = Guiraud, y = mean_rating)) +
+  geom_point(shape = 1) +
+  facet_grid(rows = vars(Time, Text_Type),
+             cols = vars(Text_Language),
+             scales = "free_y") +
+  xlab("Guiraud value") +
+  ylab("average lexical richness rating")
+@
+
+We can draw a similar plot involving \texttt{meanSUBTLEX}
+(average corpus frequency); the result is not shown here:
+<<eval = FALSE>>=
+metrics_ratings |>
+  ggplot(aes(x = meanSUBTLEX, y = mean_rating)) +
+  geom_point(shape = 1) +
+  facet_grid(rows = vars(Time, Text_Type),
+             cols = vars(Text_Language),
+             scales = "free_y") +
+  xlab("mean SUBTLEX frequency") +
+  ylab("average lexical richness rating")
+@
+
+\subsection{Add to \texttt{skills}}
+The code snippet below takes the \texttt{skills} tibble,
+transforms it so that each row represents one participant's
+grid-based score on one of the writing tasks,
+and then adds this information to the relevant row
+in the tibble containing the lexical richness ratings.
+<<>>=
+rating_gridscore <- skills |>
+  pivot_longer(Reading:Narration, names_to = "skill",
+               values_to = "grid_score") |>
+  filter(skill != "Reading") |>
+  mutate(Text_Type = case_when(
+    skill == "Argumentation" ~ "arg",
+    skill == "Narration" ~ "narr"
+  )) |>
+  full_join(rating_per_text,
+            by = join_by(Text_Type, Subject, Time, 
+                         LanguageTested == Text_Language))
+@
+
+The relationship between the grid-based scores and the lexical richness ratings
+may be visualised as follows; the result is not shown here:
+<<eval = FALSE>>=
+rating_gridscore |>
+  filter(!is.na(grid_score)) |>
+  filter(!is.na(mean_rating)) |>
+  ggplot(aes(x = mean_rating, y = grid_score)) +
+  geom_point(shape = 1) +
+  facet_grid(rows = vars(Time, Text_Type),
+             cols = vars(LanguageTested),
+             scales = "free_y") +
+  xlab("average lexical richness rating") +
+  ylab("grid-based text quality rating")
+@
+
+\section{*Walkthrough with exercises}
+In the previous sections, we started from a pretty clean dataset containing
+the writing data. The goal of the present section is to give you some insight
+into how this data set was compiled starting from a more basic representation
+of the underlying data. This section is organised as a series of exercises
+that you should tackle in order. In completing these exercises, you'll convert
+a very wide dataset (with lots of criterion scores for up to twelve texts
+per child on a single row) into a dataset that contains a single composite
+score for a single text on each row. This process is considerably more complicated
+than running a couple of \texttt{pivot\_*()} and \texttt{summarise()} commands due to how the
+data were laid out. Some of the instructions in the exercises are intentionally
+not spelt out in great detail: In real life, it's up to you to figure out
+the intermediate steps, too.
+
+\mypar[Reading in the data]{Exercise}
+The file \texttt{writing\_data.csv} contains the data reported on in \citet{Lambelet_HELASCOT_writing}.
+Importing it into R requires some additional work.
+\begin{enumerate}
+\item Open the file using Notepad (Windows), TextEdit (Mac) or whatever plain text editor you prefer.
+      What character is used to separate different cells?
+      
+\item Try to read it in as a tibble named \texttt{writing}.
+
+\item You \emph{may} have obtained the following error message:
+      \texttt{Error in nchar(x, "width") : invalid multibyte string, element 1}.
+      Error messages can be notoriously opaque in R,
+      but experience suggests that the accents and umlauts may have something to do with this error.
+      
+      To fix the error, try to read in the dataset again,
+      but additionally override the \texttt{locale} argument
+      of the function you used in Step 2 as follows: \texttt{locale = locale(encoding = "Windows-1252")}.
+      This is a Windows character encoding for Western languages;
+      consult the Wikipedia page on character encoding for an overview of common character encodings.
+      
+\item Inspect the resulting tibble. If all is well, it should contain 473 rows and 288 columns.
+      Columns such as \texttt{Sco1R\_Nb\_mots} and \texttt{Sco1R\_unitThemNbre} 
+      should be recognised as containing numbers
+      (\texttt{<dbl>}, short for \textit{double}, a format for representing numbers in computers), whereas
+      columns such as \textit{VPNID} and \texttt{Sco1R\_unitThem} 
+      should be recognised as containing text strings (\texttt{<chr>}, short for \textit{character}).
+      You'll also observe that the first column wasn't named in the CSV file, so R assigned some meaningless name to it.\parend
+\end{enumerate}
+
+<<echo = FALSE>>=
+# SPOILERS!
+writing <- read_csv2(here("data", "writing_data.csv"), locale = locale(encoding = "Windows-1252"))
+@
+
+\mypar[UTF-8]{Tip}
+When saving spreadsheets as CSV files, use the UTF-8 character encoding.
+In Excel, you can select the character encoding from a drop-down menu
+when exporting the spreadsheet as a CSV; in LibreOffice.org Calc you'll be
+asked to specify how you want to save the CSV file exactly in a pop-up window.
+\parend
+
+You can obtain the column names using \texttt{colnames(writing)} (not shown here).
+Unfortunately, I wasn't able to locate a technical report or codebook that outlines the meaning
+of all of these column names and what range of values they can take.
+That said, this project featured three waves of data collection
+in which children were, among other things, asked to write two kinds of text:
+argumentative and narrative. Most of the children were French--Portuguese
+or German--Portuguese bilinguals, and these were asked to write both kinds of texts
+in each of their languages. Other children were considered monolingual
+speakers of French, German or Portuguese, and these only wrote texts in
+their respective language. Each text was scored on a grid.
+Using \texttt{View(writing)}, we can observe the following:
+\begin{itemize}
+\item The second column (\texttt{VPNID}) contains the participants' identification codes. 
+      We already encountered these in Section \ref{sec:strings}. 
+      As you can verify for yourself, there is a single row in the dataset for each participant.
+
+\item Columns 154 (\texttt{hkngroup}), 155 (\texttt{Schulsprache}), 156 (\texttt{zweiSprachig}) and 157 (\texttt{Group}) 
+      seem to contain information regarding what type of participant we're dealing with. 
+      As we saw in Section \ref{sec:strings}, we can extract this information from the \texttt{VPNID} entries.
+      
+\item Columns 1 (\texttt{...1}), 3 (\texttt{X.x}), 158 (\texttt{PartDef}) and 159 (\texttt{X.y}) 
+      don't seem to contain any relevant information. 
+      Perhaps they served some administrative purpose?
+
+\item All the other column names are built up according to a pattern:
+  \begin{itemize}
+  \item Either the first letter is \texttt{P} or the first three letters are \texttt{Sco}. 
+        The \texttt{P} stands for `Portuguese', the \texttt{Sco} for `langue scolaire' (language of education).
+  \item After the initial letter(s), we find a number between 1 and 3. 
+        This number specifies the time of data collection (i.e., T1, T2 or T3).
+  \item After the number and before the first underscore, 
+        we find either the letter \texttt{A} or the letter \texttt{R}. 
+        From context, \texttt{A} means that we're dealing with an argumentative text, 
+        whereas \texttt{R} means that we're dealing with a narrative text (perhaps \texttt{R} is short for `to relate'?).
+  \item Whatever comes after the first underscore specifies either a criterion on the rating grid or some further information            about the text production.
+  \end{itemize}
+\end{itemize}
+
+The goal of the next few exercises is to reshape this dataset so that each
+row represents a single text.
+
+\mypar[Converting the dataset to a longer format]{Exercise}
+Convert the \texttt{writing} tibble to a tibble named \texttt{writing\_long}
+by following these steps:
+\begin{enumerate}
+\item Retain only the columns \texttt{VPNID} as well as all columns containing
+   solely numerical information  whose names start with either \texttt{Sco} or \texttt{P}.
+   
+   Hint: Check out the examples on the help page for the \texttt{where()}
+   function in the \texttt{tidyselect} package. This package is part of the tidyverse.
+   
+   Hint: The resulting tibble contains 473 rows and 250 columns.
+
+\item Convert the resulting tibble to a longer one containing just three columns:
+   \texttt{VPNID}, \texttt{criterion} (containing the former column names) 
+   and \texttt{score} (containing the values in those former columns).
+   
+   Hint: The resulting tibble contains 117,777 rows. \parend
+\end{enumerate}
+
+<<echo = FALSE>>=
+# SPOILERS
+writing_long <- writing |>
+  select(VPNID, starts_with("Sco") & where(is.numeric), starts_with("P") & where(is.numeric)) |>
+  pivot_longer(-VPNID, names_to = "criterion", values_to = "score")
+@
+
+We continue with the \texttt{writing\_long} tibble from the previous exercise.
+The \texttt{criterion} column contains a subset of the column names that were shown above.
+We want to parse these former column names and extract the following pieces of information
+from them: Language, time of data collection, text type, and criterion proper.
+For example, given the string \texttt{"Sco2R\_some\_criterion"}, we want to
+extract \texttt{"Sco"} as the language, 
+\texttt{2} as the time of data collection,
+\texttt{"R"} as the text type, 
+and \texttt{"some\_criterion"} as the criterion name.
+Similarly, given the string \texttt{"P3A\_OtherCriterion"}, 
+we want to extract 
+\texttt{"P"} as the language, 
+\texttt{3} as the time of data collection,
+\texttt{"A"} as the text type, 
+and \texttt{"OtherCriterion"} as the criterion name.
+
+If you feed the description in the previous paragraph to some AI tool
+like ChatGPT, it will probably be able to come up with a suggestion
+as to how to go about this.
+After some prodding, it suggested the following solution to me:
+<<>>=
+my_string <- "Sco2R_some_criterion"
+my_regex <- "([^\\d]+)(\\d)([^_]*)_(.*)$"
+str_match(my_string, my_regex)
+
+my_string <- "P3A_OtherCriterion"
+str_match(my_string, my_regex)
+@
+
+Though it's not too important for the remainder of this walkthrough,
+the regex above is constructed in the following way:
+\begin{itemize}
+  \item \verb|([^\d]+)|: This group matches any group of one or more (\texttt{+})
+    non-numerical (\verb|^| for 'non', \verb|\d| for digits) characters.
+  \item \verb|(\d)| matches any digit.
+  \item \verb|([^_]*)| matches any group of zero or more (\texttt{*}) characters that aren't
+    underscores.
+  \item \verb|(.*)| matches any group of zero or more characters without restrictions.
+\end{itemize}
+
+Evidently, it will be important to verify that the parsing was done correctly.
+
+We can use \texttt{str\_match()} to parse any number of strings using a regex.
+For instance, the command below parses two strings and outputs the result as a matrix:
+<<>>=
+my_strings <- c("Sco2R_some_criterion", "P3A_OtherCriterion")
+my_regex <- "([^\\d]+)(\\d)([^_]*)_(.*)$"
+str_match(my_strings, my_regex)
+@
+
+If we want to just extract, say, the language information from these strings,
+we can select the second column of this matrix like so:
+<<>>=
+str_match(my_strings, my_regex)[, 2]
+@
+
+Similarly, we can extract the criterion name like so:
+<<>>=
+str_match(my_strings, my_regex)[, 5]
+@
+
+We can define a helper function \texttt{extract\_info()} that bundles these steps:
+<<>>=
+extract_info <- function(my_strings, i, 
+                         my_regex = "([^\\d]+)(\\d)([^_]*)_(.*)$") {
+  str_match(my_strings, my_regex)[, i]
+}
+extract_info(my_strings, 4)
+extract_info(my_strings, 2)
+@
+
+\mypar[Parsing the column names]{Exercise}
+  Using the \texttt{extract\_info()} function just defined,
+  add columns called \texttt{Language}, \texttt{Time}, 
+  \texttt{TextType} and \texttt{Criterion} (uppercase `C')
+  to the \texttt{writing\_long} tibble. 
+  Evidently, these columns should contain the appropriate pieces of information. 
+  Then drop the \texttt{criterion} (lowercase `c') column from the tibble.
+\parend
+
+<<echo = FALSE>>=
+# SPOILERS!
+writing_long <- writing_long |>
+  mutate(
+    Language = extract_info(criterion, 2),
+    Time = extract_info(criterion, 3),
+    TextType = extract_info(criterion, 4),
+    Criterion = extract_info(criterion, 5)
+  ) |>
+  select(-criterion)
+@
+
+\mypar[Splitting up the dataset]{Exercise}
+Split the \texttt{writing\_long} tibble up into two tibbles: 
+\texttt{argumentative}, which contains only the data relating to argumentative texts,
+and \texttt{narrative}, which contains only the data relating to narrative texts.
+
+If all went well, the \texttt{argumentative} tibble should contain 59,125 rows
+and 6 columns, and the \texttt{narrative} tibble 58,179 rows and 6 columns.
+\parend
+
+<<echo = FALSE>>=
+# SPOILERS!
+argumentative <- writing_long |>
+  filter(TextType == "A")
+narrative <- writing_long |>
+  filter(TextType == "R")
+@
+ 
+While I wasn't able to retrieve a codebook for this dataset,
+\citet{Lambelet_HELASCOT_writing} describe the grid according to which the texts
+were scored. 
+I put the relevant information in the Excel file \texttt{scoring\_criteria.xlsx}.
+
+\mypar[Obtaining the relevant scores for each argumentative text]{Exercise}
+We now want to reorganise the data in such a way that we can easily calculate
+the total score assigned to each text. Since the scoring criteria were
+different for argumentative and narrative texts, we do this separately
+for both text types. Here, we'll only go through the steps for argumentative
+texts, but as an additional exercise, you could follow the same steps
+(\emph{mutatis mutandis}) to calculate the total scores for the narrative texts.
+Importantly, we need to check whether the scores obtained actually make sense.
+
+\begin{enumerate}
+  \item Inspect the \verb|scoring_criteria.xlsx| file in your spreadsheet program.
+        In particular, observe that it contains two sheets.
+  \item Read in the sheet containing the criteria for scoring the argumentatitive texts
+        into R as \texttt{criteria\_arg}.
+  \item In the tibble \texttt{argumentative}, only retain the rows where the value in
+        the \texttt{Criterion} column is one of the scoring criteria for the argumentative texts
+        (i.e., those contained in \texttt{criteria\_arg}). (See the hint below.)
+  \item Drop the rows containing missing \texttt{score} values from \texttt{argumentative}.
+  \item Convert the resulting tibble to a wide format in which each row represents
+        a single argumentative \emph{text} and contains the scores on all relevant criteria for this text.
+        Note that each combination of \texttt{VPNID}, \texttt{Language} and \texttt{Time} present in the dataset
+        represents one text.
+  \item In principle, the current tibble should not contain any missing data.
+        Moreover, the criterion scores should not exceed the \texttt{MaxScore} values
+        that are listed in the file \verb|scoring_criteria.xlsx|.
+        Check if this is the case.
+        
+        Hint: It isn't.
+        
+        Inspect the rows in the dataset that contain abnormalities
+        and figure out what went wrong.
+        
+        Hint: First use \texttt{summary(argumentative)} to identify the columns containing
+        aberrant entries. Then inspect the rows containing such entries.
+        Look up the corresponding information in \verb|writing_data.csv|.
+        
+        Write a brief paragraph detailing what the issues are.
+        Fix the issues \emph{without} editing the spreadsheet.
+        This may require you to go all the way back to the start of this section
+        and make some modifications there.
+  \item Once all issues have been taken care of, reconvert the tibble to a longer format,
+        i.e., with one row per criterion per text.
+        Then, for each text, compute the variable \texttt{total\_score\_arg} as the sum of all criterion scores.
+  \item Using \texttt{write\_csv()}, save the tibble containing the variables
+        \texttt{VPNID}, \texttt{Language}, \texttt{Time} and \texttt{total\_score\_arg} to a CSV file in the \texttt{data} subdirectory.
+\end{enumerate}
+
+Hint for step 3: One option is to use one of the \texttt{*\_join()} functions.
+Another one is to combine \texttt{filter()} with the \texttt{\%in\%} operator.
+The following example shows how the \texttt{\%in\%} operator works.
+<<>>=
+x <- c("A", "B", "C") # define vectors x, y
+y <- c("E", "C", "D", "A")
+y %in% x # which of the values in y occur in x?
+x %in% y # which of the values in x occur in y?
+@
+\parend
+
+\mypar[Comparing the calculated scores with the scores used earlier]{Exercise}
+We now have two sets of argumentative writing scores:
+the ones that you calculated in the previous exercise,
+and the ones we used earlier. Let's compare them.
+\begin{enumerate}
+  \item Read in the scores you calculated from the CSV file you created in the previous exercise.
+  
+  \item Read in the \verb|helascot_skills.csv| file we used earlier.
+
+  \item Combine both files in such a way that, for each text, you have both the
+   value of \verb|total_score_arg| that you computed 
+   as well as the \texttt{Argumentation} value
+   provided in the dataset \verb|helascot_skills.csv| side-by-side.
+   Make sure that the resulting tibble contains the scores of all texts,
+   even in the case that a score is present for a text in one file but not in the other.
+   
+   Hint: You can't directly use one of the \verb|*_join()| functions.
+   You'll need to do some thinking and some minor data wrangling first.
+   
+  \item Are there any texts for which an \texttt{Argumentation} score exists but no 
+  \verb|total_score_arg| was computed?
+   What is (are) the reason(s) for this (these) discrepancy(ies)?
+   
+  \item Are there any texts for which a \verb|total_scores_arg| value was computed but no 
+  \texttt{Argumentation} score exists?
+   If so, output the relevant rows.
+   
+  \item For each text, compute the difference between the \texttt{Argumentation} socre
+   and the \verb|total_score_arg| score.
+   For how many texts is the difference not equal to 0?
+   Can you think of any reason(s) for any such differences?\parend
+\end{enumerate}
+
+\mypar[Summarising the results]{Exercise}
+\begin{enumerate}
+  \item For each combination of language (i.e., French, German, Portuguese), group (i.e., bilingual vs.\ comparison group) and time of data collection, compute the number of texts for which you calculated a \verb|total_score_arg| value as well as the mean \verb|total_score_arg| value.
+
+  \item For each combination of language and group, compute the number of children who have \verb|total_score_arg| values for \emph{all} three data collections. 
+  How many children in each cell have \verb|total_score_arg| scores for the first and second data collection but not for the third? 
+  How many for the first and third, but not for the second? 
+  For the second and third, but not for the first? 
+  How many children in each cell only have a \verb|total_score_arg| score at one data collection?\parend
+\end{enumerate}
+
+\section{*Further reading}
+The Bible for working with tibbles in R is \textit{R for Data Science} \citep{Wickham2023},
+which is freely available from \url{https://r4ds.hadley.nz/}.
+\citet{Broman2017} offer further valuable guidance for organising spreadsheets.

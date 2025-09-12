@@ -1,0 +1,376 @@
+\chapter{The $t$-test}\label{ch:ttest}
+Although randomisation and permutation tests are valid significance tests
+whose assumptions can be justified by the research design in controlled experiments,
+you rarely encounter them in practice.
+This is largely down to historical reasons and inertia.
+Back in the day, 
+it was far too labour-intensive to grind through a few thousand permutations 
+of the data in order to generate the distribution of a group difference
+or a correlation coefficient under the null hypothesis.
+Instead, statisticians developed significance tests whose mathematical derivations
+were more intricate but which could be carried out much more quickly.
+Examples include the $t$-test and the $F$-test.
+The reason these tests became so popular is that their results often agree with
+those of randomisation and permutation tests:
+\begin{quote}
+``the statistician does not carry out this very
+simple and very tedious process [= permuting data],
+but his conclusions have no justification beyond the
+fact that they agree with those which could have been
+arrived at by this elementary method.''
+(\citealp{Fisher1936})
+\end{quote}
+In what follows, we introduce the $t$-test, 
+followed by analysis of variance and the $F$-test.
+That said, 
+especially in straightforward controlled experiments such as those in the previous chapter, 
+I would not automatically fall back on these pre-computer approximations, 
+but would instead seriously consider a randomisation or permutation test.
+
+The randomisation tests in Chapter \ref{ch:logic} assume 
+that any observed differences, under the null hypothesis, 
+are the result of random assignment.
+The $t$-test takes a different angle:
+here the assumption is that any observed differences, under the null hypothesis,
+can be attributed to random sampling from a population.
+More precisely, the \term{one-sample $t$-test} is based on the null hypothesis
+that we have $n$ i.i.d.\ observations $X_1, \dots, X_n$,
+drawn from a normal distribution with known mean $\mu$ and unknown variance $\sigma^2$. 
+As we have already seen (Theorem \vref{th:gosset}), 
+under these assumptions it holds that
+\[
+  T := \frac{\overline{X} - \mu}{s/\sqrt{n}} \sim t_{n-1},
+\]
+where $\overline{X}$ is the sample mean of the $n$ observations and $s$
+the sample standard deviation.
+We can now test whether the observed data are compatible with a particular
+population mean $\mu_0$. Concretely, we calculate
+\[
+  T_0 := \frac{\overline{X} - \mu_0}{s/\sqrt{n}}
+\]
+and then check how extreme this value is under a $t_{n-1}$ distribution.
+
+\mypar[One-sample $t$-test]{Example}
+  We observe seven values with a sample mean of $\overline{X} = -2.4$
+  and a sample standard deviation of $s = 5$.
+  We set up the null hypothesis that these seven values were randomly drawn
+  from a normal distribution with mean $\mu_0 = 1$ and unknown variance.
+  The $t$-value for this null hypothesis is
+  \[
+    \frac{-2.4 - 1}{5/\sqrt{7}} \approx -1.80.
+  \]
+  For a two-sided $t$-test, we first calculate the left- and right-tailed
+  $p$-values.
+  In other words, we look up how often we would encounter values of $-1.80$
+  or smaller, and values of $-1.80$ or larger, under a $t(6)$ distribution;
+  see Figure \ref{fig:t6}.
+  Using Lemma \ref{lemma:pvalue}, we obtain the two-sided $p$-value
+  by doubling the smaller of these two probabilities:
+<<>>=
+t0 <- (-2.4 - 1)/(5/sqrt(7))
+(p_l <- pt(t0, df = 7 - 1))
+(p_r <- pt(t0, df = 7 - 1, lower.tail = FALSE))
+(p <- 2 * min(p_l, p_r))
+@
+  That is, we obtain a two-sided $p$-value of about $0.12$.
+\parend
+
+<<echo = FALSE, fig.width = 2*2, fig.height = 2*1.3, fig.cap = "A probability density function of the $t(6)$ distribution. The dashed line shows the observed $t$ value of $-1.80$. The area of the coloured patch underneath the density function corresponds to the left-sided $p$ value corresponding to $t(6) = -1.80$.\\label{fig:t6}", out.width = ".4\\textwidth">>=
+ggplot(data = tibble(t = c(-7, 7)),
+       aes(x = t)) +
+  stat_function(fun = dt, args = list(df = 6)) +
+  geom_vline(xintercept = t0, linetype = 2) +
+  stat_function(fun = dt, args = list(df = 6), xlim = c(-7, t0), 
+                geom = "area", fill = "steelblue") +
+  ylab("Density")
+@
+
+You can carry out a one-sample $t$-test using the R function \texttt{t.test()}:
+<<>>=
+x <- rnorm(10, mean = 2, sd = 4)
+t.test(x, mu = 1) # tests if the mean of the normal distribution is 1
+@
+
+The above procedure can be adapted 
+so that it is suitable for comparing two group means.
+This results in the \term{two-sample $t$-test}.
+The null hypothesis here is that we drew two independent samples:
+\begin{itemize}
+  \item $\bm X_1 = (X_{1,1}, \dots, X_{1,n_1})$ where 
+    \[
+      X_{1,1}, \dots, X_{1,n_1} \sim \mathcal{N}(\mu_1, \sigma^2).
+    \]
+    We denote the sample mean and sample variance of $\bm X_1$
+    as $\overline X_1$ and $s^2_1$, respectively.
+    
+  \item $\bm X_2 = (X_{2,1}, \dots, X_{2,n_2})$ where 
+    \[
+      X_{2,1}, \dots, X_{2,n_1} \sim \mathcal{N}(\mu_2, \sigma^2).
+    \]
+    We denote the sample mean and sample variance of $\bm X_2$
+    as $\overline X_2$ and $s^2_2$, respectively.
+\end{itemize}
+That is, the samples are assumed to have been drawn from 
+normal distribution with the same unknown variance $\sigma^2$.
+
+Under this assumption, the difference $\overline X_1 - \overline X_2$
+is normally distributed, too.
+The mean of this normal distribution is
+\[
+  \E(\overline X_1 - \overline X_2) = \E(\overline X_1) - \E(\overline X_2) = \mu_1 - \mu_2.
+\]
+Since the samples are independent, its variance is
+\begin{align*}
+  \Var(\overline X_1 - \overline X_2)
+  &= \Var(\overline X_1) + \Var(\overline X_2) \\
+  &= \frac{\sigma^2}{n_1} + \frac{\sigma^2}{n_2} \\
+  &= \sigma^2\left(\frac{1}{n_1} + \frac{1}{n_2}\right).
+\end{align*}
+Hence,
+\[
+  \overline X_1 - \overline X_2 \sim \mathcal{N}\left(\mu_1 - \mu_2, \sigma^2\left(\frac{1}{n_1} + \frac{1}{n_2}\right)\right).
+\]
+
+The common variance $\sigma^2$
+can be estimated from the sample variances $s_1^2, s_2^2$ as
+\[
+  s^2 = \frac{(n_1 - 1)s_1^2 + (n_2 - 1)s_2^2}{n_1 + n_2 - 2}.
+\]
+(By taking the expected value on both sides, you can verify
+that $\E(s^2) = \sigma^2$.)
+This statistic is called the \term{pooled variance}.
+It can be shown that
+\[
+  T := \frac{(\overline{X}_1 - \overline{X}_2) - (\mu_1 - \mu_2)}{s\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}} \sim t_{n-2}.
+\]
+We'll skip the derivation of this result,
+but the next example illustrates it by means of a simulation.
+In short, for any hypothetical difference between the population means,
+we can test whether the data are compatible with that difference.
+
+\mypar[Simulation]{Example}\label{example:tvalues}
+  The code snippet below generates 20,000 simulations
+  of two samples with three and five observations, respectively.
+  These samples are drawn from the same normal distribution,
+  hence $\mu_1 - \mu_2 = 0$.
+  The $t$ value is computed using the \texttt{t.test()} function.
+  The parameter setting \texttt{var.equal = TRUE} specifies that we assume
+  that the samples are drawn from normal distributions with the same variance.
+<<>>=
+n_runs <- 20000
+ttest_one_run <- function(n1, n2, sd1, sd2) {
+  x1 <- rnorm(n1, mean = 0, sd = 3)
+  x2 <- rnorm(n2, mean = 0, sd = 3)
+  t.test(x1, x2, var.equal = TRUE)$statistic
+}
+n1 <- 3
+n2 <- 5
+t_values <- replicate(n_runs, ttest_one_run(n1, n2, 3, 3))
+@
+  If we visualise these 20,000 $t$ values,
+  we see that their distribution corresponds to a $t$ distribution with $3 + 5 - 2 = 6$
+  degrees of freedom; see Figure \ref{fig:tvalues}.
+<<fig.width = 2*2, fig.height = 2*1.3, fig.cap = "The blue curve shows the empirical distribution function of the 20,000 simulated $t$ values; the red dashed curved shows the distribution function of the $t_6$ distribution.\\label{fig:tvalues}", out.width = ".4\\textwidth">>=
+t_values |> 
+  tibble() |> 
+  ggplot(aes(t_values)) +
+  stat_ecdf(colour = "darkblue") +
+  stat_function(fun = pt, args = list(df = n1 + n2 - 2),
+                colour = "red", linetype = "dashed") +
+  xlab("t") +
+  ylab("cumulative probability")
+@
+\parend
+
+\mypar[Two-sample $t$-test]{Example}
+  We observe two samples.
+  Our null hypothesis is that these are independently drawn from normal distributions
+  with the same unknown variance and with means such that $\mu_1 - \mu_2 = -2$.
+  For the first sample, we obtain $n_1 = 7, \overline{X}_1 = 3.4, s_1^2 = 4$.
+  For the second sample, we obtain $n_2 = 10, \overline{X}_2 = 9, s_2^2 = 5$.
+
+  We compute the pooled variance
+  \[
+    s^2 = \frac{(7-1)4 + (10-1)5}{7+10-2} = 4.6
+  \]
+  and the $t$ value
+  \[
+    T
+    = \frac{3.4 - 9 -(-2)}{\sqrt{S^2}\sqrt{\frac{1}{7} + \frac{1}{10}}}
+    \approx -3.41.
+  \]
+  Now we compare this $t$ value to a $t_{15}$ distribution:
+<<>>=
+pooled_var <- ((7 - 1)*4 + (10 - 1)*5) / (7 + 10 - 2)
+t0 <- (3.4 - 9 - (-2)) / (sqrt(pooled_var) * sqrt(1/7 + 1/10))
+p_l <- pt(t0, df = 7 + 10 - 2)
+p_r <- pt(t0, df = 7 + 10 - 2, lower.tail = FALSE)
+(p <- 2 * min(p_l, p_r))
+@
+That is, $p = 0.004$. 
+If we use threshold of $\alpha = 0.05$,
+then we'd reject the null hypothesis that these samples are drawn
+from normal distributions with the same variance and whose means differ by two units.
+\parend
+
+\mypar[$t$-test as a linear model]{Remark}
+The code snippet below shows three equivalent ways to carry out
+a two-sample $t$-test.
+<<>>=
+n1 <- 12
+n2 <- 28
+group <- rep(c("A", "B"), times = c(n1, n2))
+score <- c(rnorm(n = n1, mean = 3, sd = 1),
+           rnorm(n = n2, mean = 4, sd = 1))
+d <- tibble(group, score)
+
+# t.test(x1, x2, ...)
+t.test(score[group == "A"], score[group == "B"],
+       mu = 0, var.equal = TRUE)
+
+# t.test(outcome ~ predictor, ...)
+t.test(score ~ group, data = d, mu = 0, var.equal = TRUE)
+
+# lineares Modell
+mod.lm <- lm(score ~ group, data = d)
+summary(mod.lm)$coefficients
+@
+The upshot is that you can think of a two-sample $t$-test as a linear model
+that only models a group difference and that assumes that the errors are
+i.i.d.\ normal.
+
+By the way, a one-sample $t$-test corresponds to a linear model
+in which only the intercept is modelled and that assumes that the errors
+are i.i.d.\ normal.
+\parend
+
+\mypar[Different variances]{Exercise}\label{ex:diffvar}
+  In Example \ref{example:tvalues}, increase the standard deviation
+  of the normal distribution from which the larger sample is drawn
+  from $3$ to $9$. Compare the simulated distribution function
+  with that of a $t_6$ distribution. What do you notice?
+  In this situation, would $p$-values based on a $t_6$ distribution
+  be correctly calibrated, too large, or too small?
+  
+  Now reduce the standard deviation for the larger sample
+  to $1$. What do you observe this time?
+  
+  Summarise your findings.
+  
+  Hint: If the conclusion is not immediately clear,
+  try making the larger group even larger.
+\parend
+
+\mypar[Welch's $t$-test]{Remark}
+  Exercise \ref{ex:diffvar} highlights that the null hypothesis
+  of the two-sample $t$-test assumes equality of the population variances.
+  However, it is also possible to test the null hypothesis that
+  the two samples come from normal distributions that may have
+  different variances $\sigma_1^2, \sigma_2^2$, but whose means differ
+  by a hypothetical value. 
+  For this, one can use \term{Welch's $t$-test}. 
+  In Welch's procedure, the pooled variance
+  is calculated differently, leading to different $t$-values.
+  Moreover, the degrees of freedom are computed in a different way
+  and need not be whole numbers.
+  
+  The following example tests with simulated data whether the means
+  of the normal distributions from which the samples were drawn
+  differ by $0.5$ units---once with the usual $t$-test,
+  and once with Welch's version:
+<<>>=
+x1 <- rnorm(5, mean = 2, sd = 3)
+x2 <- rnorm(8, mean = 3, sd = 6)
+t.test(x1, x2, mu = 0.5, var.equal = TRUE) # standard t-test
+t.test(x1, x2, mu = 0.5, var.equal = FALSE) # Welch's t-test
+@
+  
+  \citet{Ruxton2006} recommends that Welch's $t$-test
+  should always be used whenever one would otherwise run
+  a two-sample $t$-test. Personally, in many cases I would now
+  favour a randomisation test, as its null hypothesis
+  is often easier to justify.
+\parend
+
+\mypar[Non-normal data]{Remark}\label{remark:ttestapprox}
+  The null hypothesis tested by the $t$-test is rather unrealistic, 
+  since it assumes that the data come from a normal distribution.
+  Normal distributions are idealised mathematical constructs.
+  In reality, genuine data are never drawn from perfectly normal distributions.
+  For example, they may only take values within a bounded range, or
+  they may only take on a countable number of values.
+  
+  For sufficiently large samples, however, 
+  the $t$-test can be regarded as an approximation
+  to randomisation and permutation tests, 
+  as Fisher's quotation at the start of this chapter suggested. 
+  There is, however, no guarantee that 
+  this approximation will already be accurate enough for a specific, finite sample;
+  see, for instance, \citet[][Section 4.4]{Hesterberg2014}.
+  For simpler designs---such as those in Chapter \ref{ch:logic}---I 
+  would now often prefer randomisation or permutation tests.
+  For more complex designs and models, this option is not always available,
+  which makes it worthwhile to be familiar with these approximation methods nonetheless.
+\parend
+
+\mypar[$t$-tests for other parameter estimates]{Remark}
+$t$-tests can also be used to test null hypotheses
+for parameter estimates that do not concern group means.
+We've seen many examples of this 
+in the \texttt{summary()} outputs in the previous chapters:
+\begin{itemize}
+ \item Page \pageref{sec:aoa}: 
+  The null hypotheses tested here state that the parameters
+   for \texttt{(Intercept)} and \texttt{AOA} are actually equal to $0$.
+   The first of these is of little substantive interest, since few people
+   are concerned with the intercept, and no one would seriously claim that it
+   ought to be exactly $0$.
+   The second is also implausible, as it implies that \texttt{AOA}
+   has no linear relationship at all with \texttt{GJT}.
+   
+ \item Page \pageref{model:money.lm}: 
+   Once again, the null hypotheses state that the parameters for
+   \texttt{(Intercept)} and \texttt{n.Condition} in the population are equal to $0$.
+   The $t$- and $p$-values for the estimated parameter \texttt{n.Condition} 
+   could also be obtained
+   using the \texttt{t.test()} function, just as we have done above.
+   
+ \item Page \pageref{sec:strategy}: 
+   Again, the null hypotheses under test are that the parameters in the population
+   are equal to $0$.
+   
+ \item Page \pageref{sec:dragan}: Likewise.
+   Here, the significance test for
+   \texttt{DraganWithCS} might be of genuine interest.
+\end{itemize}
+The above tests are exact if we assume i.i.d.\ normally distributed errors;
+otherwise, they should be understood as approximations,
+cf.\ Remark \ref{remark:ttestapprox}.
+
+We can also compute a $p$-value for a correlation coefficient
+using a $t$-test.  
+For instance, with the permutation tests in Section \vref{sec:permutationcorr},
+we found a $p$-value of $0.005$ for the correlation between the Flanker and Simon data
+in \citet{Poarch2018}.  
+Using \texttt{cor.test()}, we obtain essentially the same result
+($t(32) = 2.95$, $p = 0.0059$):
+<<>>=
+cor.test(poarch$Flanker, poarch$Simon)
+@
+
+Incidentally, you obtain the same $p$-value if you analyse these data
+within a regression model:
+
+<<eval = FALSE>>=
+# Output not shown
+poarch1.lm <- lm(Flanker ~ Simon, data = poarch)
+poarch2.lm <- lm(Simon ~ Flanker, data = poarch)
+summary(poarch1.lm)
+summary(poarch2.lm)
+@
+In this case, the null hypothesis is that the correlation coefficient,
+or equivalently the $\beta$ coefficient, is equal to $0$,
+and that the errors are i.i.d.\ normally distributed.
+If the errors are not normally distributed, the test should again
+be seen as an approximation.
+\parend

@@ -1,0 +1,1246 @@
+\chapter{Estimating estimation uncertainty}\label{ch:uncertainty}
+An unavoidable fact when working with samples is 
+that we can only \emph{estimate} properties of distributions. 
+The question arises as to how accurate these estimates actually are. 
+Unfortunately, in most cases we do not know this precisely either, 
+which is why this inaccuracy \emph{also} 
+has to be estimated on the basis of the sample.
+
+The aim of this chapter is to illustrate, by means of an example, 
+how one can assess the inaccuracy of a parameter estimate using a sample. 
+To this end, this chapter introduces the \term{bootstrap}---a flexible, 
+mechanistic procedure for estimating such inaccuracy. 
+Then, it shows how the central limit theorem 
+(cf.\ Section \ref{sec:clt}) can be used for the same purpose.
+
+In what follows, we work with a dataset from the study by 
+\citet{DeKeyser2010}. 
+They investigated how the age at which migrants 
+began to learn a second language (\textit{age of acquisition}, \textsc{aoa}) is related 
+to their performance on a grammar task (\textit{grammaticality judgement task}, \textsc{gjt}). 
+The participants were Russian migrants in Israel and in North America. 
+The grammar task consisted of 204 true/false items. 
+In the next chapters, we will consider the relationship between \textsc{aoa} and \textsc{gjt}; 
+here, we use the dataset from \citet{DeKeyser2010} to show 
+how one can quantify the inaccuracy of sample estimates.
+
+<<message = FALSE, echo = FALSE>>=
+library(tidyverse)
+d <- read_csv(here("data", "dekeyser2010.csv"))
+@
+
+\mypar{Activity}\label{ex:dekeyser}
+  The dataset \texttt{dekeyser2010.csv} contains the \textsc{aoa} and 
+  \textsc{gjt} data of the Russian immigrants in North America
+  that participated in the study by \citet{DeKeyser2010}.
+  Read in this dataset into R.
+  Then reproduce the graph in Figure \ref{fig:gjthistogram}
+  and compute the sample mean of the \textsc{gjt} values.
+\parend
+
+
+<<fig.cap = "Histogram of the \\textsc{gjt} data from the North America study by \\citet{DeKeyser2010}.\\label{fig:gjthistogram}", echo = FALSE, fig.width = 4, fig.height = 2, out.width=".4\\textwidth">>=
+ggplot(data = d,
+       aes(x = GJT)) +
+  geom_histogram(binwidth = 10, fill = "lightgrey", colour = "black") +
+  xlab("GJT score") +
+  ylab("Number of participants")
+@
+
+\section{Sample means vary}
+Let's assume that the \textsc{gjt} data in the entire population 
+were distributed exactly as in the dataset of 
+\citet[][cf.\ Figure \ref{fig:gjthistogram}]{DeKeyser2010}. 
+This is merely an assumption for pedagogical purposes: 
+as researchers we do not have access to the entire population, 
+i.e., we actually do not know what this population distribution looks like. 
+Instead, we must make do with samples. 
+But let's temporarily assume that the data in the population 
+were distributed exactly as in this study.
+
+As discussed in Section \ref{sec:clt}, 
+the means of random samples of the same size follow a certain distribution,
+the mean of which equals the mean of the parent distribution ($\mu_{\overline{X}} = \mu$). 
+Figure \ref{fig:stichprobenauspopulation} shows, by way of example, 
+five samples of size 20 from this \textsc{gjt} population, 
+as well as the distribution of the means of 20,000 samples of 20 observations 
+each from the population.
+\textsc{gjt} values that were already drawn could be drawn again, that is,
+sampling with replacement was used. 
+The standard deviation of the sampling distribution of the mean is 6.07 points. 
+Further, 2.5\% of the sample means are smaller than 138.95,
+and 2.5\% are greater than 162.60. 
+Thus, 95\% of the 20,000 sample means lie within an interval of $162.60-138.95 = 23.65$ points. 
+The standard deviation of the sampling distribution or the width of such an interval 
+would be sensible measures of the accuracy with which one can estimate a population parameter 
+(here: the mean) from a sample: 
+if the standard deviation is small, or if the interval is narrow, 
+then the sample-based parameter estimates (here: the sample means) 
+lie closer both to one another and to the population parameter.
+
+<<echo = FALSE, fig.cap = "When we draw a large number of random samples of the size size from the population and compute their sample means (vertical line), we obtain the sampling distribution of the sample mean. In this case, the latter distribution looks approximately normal, but this doesn't have to be the case. For illustrative purposes, five random samples are shown as well.\\label{fig:stichprobenauspopulation}", cache = TRUE, fig.width = 9, fig.height = 5.5, out.width = "\\textwidth", message = FALSE, warning = FALSE>>=
+theme_set(theme_bw(9))
+p_population <- ggplot(data = d,
+       aes(x = GJT, y = after_stat(density))) +
+  geom_histogram(binwidth = 10, fill = "lightgrey", colour = "black") +
+  xlab("GJT score") +
+  ylab("Density") +
+  ggtitle("Population distribution",
+          "(usually unknown)")
+
+
+colours <- RColorBrewer::brewer.pal(5, "Set1")
+set.seed(2024-02-22)
+
+stichprobe1 <- d |>  sample_n(20, replace = TRUE)
+p_1 <- ggplot(stichprobe1, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5),
+                 fill = colours[1], colour = "black") +
+  geom_vline(xintercept = mean(stichprobe1$GJT), linetype = 2) +
+  # xlim(90, 210) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Random sample", "(n = 20)")
+
+stichprobe2 <- d |>  sample_n(20, replace = TRUE)
+p_2 <- ggplot(stichprobe2, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = colours[2], colour = "black") +
+  geom_vline(xintercept = mean(stichprobe2$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Random sample", "(n = 20)")
+
+stichprobe3 <- d |>  sample_n(20, replace = TRUE)
+p_3 <- ggplot(stichprobe3, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = colours[3], colour = "black") +
+  geom_vline(xintercept = mean(stichprobe3$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Random sample", "(n = 20)")
+
+stichprobe4 <- d |>  sample_n(20, replace = TRUE)
+p_4 <- ggplot(stichprobe4, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = colours[4], colour = "black") +
+  geom_vline(xintercept = mean(stichprobe4$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Random sample", "(n = 20)")
+
+stichprobe5 <- d |>  sample_n(20, replace = TRUE)
+p_5 <- ggplot(stichprobe5, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = colours[5], colour = "black") +
+  geom_vline(xintercept = mean(stichprobe5$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Random sample", "(n = 20)")
+
+sampling_distribution <- replicate(20000, {
+  mean(sample(d$GJT, 20, replace = TRUE))
+})
+df_stichprobenmittel <- data.frame(means = sampling_distribution)
+p_stichprobenmittel <- ggplot(df_stichprobenmittel, aes(x = means)) +
+  geom_histogram(aes(y = after_stat(density)),
+                     breaks = seq(90, 210, 3), fill = "darkgrey", colour = "black") +
+  xlab(expression(bar(x)))  +
+  ylab("Density") +
+  ggtitle("Sampling distribution of mean\nfor samples of size 20")
+
+gridExtra::grid.arrange(p_population,
+                        p_1, p_2, p_3, p_4, p_5,
+                        p_stichprobenmittel,
+                        layout_matrix = matrix(c(NA, NA, 1, NA, NA,
+                                                 2, 3, 4, 5, 6,
+                                                 NA, NA, 7, NA, NA), ncol = 5, byrow = TRUE))
+@
+
+The problem we're faced with is that we can only generate the sampling
+distribution if we have access to the entire population.
+If we only have a sample at our disposal, we need to estimate
+the standard deviation or the size of an interval expressing the 
+spread of this sampling distribution.
+
+\section{The bootstrap}
+Enter the plug-in principle.
+Figure \ref{fig:stichprobenauspopulation} illustrates that each individual
+sample imperfectly reflects the population.
+But in practice, this imperfect reflection may be the only thing 
+we have at our disposal.\footnote{We could in principle make further assumptions about the data
+that cannot be inferred from the data themselves.}
+In order to estimate the standard deviation or gauge the form of the sampling
+distribution of the mean, 
+we can apply the plug-in principle and treat the sample 
+as a stand-in for the population.\footnote{This section was inspired by \citet{Hesterberg2015}.}
+
+\mypar[Red sample]{Example}
+Figure \vref{fig:bootstrap_rot} illustrates the procedure.
+We've drawn the first (red) sample from Figure \ref{fig:stichprobenauspopulation}. 
+Applying the plug-in principle, we pretend that the \textsc{gjt} population
+is distributed exactly as in this sample.
+To generate the sampling distribution of the mean under this assumption,
+we draw random samples of size 20 from the red sample using sampling with replacement.
+These new samples are called \term{bootstrap replicates}.
+Figure \ref{fig:bootstrap_rot} shows three such bootstrap replicates.
+We compute the sample mean of each bootstrap replicate;
+the distribution of 20,000 such means is shown in the bottom plot.
+
+<<echo = FALSE, cache = TRUE, fig.cap = "The first sample from Figure \\ref{fig:stichprobenauspopulation} serves as a stand-in for the \\textsc{gjt} population. By way of example, three bootstrap replicates of size 20 are shown. The distribution of the means of 20,000 such bootstrap replicates are shown in the bottom plot. This distribution looks approximately normal, but this doesn't have to be the case.\\label{fig:bootstrap_rot}", echo = FALSE, fig.width = 9, fig.height = 6.5, out.width="\\textwidth">>=
+p_sample <- ggplot(stichprobe1, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = colours[1], colour = "black") +
+  geom_vline(xintercept = mean(stichprobe1$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Sample 1", "(n = 20)")
+
+bs1 <- stichprobe1[sample(1:nrow(stichprobe1), 20, replace = TRUE), ]
+p_bs1 <- ggplot(bs1, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = "pink", colour = "black") +
+  geom_vline(xintercept = mean(bs1$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Bootstrap A" ,"(n = 20)")
+
+bs2 <- stichprobe1[sample(1:nrow(stichprobe1), 20, replace = TRUE), ]
+p_bs2 <- ggplot(bs2, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = "pink", colour = "black") +
+  geom_vline(xintercept = mean(bs2$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Bootstrap B", "(n = 20)")
+
+bs3 <- stichprobe1[sample(1:nrow(stichprobe1), 20, replace = TRUE), ]
+p_bs3 <- ggplot(bs3, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = "pink", colour = "black") +
+  geom_vline(xintercept = mean(bs3$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Bootstrap C" ,"(n = 20)")
+
+# Bootstrapping
+bootstrap_1 <- replicate(20000, {
+  mean(sample(stichprobe1$GJT, size = 20, replace = TRUE))
+})
+
+df <- data.frame(means = bootstrap_1)
+p_bs <- ggplot(df, aes(x = means, y = after_stat(density))) +
+  geom_histogram(breaks = seq(90, 210, 2), fill = colours[1], colour = "black") +
+  xlab("Bootstrapped means") +
+  ylab("Density") +
+  ggtitle("Distribution of bootstrapped means")
+
+gridExtra::grid.arrange(p_sample,
+                        p_bs1, p_bs2, p_bs3,
+                        p_bs,
+                        layout_matrix = matrix(c(NA, 1, NA,
+                                                 2, 3, 4,
+                                                 NA, 5, NA), ncol = 3, byrow = TRUE))
+@
+
+The expected value of the mean of the bootstrapped means equals the
+mean of the sample ($141.5$); any differences between the observed mean
+of the bootstrapped means and the sample means will be small.
+The standard deviation of the bootstrapped means is about $6.0$.
+2.5\% of the bootstrapped means are smaller than 130.10,
+whereas 2.5\% are larger than 153.55.
+The middle 95\% of the bootstrapped means, then, is covered by an interval
+of 23.45 points.
+\parend
+
+\mypar[Blue sample]{Example}
+Figure \vref{fig:bootstrap_blau} illustrates the same procedure but applied
+to the second (blue) sample from Figure \ref{fig:stichprobenauspopulation}.
+The mean of the bootstrapped means is very close to the mean of the sample ($153$).
+The standard deviation of the bootstrapped means is about $7.05$. 
+2.5\% of the bootstrapped means are smaller than 139.05,
+whereas 2.5\% are larger than 166.60.
+The middle 95\% of the bootstrapped means, then, is covered by an interval
+of 27.55 points.
+\parend
+
+<<echo = FALSE, cache = TRUE, fig.cap = "The second sample from Figure \\ref{fig:stichprobenauspopulation} serves as a stand-in for the \\textsc{gjt} population. By way of example, three bootstrap replicates of size 20 are shown. The distribution of the means of 20,000 such bootstrap replicates are shown in the bottom plot. This distribution looks approximately normal, but this doesn't have to be the case.\\label{fig:bootstrap_blau}", echo = FALSE, fig.width = 9, fig.height = 6.5, out.width="\\textwidth">>=
+p_sample <- ggplot(stichprobe2, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = colours[2], colour = "black") +
+  geom_vline(xintercept = mean(stichprobe2$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Sample 2" ,"(n = 20)")
+
+bs1 <- stichprobe2[sample(1:nrow(stichprobe2), 20, replace = TRUE), ]
+p_bs1 <- ggplot(bs1, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = "lightblue", colour = "black") +
+  geom_vline(xintercept = mean(bs1$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Bootstrap A" ,"(n = 20)")
+
+bs2 <- stichprobe2[sample(1:nrow(stichprobe2), 20, replace = TRUE), ]
+p_bs2 <- ggplot(bs2, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = "lightblue", colour = "black") +
+  geom_vline(xintercept = mean(bs2$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Bootstrap B" ,"(n = 20)")
+
+bs3 <- stichprobe2[sample(1:nrow(stichprobe2), 20, replace = TRUE), ]
+p_bs3 <- ggplot(bs3, aes(x = GJT)) +
+  geom_histogram(breaks = seq(90, 210, 5), fill = "lightblue", colour = "black") +
+  geom_vline(xintercept = mean(bs3$GJT), linetype = 2) +
+  xlab("GJT score") +
+  ylab("Number") +
+  ggtitle("Bootstrap C", "(n = 20)")
+
+# Bootstrapping
+bootstrap_2 <- replicate(20000, {
+  mean(sample(stichprobe2$GJT, size = 20, replace = TRUE))
+})
+
+df <- data.frame(means = bootstrap_2)
+p_bs <- ggplot(df, aes(x = means, y = after_stat(density))) +
+  geom_histogram(breaks = seq(90, 210, 2), fill = colours[2], colour = "black") +
+  xlab("Bootstrapped means") +
+  ylab("Density") +
+  ggtitle("Distribution of bootstrapped means")
+
+gridExtra::grid.arrange(p_sample,
+                        p_bs1, p_bs2, p_bs3,
+                        p_bs,
+                        layout_matrix = matrix(c(NA, 1, NA,
+                                                 2, 3, 4,
+                                                 NA, 5, NA), ncol = 3, byrow = TRUE))
+@
+
+The bootstrap is a technique for quantifying the uncertainty 
+or imprecision of parameter estimates \citep{Efron1979,Efron1993}.
+To calculate the actual uncertainty of a parameter estimate, 
+one could draw a large number of samples from the same population 
+and observe how the estimates vary between samples:
+\begin{itemize}
+\item Define the population, \\
+$\rightarrow$ draw samples, \\
+$\rightarrow$ generate the distribution of estimates across samples, \\
+$\rightarrow$ compute the variability of the estimates.
+\end{itemize}
+
+In the absence of a large number of samples from the same population, 
+one relies on the plug-in principle: 
+the single observed sample stands in for the population, 
+and one examines how well samples of the same size 
+drawn from this sample can estimate the parameter of interest:
+\begin{itemize}
+\item Define the sample, \\
+$\rightarrow$ draw bootstrap samples, \\
+$\rightarrow$ generate the distribution of estimates across bootstrap samples, \\
+$\rightarrow$ estimate the variability of the estimates.
+\end{itemize}
+
+So, crucially, the bootstrap provides an \emph{estimate} of the uncertainty of 
+a parameter estimate. 
+This becomes clear when examining Figure \vref{fig:bootstrapdistributions} 
+and Table \vref{tab:bootstrap}.
+Figure \ref{fig:bootstrapdistributions} shows the distribution of the 
+bootstrapped means for the five samples, 
+while Table \ref{tab:bootstrap} summarises their standard deviations, 
+their 2.5th and 97.5th percentiles, 
+and the difference between these percentiles.
+The standard deviations and the widths of the intervals between the 
+2.5th and 97.5th percentiles do not exactly match the corresponding actual, 
+but unknown, values in any of the five examples.
+But, on average, they are fairly similar.
+
+\begin{table}[htbp]
+\centering
+\caption{Standard deviation, percentiles, and the difference between the percentiles for the actual
+sampling distribution of the sample mean and for the five distributions of bootstrapped means.
+The percentiles and the differences between them aren't entirely consistent due to rounding.}
+\label{tab:bootstrap}
+\begin{tabular}{lrrrr}
+\toprule
+Sampling distribution     & \textsc{sd}  & 2.5th percentile  & 97.5th percentile & Difference \\
+\midrule
+True (unknown)                  & 6.1   & 139          & 163          & 24 \\
+\midrule
+Based on bootstrap sample 1          & 6.0   & 130          & 154          & 23 \\
+Based on bootstrap sample 2          & 7.0   & 139          & 167          & 28 \\
+Based on bootstrap sample 3          & 4.9   & 130          & 149          & 19 \\
+Based on bootstrap sample 4          & 6.5   & 133          & 158          & 25 \\
+Based on bootstrap sample 5          & 6.6   & 140          & 166          & 26 \\
+ \bottomrule
+\end{tabular}
+\end{table}
+
+Hence, when no additional information is available 
+(for example, prior studies or subject-matter reasoning), 
+the bootstrap can provide useful, albeit imperfect, 
+information about the uncertainty of a parameter estimate.
+
+<<echo = FALSE, cache = TRUE, warning = FALSE, fig.cap = "The distribution of bootstrapped means on the basis of five samples.\\label{fig:bootstrapdistributions}", echo = FALSE, fig.width = 1.7*3, fig.height = 1.7*8, out.width = ".5\\textwidth">>=
+
+df1 <- data.frame(means = bootstrap_1)
+df2 <- data.frame(means = bootstrap_2)
+
+# Bootstrapping
+bootstrap_3 <- replicate(20000, {
+  mean(sample(stichprobe3$GJT, size = 20, replace = TRUE))
+})
+df3 <- data.frame(means = bootstrap_3)
+
+bootstrap_4 <- replicate(20000, {
+  mean(sample(stichprobe4$GJT, size = 20, replace = TRUE))
+})
+df4 <- data.frame(means = bootstrap_4)
+
+bootstrap_5 <- replicate(20000, {
+  mean(sample(stichprobe5$GJT, size = 20, replace = TRUE))
+})
+df5 <- data.frame(means = bootstrap_5)
+
+minmax <- range(c(bootstrap_1, bootstrap_2, bootstrap_3, bootstrap_4, bootstrap_5))
+
+p_bs1 <- ggplot(df1, aes(x = means, y = after_stat(density))) +
+  geom_histogram(binwidth = 2, fill = colours[1], colour = "black") +
+  xlab("Bootstrapped means") +
+  ylab("Density") +
+  ggtitle("Sample 1") +
+  xlim(minmax)
+
+p_bs2 <- ggplot(df2, aes(x = means, y = after_stat(density))) +
+  geom_histogram(binwidth = 2, fill = colours[2], colour = "black") +
+  xlab("Bootstrapped means") +
+  ylab("Density") +
+  ggtitle("Sample 2") +
+  xlim(minmax)
+
+p_bs3 <- ggplot(df3, aes(x = means, y = after_stat(density))) +
+  geom_histogram(binwidth = 2, fill = colours[3], colour = "black") +
+  xlab("Bootstrapped means") +
+  ylab("Density") +
+  ggtitle("Sample 3") +
+  xlim(minmax)
+
+p_bs4 <- ggplot(df4, aes(x = means, y = after_stat(density))) +
+  geom_histogram(binwidth = 2, fill = colours[4], colour = "black") +
+  xlab("Bootstrapped means") +
+  ylab("Density") +
+  ggtitle("Sample 4") +
+  xlim(minmax)
+
+p_bs5 <- ggplot(df5, aes(x = means, y = after_stat(density))) +
+  geom_histogram(binwidth = 2, fill = colours[5], colour = "black") +
+  xlab("Bootstrapped means") +
+  ylab("Density") +
+  ggtitle("Sample 5") +
+  xlim(minmax)
+
+p_stichprobenmittel <- ggplot(df_stichprobenmittel, aes(x = means)) +
+  geom_histogram(aes(y = after_stat(density)),
+                     binwidth = 2, fill = "darkgrey", colour = "black") +
+  xlab(expression(bar(x)))  +
+  xlim(minmax) +
+  ylab("Density") +
+  ggtitle("Sampling distribution of sample mean")
+
+gridExtra::grid.arrange(p_stichprobenmittel,
+                        p_bs1, p_bs2, p_bs3, p_bs4, p_bs5,
+                        ncol = 1)
+@
+
+
+
+\mypar[Advantages of the bootstrap]{Remark}
+These are the main advantages of the bootstrap:
+\begin{itemize}
+ \item The bootstrap is pedagogically valuable (I hope). 
+ The mathematical requirements are modest, 
+ which allows us to discuss important concepts 
+ independently of their usual formal treatment.
+
+ \item The bootstrap is flexible. 
+ Here, we have focused on the uncertainty of a sample mean. 
+ This can also be expressed using a relatively simple analytical method (see below).
+ However, the bootstrap can also be used to quantify the uncertainty of many other
+ estimators, such as a trimmed or winsorised mean, a median, a standard deviation, 
+ a specific quantile, etc.
+ Examples appear in the exercises. 
+ Moreover, the bootstrap can also be applied to more complex models 
+ (e.g., when examining relationships between multiple variables).
+
+ \item In some cases, 
+ the bootstrap assumptions are more plausible than those of other common methods. 
+ This point will become clearer later in this chapter. 
+ Here, it is worth noting that in the examples above we never assumed 
+ that the sampling distribution of the mean was normally distributed. 
+ In these examples, the distributions of the bootstrapped means 
+ \emph{happened} to be approximately normal---but we did not assume this a priori. 
+ In particular, we did not assume that the population 
+ from which the samples were drawn is normally distributed. \parend
+\end{itemize}
+
+\mypar[Disadvantages of the bootstrap]{Remark} 
+  Naturally, the bootstrap is not a silver bullet.
+\begin{itemize}
+ \item ``Bootstrapping does not overcome the weakness of small samples as a basis for inference.'' \citep[][p.~379]{Hesterberg2015}
+ On the one hand, the \emph{actual} uncertainty of a parameter estimate is, 
+ of course, larger for a small sample than for a large one 
+ (see also the central limit theorem). 
+ On the other hand, our \emph{estimate} of this uncertainty is also 
+ less accurate for smaller samples. 
+ This, however, is not so much a drawback of the bootstrap itself, 
+ but of small samples in general: 
+ other methods do not provide a better solution here.\footnote{Unless they make stricter assumptions or incorporate information not derivable from the data proper.}
+
+ \item The bootstrap implementation illustrated above tends to slightly underestimate,
+ rather than overestimate, the uncertainty of a parameter estimate. 
+ This effect is stronger for small samples. 
+ The reason is that the variability of a sample typically underestimates the variability in the population; 
+ this is why the sample variance is calculated 
+ slightly differently from the population variance. 
+ In the bootstrap, however, the sample stands in for the population. 
+ To the extent that the sample underestimates population variability, 
+ the bootstrap underestimates the uncertainty of the parameter estimate. 
+ There are several ways to correct this bias \citep[see][]{Efron1993}, 
+ but these aren't so pedagogically useful.
+
+ \item Because the bootstrap is so flexible, 
+ it is difficult to write a general, user-friendly function for it. 
+ In my view, it is best to program the bootstrap yourself. \parend
+\end{itemize}
+
+The examples above served purely a pedagogical purpose: 
+if we have a sample of 76 participants, 
+it is hardly sensible to draw smaller samples from it. 
+Example \ref{example:bootstrap} below shows how to estimate the uncertainty of 
+DeKeyser et al.'s original sample mean.
+Incidentally, we find ourselves in the somewhat
+odd---but fairly common---situation 
+that we do not really know precisely which population our statements 
+can generalise to. 
+Two further exercise illustrate the flexibility of the bootstrap.
+
+\mypar[Standard error]{Definition}
+  An estimate of the standard deviation of a sampling distribution
+  is known as a \term{standard error}.
+\parend
+
+\mypar{Example}\label{example:bootstrap}
+The function \texttt{btstrp\_mean\_one\_run()} 
+generates a single bootstrap replicate and calculates its mean. 
+The function \texttt{replicate()} then executes it \texttt{n\_bootstraps} times. 
+It is assumed that your dataset is named \texttt{d}. 
+If this is not the case, 
+you need to replace \texttt{d} everywhere with the correct object name, 
+or rename the dataset.
+<<cache = TRUE>>=
+btstrp_mean_one_run <- function(x) {
+  btstrp_sample <- sample(x, replace = TRUE)
+  mean(btstrp_sample)
+}
+n_bootstraps <- 20000
+bootstraps <- replicate(n_bootstraps, btstrp_mean_one_run(d$GJT))
+@
+
+\citet{Hesterberg2015} recommends generating 20,000 bootstrap replicates 
+so that the result is minimally affected by randomness in the bootstrap itself. 
+To get a rough idea, 1,000 replicates would suffice, 
+but in principle this computation should not take too long. 
+A quick histogram (without \texttt{ggplot2}) illustrates 
+the central limit theorem at work.
+<<eval = FALSE>>=
+hist(bootstraps)
+@
+
+The standard deviation of the bootstrapped means serves 
+as the standard error:
+<<>>=
+# standard error of mean
+sd(bootstraps)
+@
+
+I would report the estimate of the mean and its uncertainty as 
+$150.8 \pm 3.1$ or even $151 \pm 3$. 
+The exact values $150.7763 \pm 3.1170$ would include too many digits, 
+giving a misleading sense of precision. 
+In \citet{Vanhove2020b}, I provide some guidelines for rounding estimates.
+
+Approximately 95\% of the bootstrapped means lie between 145 and 157. This interval represents a \term{confidence interval}, which we will discuss in more detail later.
+<<>>=
+quantile(bootstraps, probs = c(0.025, 0.975))
+@
+
+Since the distribution of the bootstrapped means appears roughly normal, 
+we can also calculate these quantiles using the properties of the normal distribution. The 2.5th percentile of any normal distribution lies about 1.96 standard deviations below the mean:
+<<>>=
+qnorm(0.025)
+@
+And the 97.5th percentile lies the same distance above the mean:
+<<>>=
+qnorm(0.975)
+@
+The following calculation therefore yields essentially the same solution:
+<<>>=
+mean(d$GJT) + qnorm(c(0.025, 0.975)) * sd(bootstraps)
+@
+Of course, this only holds if the distribution of the bootstrapped means is approximately normal; the percentile method is more generally applicable.
+\parend
+
+\mypar{Exercise}
+  The standard error and the interval width obtained in Exercise \ref{example:bootstrap}
+  are smaller than those reported in Table \vref{tab:bootstrap}.
+  Why?
+\parend
+
+\mypar[Trimmed mean]{Exercise}
+  Definition \vref{def:trimmedmean} introduced trimmed means.
+  Here, we want to compute the 20\% trimmed mean of the \textsc{gjt} data:
+<<>>=
+mean(d$GJT, trim = 0.2)
+@
+  
+Compute a standard error of the 20\% trimmed mean of the GJT data 
+using the bootstrap. 
+To do so, you only need to change one line in the code from Example \ref{example:bootstrap}.
+Also plot a histogram of the bootstrap estimates.
+\parend
+
+\mypar[Uncertainty of the standard deviation]{Exercise}
+The bootstrap is not only useful for quantifying the 
+uncertainty in the estimation of a mean.
+Compute the standard deviation of the \textsc{gjt} data and use 
+the bootstrap to assess the uncertainty of this estimate.
+Also draw the corresponding histogram.
+\parend
+
+\mypar[Median]{Exercise}
+Compute the median of the \textsc{gjt} data 
+and use the bootstrap to quantify the uncertainty of this estimate.
+What do you notice compared to the previous exercises?
+If nothing stands out at first, 
+try increasing the number of \textit{bins} in the histogram:
+\texttt{hist(bootstraps, breaks = 100)}.
+How do you explain your findings?
+\parend
+
+\section{The plug-in principle and the central limit theorem}
+In applied linguistics, 
+the bootstrap isn't often used to quantify the uncertainty of a sample mean.
+Instead, researchers typically rely on the central limit theorem (see Section~\vref{sec:clt}).
+To recall: the central limit theorem states 
+that the distribution of sample means ($\overline{X}$) tends 
+towards a normal distribution when sample sizes are sufficiently large. 
+The mean of the sampling distribution equals 
+the population mean ($\mu_{\overline{X}} = \mu$); 
+its standard deviation is
+\begin{equation*}
+\sigma_{\overline{X}} = \frac{\sigma}{\sqrt{n}}.
+\end{equation*}
+If the population standard deviation $\sigma$ is known, 
+we can compute $\sigma_{\overline X}$ directly. 
+If the population standard deviation is unknown,
+we can once again apply the plug-in principle: 
+the sample standard deviation $s$ is the best available estimate 
+of the population standard deviation $\sigma$, 
+so we substitute it into the formula. 
+This gives us an estimate of $\sigma_{\overline X}$, i.e., a standard error (\textsc{se}):
+\begin{equation*}
+  \sigma_{\overline X} \approx \textsc{se} = \frac{s}{\sqrt{n}}.
+\end{equation*}
+The sample standard deviation of the \textsc{gjt} scores is about 27.32. 
+So the standard error is
+$\frac{27.32}{\sqrt{76}} = 3.13$.
+
+The central limit theorem also allows us to construct a 95\% confidence interval:
+<<>>=
+mean(d$GJT) + qnorm(c(0.025, 0.975)) * sd(d$GJT)/sqrt(76)
+@
+This confidence interval is very similar 
+to the one obtained via bootstrapping, which is of course reassuring.
+The difference is that this time we have \emph{assumed} 
+that the means of samples of size 76 drawn from the population 
+are normally distributed. 
+This assumption was not required when using the bootstrap. 
+For strongly skewed or otherwise wonky distributions, 
+it is quite possible that the central limit theorem has not yet ``kicked in'' 
+with samples of 76 observations. 
+In such cases, the bootstrap is likely to be the more appropriate approach.
+That said, for such distributions, one should pause to consider
+whether the mean is really of interest; see
+\href{https://janhove.github.io/posts/2019-04-11-assumptions-relevance/}{\textit{Before worrying about model assumptions, think about model relevance}} 
+(11 April 2019).
+It should also be noted that the central limit theorem applies
+only to the sample mean, not to other parameter estimates.
+For some parameters, alternative formulae exist,
+but the bootstrap is considerably more flexible.
+
+\section{The $t$ distributions}
+The sample standard deviation ($s$) 
+is merely an estimate of the population standard deviation ($\sigma$). 
+If $s$ underestimates $\sigma$, 
+the uncertainty in the parameter estimate will in turn be underestimated; 
+if $s$ overestimates $\sigma$, the uncertainty will be overestimated. 
+This would not be problematic if the under- and overestimations cancelled out on average. 
+However, as noted on page \pageref{comment:sd}, 
+$s$ tends to underestimate $\sigma$, particularly in small samples. 
+Consequently, the sampling distribution of the mean is typically wider 
+than a normal distribution with standard deviation $s/\sqrt{n}$. 
+In most cases this bias in $s$ cannot be corrected. 
+An important exception is when the sample comes from a normally distributed population;
+this exception is dealt with in Student's theorem.
+
+\mypar[Gosset (Student)]{Theorem}\label{th:gosset}
+  Let $\bm X = (X_1, \dots, X_n)$ be a random sample of independent observations 
+  from a $\mathcal{N}(\mu, \sigma^2)$ distribution. 
+  Let $\overline{X}$ and $s(\bm X)$ denote the sample mean 
+  and sample standard deviation, respectively. 
+  Then the quantity
+  \[
+    T := \frac{\overline{X} - \mu}{s(\bm X) / \sqrt{n}}
+  \]
+  has the same distribution as  
+  \[
+    \frac{Z_0}{\sqrt{\frac{1}{n-1}\left(Z_1^2 + \dots + Z_{n-1}^2\right)}},
+  \]
+  where $Z_0, \dots, Z_{n-1} \sim \mathcal{N}(0, 1)$ are independent. 
+  This distribution is called the \term{Student's $t$ distribution} 
+  with $n-1$ degrees of freedom 
+  (equal to the number of random variables appearing in the denominator). 
+  It is denoted by $T \sim t_{n-1}$ or $T \sim t(n-1)$.
+\parend
+
+For comparison: if $\sigma$ is known, then
+\[
+  \frac{\overline{X} - \mu}{\sigma / \sqrt{n}} \sim \mathcal{N}(0, 1)
+\]
+or, equivalently,
+\[
+  \overline{X} \sim \mathcal{N}(\mu, \sigma^2 / n).
+\]
+Figure \ref{fig:dt} shows $t$ distributions with two, five, and twenty
+degrees of freedom.
+As the number of degrees of freedom increases, 
+the $t$ distribution becomes increasingly similar to 
+the standard normal distribution. 
+This reflects the fact that larger samples tend to underestimate $\sigma$ 
+less than smaller samples.
+Incidentally, ``Student'' was the pseudonym of 
+William S.\ Gosset, whose employer, Guinness, 
+forbade him from publishing under his real name 
+for fear of revealing ideas to competitors.
+
+<<echo = FALSE, warning = FALSE, fig.cap = "Densities of the Student's $t$ distributions with two (red), five (blue), and twenty (green) degrees of freedom. The black curve shows the density function of the standard normal distribution.\\label{fig:dt}", fig.width = 4, fig.height = 2.8, out.width=".4\\textwidth">>=
+my_col <- RColorBrewer::brewer.pal(3, "Set1")
+ggplot(data.frame(x = c(-6, 6)),
+             aes(x)) +
+  stat_function(fun = function(x) dt(x, 2),
+                colour = my_col[1]) +
+  # annotate("text", x = 2 + 2, y = dt(2, 4), label = bquote(t[4]^2),
+  #          color = my_col[1]) +
+  stat_function(fun = function(x) dt(x, 5),
+                colour = my_col[2]) +
+  # annotate("text", x = 7 + 1.5, y = dt(7, 9) + 0.005, label = bquote(t[9]^2),
+  #          color = my_col[2]) +
+  stat_function(fun = function(x) dt(x, 20),
+                color = my_col[3]) +
+  # annotate("text", x = 14, y = dt(14, 16) + 0.01, label = bquote(t[16]^2),
+  #          color = my_col[3]) +
+  stat_function(fun = function(x) dnorm(x),
+                color = "black") +
+  ylab("Density") +
+  xlab("T")
+@
+ 
+To construct a 95\% confidence interval around a sample mean 
+using the $t$ distribution, one first uses \texttt{qt()} 
+to find the 2.5th and 97.5th percentiles of the $t$ distribution 
+with $n-1$ degrees of freedom (here: $76-1 = 75$). 
+These values are then multiplied by the standard error.
+This procedure is entirely analogous to constructing a confidence interval 
+based on the central limit theorem; 
+the only difference is that a $t$ distribution 
+is used instead of a normal distribution.
+<<>>=
+qt(0.025, df = 75)
+qt(0.975, df = 75)
+
+mean(d$GJT) + qt(c(0.025, 0.975), df = 75) * sd(d$GJT) / sqrt(76)
+@
+
+In this example, all calculation methods yield highly similar results. 
+However, this is not necessarily the case for small samples or
+when the sample suggests that the population is highly skewed.
+Of the three methods discussed, the $t$-method makes the most assumptions: 
+it not only assumes that one can make meaningful statements 
+about the uncertainty from the sample and 
+that the population has some distribution 
+for which the central limit theorem applies at this sample size, 
+but also that the population itself is normally distributed.
+When all these assumptions hold, this method is also the most accurate.
+The bootstrap, by contrast, is
+the Swiss Army knife of estimation methods: 
+it can be applied in many situations, 
+but depending on the circumstances, there may be specialised methods 
+that perform better. \footnote{In fact, the predecessor of the bootstrap was called the \textit{jackknife}.}
+
+\section{Confidence intervals}\label{sec:ci}
+Over the course of this chapter, 
+we have constructed a few confidence intervals.
+It is now high time to explain what these actually are. 
+Unfortunately, their definition is somewhat challenging.
+
+\mypar[Confidence bounds and intervals]{Definition}\label{def:ci}
+  Let $\bm X = (X_1, \dots, X_n)$ be a sample from a population, 
+  and let $\theta$ be a parameter of interest (estimand).
+  A mapping (function) $a(\alpha, \bm X)$ provides 
+  a \term{lower $100(1-\alpha)$\% confidence bound} if
+  \begin{equation}\label{eq:ci}
+    \Prob(a(\alpha, \bm X) \leq \theta) \geq 1 - \alpha
+  \end{equation}
+  for all $\alpha \in (0, 1)$.
+  A mapping $b(\alpha, \bm X)$ provides an 
+  \term{upper $100(1-\alpha)$\% confidence bound} if
+  \[
+    \Prob(\theta \leq b(\alpha, \bm X)) \geq 1 - \alpha.
+  \]
+  for all $\alpha \in (0, 1)$.
+  Two mappings $\tilde{a}(\alpha, \bm X)$ and 
+  $\tilde{b}(\alpha, \bm X)$ provide a 
+  \term{$100(1-\alpha)$\% confidence interval} if
+  \[
+    \Prob(\tilde{a}(\alpha, \bm X) \leq \theta \leq \tilde{b}(\alpha, \bm X))
+    \geq 1 - \alpha
+  \]
+  for all $\alpha \in (0, 1)$.
+\parend
+
+The idea is this.
+We want to estimate a parameter $\theta$ from a random sample.
+Rather than providing only a point estimate, 
+we aim to give a range of possible values for $\theta$ 
+that are compatible with the observed data.
+To do this, we need a procedure that guarantees 
+that the lower or upper confidence bound is greater or smaller than $\theta$ 
+with probability at most $\alpha$, 
+where $\alpha$ is the allowable error probability.
+For a confidence interval, 
+we need a procedure that constructs an interval containing the parameter 
+$\theta$ with probability at least $1-\alpha$.
+ 
+\mypar[Exact confidence bounds for the mean of a normal distribution with known variance]{Example}\label{example:ci_exact_norm}
+  Let $X_1, \dots, X_n$ be a simple random sample from a $\mathcal{N}(\mu, \sigma^2)$ distribution, where $\sigma^2$ is known.
+  The sample mean of normally distributed variables is again normally distributed,
+  so we know that
+  \[
+    \overline{X} \sim \mathcal{N}(\mu, \sigma^2/n)
+  \]
+  or, equivalently,
+  \[
+    \frac{\overline{X} - \mu}{\sigma / \sqrt{n}} \sim \mathcal{N}(0, 1).
+  \]
+  Thus, with $q_{1-\alpha}$  the $(1-\alpha)$-quantile of the standard normal distribution $\mathcal{N}(0,1)$,
+  \begin{align*}
+  1 - \alpha
+  &= \Prob\left(\frac{\overline{X} - \mu}{\sigma / \sqrt{n}} \leq q_{1 - \alpha}\right)
+  & [\textrm{quantile of continuous distribution}] \\
+  &= \Prob\left(\overline{X} - q_{1 - \alpha}\frac{\sigma}{\sqrt{n}} \leq \mu\right)
+  & [\textrm{rearranging}] \\
+  &= \Prob\left(\overline{X} + q_{\alpha}\frac{\sigma}{\sqrt{n}} \leq \mu\right), &
+  \end{align*}
+since $-q_{1-\alpha} = q_{\alpha}$.
+  Accordingly, we define
+  \[
+    a(\alpha, X_1, \dots, X_n) := \overline{X} + q_{\alpha}\frac{\sigma}{\sqrt{n}},
+  \]
+  where $q_{\alpha}$ is the $\alpha$-quantile of the standard normal distribution.
+Then $a(\alpha, X_1, \dots, X_n)$ is a lower $100(1-\alpha)$\% confidence bound for $\mu$.
+Let's illustrate this with a simulation, here with $n = 5$, $\mu = -34$, $\sigma^2 = 9^2$, and $\alpha = 0.13$:
+<<>>=
+known_sigma_one_run <- function(n, mu, sigma, alpha) {
+  # draw sample
+  x <- rnorm(n, mu, sigma)
+  # lower confidence bound
+  mean(x) + qnorm(alpha) * sigma / sqrt(n)
+}
+lwr <- replicate(
+  20000, known_sigma_one_run(n = 5, mu = -34, sigma = 9, alpha = 0.13))
+mean(lwr <= -34)
+@
+87\% of the lower confidence bounds, then, lie below the true parameter value of $\mu$.
+Indeed, the inequality in (\ref{eq:ci}) holds with equality in this special setting.
+<<echo = FALSE>>=
+set.seed(2024)
+@
+
+Let's generate a concrete sample from $\mathcal{N}(12, 17^2)$
+and use it to construct an 80\% lower confidence bound for $\mu$:
+<<>>=
+mu <- 12
+sigma <- 17
+n <- 7
+alpha <- 0.2
+x <- rnorm(n, mu, sigma)
+x # sample
+mean(x) + qnorm(alpha) * sigma / sqrt(n)
+@
+A priori, the probability that a random sample produces a `correct'
+lower $100(1-\alpha)$\% confidence bound 
+(that is, a bound that is below $\theta$) is at least $1-\alpha$.
+However, it can of course happen, as in this case, 
+that the lower confidence bound is greater than $\theta$. 
+This example also shows that the probability guarantees 
+refer to the construction procedure, not to individual bounds: 
+it would be nonsensical to say that
+\[
+  \Prob(16.58 \leq \mu) \geq 0.80,
+\]
+because the expression `$16.58 \leq \mu$' does not involve any randomness:
+it is simply false.\footnote{Another example: before rolling a six-sided die, 
+the probability of rolling at least a $4$ is 50\%. 
+But if we observe a $2$, it no longer makes sense to claim that the 
+probability of 2 being at least as large as 4 is 50\%.}
+
+An upper $100(1-\alpha)$\% confidence bound is given by
+\[
+    b(\alpha, X_1, \dots, X_n) := \overline{X} + q_{1 - \alpha}\frac{\sigma}{\sqrt{n}}.
+\]
+So a $100(1-\alpha)$\% confidence interval is given by
+\[
+    [a(\alpha/2, X_1, \dots, X_n), b(\alpha/2, X_1, \dots, X_n)].
+\]
+That is, we use two $100(1-\alpha/2)$\% confidence bounds.
+
+Other construction methods are possible; these yield different specific values, 
+but provide the same probability guarantees. 
+The method described here is the most common.
+\parend
+
+\mypar[Quality criteria for confidence intervals]{Remark}
+  For any given estimation problem, there is not always a unique procedure 
+  to construct confidence intervals. 
+  The most important criterion when choosing a method is 
+  that the probability guarantees (as in \ref{eq:ci}) are respected. 
+  If these guarantees are satisfied exactly, 
+  the intervals are called \term{exact} confidence bounds. 
+  In practice, however, they are often only approximately satisfied.
+  If its assumptions are satisfied, then 
+  the method from Example \ref{example:ci_exact_norm} is exact,
+  whereas the bootstrap intervals discussed earlier are approximate.
+  
+  If two procedures satisfy this criterion equally well, 
+  one generally prefers the method that tends to produce narrower intervals, 
+  or for which the interval width converges to zero as the sample size increases to infinity. 
+  Indeed, it is possible to devise procedures 
+  that satisfy the necessary probability guarantees 
+  but either produce entirely trivial confidence bounds 
+  or fail to shrink as the sample size increases to infinity. 
+  We will not consider such procedures here.
+  
+  Another important quality criterion for confidence bounds and intervals 
+  is their \term{robustness}: 
+  if a procedure satisfies the probability guarantees exactly 
+  only under rather specific assumptions about the data, 
+  it is desirable in practice that the method still approximately 
+  maintains the guarantees under less restrictive conditions. 
+  See Exercise \ref{ex:robust}.
+\parend
+
+\mypar[Choice of bounds]{Remark}
+  A lower confidence bound is appropriate 
+  when one is interested in whether $\theta$ 
+  is at least a certain value (with a specified probability of error).
+  An upper confidence bound is appropriate 
+  when one is interested in whether $\theta$ is at most a certain value.
+  A confidence interval is appropriate
+  when one wishes to answer both questions simultaneously.
+  For the questions that concern us, 
+  confidence intervals are typically suitable.
+
+  By default, one typically sets $\alpha = 0.05$, i.e., 
+  one calculates 95\% confidence bounds or 95\% confidence intervals. 
+  This, however, is merely a convention.
+\parend
+
+The concepts of confidence bounds and confidence intervals are 
+more subtle than they might appear---even for experienced researchers \citep{Hoekstra2014}.
+A 95\% confidence interval is often interpreted as the range within which the population parameter (here: $\mu$) lies with 95\% probability.
+However, this interpretation is incorrect, as Example \ref{example:ci_exact_norm} demonstrates 
+\citep[see also][]{Morey2016}.
+Nonetheless, \citet{Ehrenberg1982} offers the following perspective on interpreting confidence intervals:
+\begin{quote}
+``[This] rough-and-ready interpretation of confidence limits \dots will be close
+to the truth. The choice is between making a statement which is true but so
+complex that it is almost unactionable, and making one which is much simpler
+but not quite correct. Fortunately, the effective content of the two kinds
+of statement is generally similar.'' (p.\ 125)
+\end{quote}
+
+Instead of confidence intervals, 
+\citet{Morey2016} recommend the use of \term{credibility intervals}. 
+These are grounded in Bayesian statistics 
+and are rare in our research literature, 
+which is why they are not discussed here.
+\citet{Albers2018} note that confidence and credibility intervals
+are usually very similar; 
+however, \citet{Nalborczyk2018} question this conclusion.
+
+Despite this, I consider the following points particularly important:
+\begin{itemize}
+  \item Confidence intervals emphasise that estimates are inherently uncertain.
+  
+  \item With large samples, or with populations that exhibit little variation,
+        confidence intervals tend to be narrower.
+  
+  \item By chance alone, a sample may underestimate population variation, 
+        and thus the confidence interval may also underestimate 
+        the uncertainty of the estimate.
+  
+  \item More accurate assessments of uncertainty 
+        can be obtained with larger samples, more sophisticated study designs, 
+        or by making additional reasonable assumptions about the data.
+\end{itemize}
+
+In the remainder of this chapter, 
+we will examine the construction of confidence intervals for more realistic scenarios.
+
+\mypar[Exact confidence bounds for the mean of a normal distribution with unknown variance]{Example}\label{bsp:ci_exact_t}
+ If we have a random sample of independent observations
+$X_1, \dots, X_n \sim \mathcal{N}(\mu, \sigma^2)$, where both $\mu$ and $\sigma^2$
+are unknown, the method from Example \ref{example:ci_exact_norm} no longer
+provides exact confidence bounds. However, using Theorem \ref{th:gosset}, we can exploit the fact that
+  \[
+    \frac{\overline{X} - \mu}{S / \sqrt{n}} \sim t(n-1).
+  \]
+A derivation analogous to the one in Example \ref{example:ci_exact_norm} yields
+a lower confidence bound of
+  \[
+    a(\alpha, X_1, \dots, X_n) := \overline{X} + q_{n-1;\alpha}\frac{S}{\sqrt{n}},
+  \]
+ where $q_{n-1; \alpha}$ is the $\alpha$-quantile of the $t(n-1)$ distribution.
+Upper confidence bounds and confidence intervals can be constructed analogously.
+
+  Using the function \texttt{t.test()}, you can quickly compute these confidence bounds:
+<<>>=
+# 80% confidence interval for the GJT mean
+t.test(d$GJT, conf.level = 0.80)$conf.int
+# lower 95% confidence bound for the GJT mean
+t.test(d$GJT, conf.level = 0.95, alternative = "greater")$conf.int
+@
+Use \texttt{alternative = "less"} for upper confidence bounds.
+\parend
+
+\mypar{Remark} 
+Identical random experiments can yield quite different confidence intervals. 
+With the code below, you can demonstrate this yourself. 
+The same random experiment is carried out \texttt{n\_sim} times: 
+each time, \texttt{n\_obs} independent observations are generated from a 
+$\mathcal{N}(\texttt{popmean}, \texttt{stdev}^2)$ distribution. 
+On the basis of this sample, a 95\% confidence interval is constructed using \texttt{t.test()}. 
+The confidence intervals, sorted by their width, are displayed in Figure \ref{fig:ci_dance}. 
+About 5\% of the intervals shown don't contain the value of \texttt{popmean}, 
+and the width of the intervals varies appreciably between samples.
+
+<<echo = TRUE, warning = FALSE, fig.cap = "Confidence intervals based on 100 samples of 23 observations from a $\\mathcal{N}(-7, 2.5^2)$-distribution. The confidence intervals are sorted by their width.\\label{fig:ci_dance}", fig.width = 6, fig.height = 9, out.width=".6\\textwidth">>=
+n_sim  <- 100
+n_obs  <- 23
+stdev  <- 2.5
+popmean <- -7
+
+cis <- matrix(nrow = n_sim, ncol = 2)
+
+for (i in 1:n_sim) {
+  x <- rnorm(n_obs, popmean, stdev)
+  cis[i, ] <- t.test(x)$conf.int
+}
+
+in_interval <- cis[, 1] <= popmean & popmean <= cis[, 2]
+
+resultats <- tibble(min = cis[, 1],
+                    max = cis[, 2],
+                    in_interval,
+                    sim = 1:n_sim) |>
+  mutate(width = max - min)
+
+ggplot(resultats,
+       aes(xmin = min, xmax = max,
+           y = reorder(sim, width),
+           colour = in_interval)) +
+  geom_errorbarh() +
+  geom_vline(xintercept = popmean,
+             linetype = "dashed") +
+  scale_y_discrete(breaks = NULL) +
+  scale_colour_manual("True mean in interval?",
+                      limits = c(FALSE, TRUE),
+                      labels = c("no", "yes"),
+                      values = c("red", "black")) +
+  theme(legend.position = "bottom") +
+  labs(y = element_blank(),
+       title = "100 95% confidence intervals for the same mean")
+@
+\parend
+
+\mypar{Exercise}
+  Assume you have random samples with the same sample standard deviation:
+  $s_1 = s_2$.
+  Sample 1 consists of 16 observations;
+  sample 2 of only four.
+  Based on both samples, 95\% confidence intervals for the mean are
+  computed using $t$-distributions.
+  What are the \emph{two} reasons that the 95\% confidence inteval
+  based on sample 1 will be narrower than the one based on sample 2.
+\parend
+
+\mypar[Approximate confidence bounds for the mean]{Remark}
+  If the random sample was not drawn from a normal distribution,
+  the confidence bounds and confidence intervals from Example \ref{bsp:ci_exact_t}
+  can still be used as approximations.
+  Another option is to use bootstrap-based intervals.
+\parend
+
+\mypar[Robustness of the $t$ method]{Exercise}\label{ex:robust}
+  We wish to investigate if the confidence interval obtained using the method
+  discussed in Example \ref{bsp:ci_exact_t} is useful if the data stem from a
+  uniform distribution instead of a normal distribution.
+  To this end, we first define a function that 
+  generates a random sample from a uniform distribution, 
+  constructs a $t$-based confidence interval for the mean,
+  and outputs if the mean of the uniform distribution is contained in this interval:
+<<>>=
+uniform_one_run <- function(n, min, max, conf_level) {
+  x <- runif(n, min, max)
+  ci <- t.test(x, conf.level = conf_level)$conf.int
+  popmean <- (min + max)/2
+  ci[1] <= popmean & popmean <= ci[2]
+}
+@
+  We run this function 20,000 times with some parameter settings.
+  Then, we calculate how often the confidence interval contained the true population mean.:
+<<>>=
+simulation <- replicate(20000, uniform_one_run(9, -12, 2, 0.7))
+mean(simulation)
+@
+  In this case, about 70.7\% of the 70\% confidence intervals contain the 
+  true mean.
+  \begin{enumerate}
+    \item Run this simulation again with smaller and larger sample sizes.
+          Also vary the value of \texttt{conf\_level}.
+          What do you conclude?
+
+    \item Uniform distributions, like normal distributions, are symmetric around their mean.
+    $\chi^2$ distributions (see Remark \ref{remark:chisq}), by contrast, are right-skewed:
+    There is more probability mass below the mean than above it,
+    especially if the number of degrees of freedom is low.
+    We want to check if the $t$ method still works for such right-skewed distributions.
+    To this end, adapt the code above so that it generates samples from
+    a $\chi^2$ distribution with \texttt{df} degrees of freedom (\texttt{rchisq(n, df)});
+    you should also adapt the code elsewhere so that it makes sense.
+    (The mean of a $\chi^2$ distribution equals its number of degrees of freedom.)
+    Play around with the values for \texttt{n}, \texttt{df}, and \texttt{conf\_level},
+    and draw a conclusion.\parend
+  \end{enumerate}
+
+\mypar[Exact confidence bounds for a binomial parameter]{Example}\label{example:clopperpearson}
+  We conclude this chapter with a classic example.
+  Let $X \sim \textrm{Binomial}(n, p)$. 
+  An unbiased estimator of $p$ is
+  \[
+    \widehat{p} := \frac{X}{n}.
+  \]
+  We now wish to construct exact lower and upper confidence bounds for $p$.
+  To this end, we consider the distribution function $F_{n,p}$ of the
+  $\textrm{Binomial}(n,p)$ distribution.
+  A useful result, which we won't prove, states that for all $\alpha \in (0,1)$,
+  \[
+    \Prob(F_{n,p}(X) \leq \alpha) = 1 - \Prob(F_{n,p}(X) > \alpha) \leq \alpha.
+  \]
+  (This holds not only for binomial distributions but for
+  all random variables $X$ with distribution function $F$.)
+  Consequently,
+  \begin{align*}
+    \Prob(F_{n,p}(X) > \alpha) \geq 1 - \alpha. \tag{$\ast$}
+  \end{align*}
+  
+  We now regard the expression $F_{n,p}(r)$ not as a function of $r$
+  but rather as a function of $p$.
+  For $r$ we substitute the observed number of successes $X$.
+  The function thus obtained is strictly decreasing in $p$:
+  for a fixed number of successes, the probability that a binomially distributed
+  random variable generates at most $r$ successes is greater for small $p$
+  than for large $p$.
+  As the upper $100(1-\alpha)$\% confidence bound, we now choose the smallest
+  possible $b$ such that $F_{n, b}(X) > \alpha$.
+  This number $b$ represents a valid upper $100(1-\alpha)$\% confidence bound, for
+  \begin{align*}
+    \Prob(p \leq b)
+    &= \Prob(F_{n,p}(X) \geq F_{n,b}(X)) & [\textrm{strictly decreasing}] \\
+    &\geq \Prob(F_{n,p}(X) > \alpha)             & [\textrm{choice of $b$}] \\
+    &\geq 1 - \alpha.                            & [(\ast)]
+  \end{align*}
+  
+  Let us take a concrete examples with 23 trials and seven successes.
+  Then $\widehat{p} = 7/23 \approx 0.304$.
+  The red curve in Figure \ref{fig:binomtest} shows
+  how $F_{23,p}(7)$ varies with $p$. 
+  The upper 90\% confidence bound for $p$ (i.e., with $\alpha = 0.1$)
+  is about $0.46$.
+
+  For the lower confidence bound, 
+  we consider successes as failures and vice versa.
+  That is, instead of $X$, we consider the random variable $Y := n - X$. 
+  This random variable has a $\textrm{Binomial}(n, 1 - p)$ distribution.
+  Using the same method as before, we compute an upper confidence bound $\tilde{b}$
+  for $1-p$.
+  The lower confidence bound for $p$ is then simply $a := 1 - \tilde{b}$.
+  The blue curve in Figure \ref{fig:binomtest} shows
+  how $F_{23,p}(23 - 7)$ varies with $p$. 
+  The upper 90\% confidence bound for $1-p$ is about $0.82$. 
+  Accordingly, the lower 90\% confidence bound for $p$ is about $0.18$.
+  Hence, an 80\% confidence interval for $p$ is $[0.18, 0.46]$.
+
+<<echo = FALSE, warning = FALSE, fig.cap = "Constructing a 80\\% confidence interval for the binomial parameter $p$ when $n = 23$ and $X = 7$. The red curve shows the quantity $F_{23,p}(7)$ as a function of $p$. The blue curve shows the quantity $F_{23,p}(23 - 7)$ as a function of $p$. The dashed lines show the upper 90\\% confidence bounds for $p$ (red) and $1-p$ (blue). The lower confidence bound for $p$ can be derived from the upper confidence bound for $1-p$.\\label{fig:binomtest}", fig.width = 4, fig.height = 2.8, out.width=".4\\textwidth">>=
+n <- 23 # Anzahl Versuche
+X <- 7  # Anzahl Erfolge
+
+# Obere Schranke für p
+curve(pbinom(X, n, x), from = 0, to = 1, lwd = 2,
+      xlab = "p", ylab = "F(23,p)({7, 23-7})", col = "red")
+abline(h = 0.10, lty = 2, lwd = 2)
+abline(v = 0.46, lty = 2, lwd = 2, col = "red")
+
+# Untere Schranke
+curve(pbinom(16, n, x), add = TRUE, col = "blue", lwd = 2)
+abline(v = 1-0.1781578, lty = 2, lwd = 2, col = "blue")
+@
+
+But it's considerably easier to use the \texttt{binom.test()} function:
+<<>>=
+binom.test(7, 23, conf.level = 0.80)$conf.int
+@
+\parend
+
+\mypar[Alternative confidence bounds for a binomial parameter]{Remark}
+  The method for constructing confidence bounds for a binomial parameter 
+  introduced in Example \ref{example:clopperpearson}
+  was first published by \citet{Clopper1934}.
+  It is exact in the sense of Definition \ref{def:ci}.
+  But it also conservative: The true coverage of Clopper--Pearson intervals
+  is higher than $1-\alpha$, sometimes considerably so.
+  \citet[Section 1.4]{Agresti2002} discusses a handful of alternative methods
+  for constructing confidence bounds for a binomial parameter.
+  Some of these are approximate, 
+  while others are exact but still tend to produce
+  narrower confidence intervals than the Clopper--Pearson method.
+\parend
+
+\mypar[Exact confidence bounds for quantiles]{*Remark}
+  There exists a general method for constructing exact confidence bounds for
+  quantiles, including for the median. See \citet[Section 3.3]{Duembgen2016}.
+  This method is implemented in the functions made available
+  in \texttt{functions/quantile\_ci.R} but not elaborated on here.
+<<>>=
+# Load functions
+source(here("functions", "quantile_ci.R"))
+
+# Use alternative = "less" for upper bound 
+# and alternative = "greater" for lower bound.
+median_ci(d$GJT, conf_level = 0.95, alternative = "two.sided")
+
+# For arbitrary quantiles, e.g., 0.75 quantile.
+quantile_ci(d$GJT, gamma = 0.75, conf_level = 0.9, alternative = "two.sided")
+@
+\parend

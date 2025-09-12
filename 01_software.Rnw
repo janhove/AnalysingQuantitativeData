@@ -1,0 +1,673 @@
+\chapter{Self-study: Software}\label{ch:software}
+Our first priority is to install and configure the software 
+we'll use throughout this course.
+We'll also see how this software can be used as a calculator
+and how we can extend its functionality.
+
+This chapter is for self-study.
+If you've done all the activities in this chapter, 
+you're ready to go.
+Optional sections, exercises, etc.\ are marked by an asterisk.
+
+\section{Installing and configuring R and RStudio}
+In order to reproduce all steps in these lecture notes,
+you'll need the freeware R.
+Other freeware for analysing quantitative data is available
+(e.g., 
+\href{https://www.python.org/}{Python},
+\href{https://julialang.org/}{Julia},
+\href{https://jasp-stats.org/}{JASP}),
+but R is more widely used in the humanities and the social sciences.
+I also happen to know R better than these alternatives.
+
+\mypar[Installing R]{Activity}
+  If you haven't installed R on your machine yet (version 4.2.0 or newer),
+  download it from \url{https://www.r-project.org} and install it.
+\parend
+
+I use the $\diamondsuit$ symbol to mark the end of an activity, exercise, remark, etc.
+The $\square$ symbol is used to mark the end of a proof.
+
+\mypar[Installing RStudio]{Activity}
+  RStudio is a free interface that makes working with R considerably easier.
+  Download the Open Source Desktop version of RStudio from \url{https://posit.co} 
+  and install it.
+\parend
+
+Open RStudio.
+Your display should look like in Figure \ref{fig:rstudio}.
+If you only see three rather than four panes, click on \texttt{File, New file, R script}.
+
+\begin{itemize}
+\item In the bottom left, you see the R console.
+      R executes any commands you enter here and also displays the output
+      of these commands here.
+
+\item The top left pane is a text editor.
+      Instead of entering your commands directly onto the console,
+      you should enter them here first.
+      This makes it easier to structure and format your commands,
+      which in turn makes it easier to read and find errors in them.
+      Moreover, you can save your scripts as .R files so that you can
+      later reproduce your analyses.
+      
+\item In the top right panel, any objects currently in the R working environment
+      are listed.
+      Since we haven't read in or otherwise created any data yet,
+      this environment is currently empty.
+
+\item If you draw a plot, you'll see it displayed in the bottom right panel.
+      Help pages can also be displayed here, and the panel can additionally
+      be used as a file manager (like Windows Explorer).
+      If you delete files in the file manager, they're gone!
+\end{itemize}
+
+\begin{figure}
+ \centering
+ \includegraphics[width = \textwidth]{figs/RStudio.png}
+ \caption{RStudio, 
+          with the R console in the bottom left, 
+          the text editor in the top left, 
+          the inventory of the working environment in the top right (currently empty),
+          and any plots or opened help pages in the bottom right.}
+ \label{fig:rstudio}
+\end{figure}
+
+\mypar[Configuring RStudio]{Activity}
+In RStudio, and go to \texttt{Tools > Global options...}. 
+In the tab \texttt{General, Basic}, make sure to untick the option 
+`Restore .RData into workspace at startup' 
+and select the option `never' for `Save workspace to .RData on exit'. 
+These settings help ensure that you’re starting from a clean slate each time you open RStudio and prevent the results of calculations in previous sessions from messing up your analyses. 
+Additionally, in the tab \texttt{Code, Editing}, tick the box next to `Use native pipe operator, |>'. 
+We’ll encounter this pipe operator shortly. 
+Finally, I recommend setting the default text encoding to UTF-8 under \texttt{Code, Saving}.
+\parend
+
+\section{Using R as a calculator}\label{sec:calculator}
+\subsection{Arithmetic} \label{sec:arithmetic}
+R can be used as a calculator.
+To compute sums, products, and quotients, you can enter commands like those
+you find below onto the console.
+The results aren't part of the commands;
+they are displayed once you've entered the command and confirmed it by pressing \textsc{enter}.
+R ignores everything to the right of a hash (\#), 
+which allows us to add comments to the commands:
+<<>>=
+10 + 7     # addition
+12 - 28    # subtraction
+7 * 3.5    # multiplication
+11 / 3     # usual division
+6^3        # exponentiation
+10^(-2)    # = 1/10^2 = 1/100
+4^0        # x^0 = 1; R uses the convention 0^0 = 1.
+sqrt(16)   # square root
+log(16, 2) # logarithm base 2 of 16, i.e., 2^4 = 16
+log(16)    # natural logarithm of 16 (i.e., using base e =~ 2.72)
+log2(16)   # shorthand for logarithm base 2
+log10(16)  # shorthand for logarithm base 10
+
+ceiling(2.3) # rounding up
+floor(11.7)  # rounding down
+round(2.3)   # symmetric rounding
+round(2.7)
+round(2.5)   # if ~.5: round to the nearest even integer
+round(3.5)
+
+abs(-3)  # absolute value
+sign(-3) # sign
+sign(3)
+sign(0)
+@
+
+R respects the usual order of operations (e.g., multiplication before addition).
+To override this order, you can use round brackets or braces:
+<<>>=
+4 + 8 * 2
+(4 + 8) * 2
+{4 + 8} * 2
+@
+
+\mypar[Roots]{*Remark}
+The result of $\sqrt{-3}$ is \texttt{NaN} (\textit{not a number})
+as there is no real number $x$ such that $x^2 = -3$:
+<<>>=
+sqrt(-3)
+@
+In the complex numbers, however, such a number does exist.
+(More precisely, there exist two such numbers, namely $0 \pm \sqrt{3}\textrm{i}$.)
+We won't need complex numbers in this course, so we won't explore them further.
+
+To take arbitrary roots of non-negative number,
+note that $\sqrt[n]{x} = x^{1/n}$.
+Hence, we may compute $\sqrt[3]{216}$ as $216^{1/3}$:
+<<>>=
+216 ^ (1/3)
+@
+To take arbitrary roots of negative numbers (e.g., $\sqrt[3]{-8}$),
+we'd have to take a detour via the complex numbers, even though real solutions
+may exist ($(-2)^3 = -8$).
+\parend
+
+\mypar[Scientific notation]{Remark}
+If we compute $3328^{27}$, 
+the result is displayed as \texttt{1.26e+95}.\footnote{The numbers in the running text don't always correspond exactly to the numbers in the R output since I tend to round them more aggressively.}
+<<>>=
+3328^27
+@
+This notation is known as \term{scientific notation}
+and is to be read as $1.26 \cdot 10^{95}$ -- that is, as $1.26$ but with the decimal
+point moved 95 places to the right.
+The result of $2^{-21}$ is displayed as \texttt{4.8e-07},
+which is to be read as $4.8 \cdot 10^{-7}$ -- that is, as $4.8$ but with the decimal
+point moved seven places to the left ($0.00000048$).
+<<>>=
+2^(-21)
+@
+\parend
+
+\mypar[Help pages]{Remark}
+In principle, every R function has a help page.
+You can display this help page by typing \texttt{?function\_name} at the console.
+It takes some practice to efficiently read a help page,
+so let's take a closer look at the rounding function \texttt{round()}:
+<<eval = FALSE>>=
+?round # help page not shown in script
+@
+This help page consists of nine sections.
+Five of these can be found on most help pages:
+\begin{enumerate}
+  \item Description: A crisp description of the function.
+
+  \item Usage: Which parameters does the function have?
+  The function \texttt{round()} has two parameters:
+  \texttt{x} and \texttt{digits}.
+  If no value is specified for \texttt{digits}, 
+  the value 0 is used by default.
+
+  \item Arguments: Brief specifications of the expected parameter values.
+
+  \item Details: More details about the function.
+  For instance, the Details section on the help page for \texttt{round()}
+  explains how and why $-1.5$ is rounded
+  and why the command \texttt{round(0.15, 1)} can produce unexpected results.
+
+  \item Examples: Click on `Run examples' to see the output generated
+  by these examples.
+\end{enumerate}
+
+The help page for the addition operator \texttt{+} can be displayed
+by typing \texttt{?"+"} at the console.\parend
+
+% \subsection{Graphs of functions}
+% With the command below, you can draw the graph of a mathematical function;
+% see Figure \ref{fig:curve}.
+% Type this command in RStudio's text editor (top left panel).
+% And I mean `type', not `copy-paste'!
+% You'll learn more by typing than by copy-pasting.
+% Then move the text cursor to one of the lines that make up the command
+% and hit \textsc{ctrl + enter} (on Windows and Linux)
+% or \textsc{cmd + enter} (on macOS).
+% This relays the command to the console (bottom left).
+% While you could enter this command directly onto the console,
+% you should make a habit of working in the text editor.
+% This makes it easier to find and rectify errors.
+% Moreover, working in the editor makes it easy to document your analyses
+% as you can save your scripts.
+% 
+% <<Curve, fig.cap = "Graph of the function $x \\mapsto 2^{-\\frac{x^2}{2}}\\frac{x}{1 + x^2}$.\\label{fig:curve}", fig.asp=0.7>>=
+% curve(2^(-x^2/2) * x/(1 + x^2),
+%       from = -5, to = 5,
+%       xlab = "x", ylab = "f(x)")
+% @
+% 
+% Graphs drawn using \texttt{curve()} can give the impression that the function
+% being drawn is defined everywhere, even if this isn't the case.
+% For instance, the function $x \mapsto \frac{\sin(x)}{x}$ isn't defined at $x = 0$,
+% since you can't divide by 0.
+% If you draw the graph of this function, however, you might conclude that $0 \mapsto 1$.
+% Here, it's a good idea to draw an empty circle at the coordinates $(0, 1)$ to
+% highlight that the function isn't defined at $x = 0$:
+% <<eval = FALSE>>=
+% curve(sin(x)/x,
+%       from = -12, to = 12,
+%       xlab = "x", ylab = "f(x)")
+% # Use 'cex' (character expansion) to specify the size
+% points(0, 1, cex = 2)
+% @
+% 
+% Additionally, graphs of functions drawn using \texttt{curve()}
+% can look continuous (i.e., without gaps).
+% But i
+% Weiter sieht jeder mit \texttt{curve()} gezeichnete Funktionsgraph
+% stetig, also lückenlos, aus.
+% Aber beispielsweise die Vorzeichen- (oder Signum-)Funktion,
+% \[
+%   \textrm{sgn}(x) := \begin{cases} -1,  & \textrm{falls $x < 0$,} \\
+%                                   0,    & \textrm{falls $x = 0$,} \\
+%                                   1,    & \textrm{falls $x > 0$,}
+%                     \end{cases}
+% \]
+% hat eine Unstetigkeitsstelle, also einen Sprung, bei $x = 0$.
+% Wenn Sie den Graphen
+% dieser Funktion zeichnen würden, so würde es aussehen, als wäre dieser zwar
+% stark wachsend um den Nullpunkt herum,
+% aber schon ununterbrochen.
+% Um den richtigen Graphen dieser Funktion zu zeichnen,
+% reicht den \texttt{curve()}-Befehl nicht aus.
+% Stattdessen müssen wir uns den Graphen mit etwas mehr Mühe zusammenbasteln:
+% <<eval = FALSE>>=
+% # leere Leinwand zeichnen
+% plot(0, 0,
+%      type = "n", # nur Leinwand zeichnen
+%      xlim = c(-3, 3),
+%      ylim = c(-1.2, 1.2),
+%      xlab = "x", ylab = "f(x)")
+% # Funktionswerte für negative Zahlen
+% segments(x0 = -4, x1 = 0, y0 = -1) # siehe ?segments
+% # für positive Zahlen
+% segments(x0 = 0, x1 = 4, y0 = 1)
+% # für 0
+% points(0, 0, pch = 16) # siehe ?points
+% points(0, -1, pch = 1)
+% points(0, 1, pch = 1)
+% @
+
+% 
+% \mypar[grafische Parameter einstellen]{Bemerkung}
+%   Wenn Sie den Graphen in Abbildung \ref{fig:curve} selber zeichnen,
+%   so werden Sie feststellen, dass das Resultat bei Ihnen etwas anders aussieht.
+%   Unter anderem werden die Werte auf der $y$-Achse bei Ihnen vertikal statt
+%   horizontal orientiert sein.
+%   Wie mit \texttt{curve()} oder \texttt{plot()} gezeichnete Graphen aussehen sollten,
+%   können Sie mit \texttt{par()} einstellen.
+%   Wenn Sie meine Einstellungen übernehmen möchten, können Sie zunächst
+%   den folgenden Befehl ausführen und dann den Graphen nochmals zeichnen.
+%   
+% <<eval = FALSE>>=
+% par(las = 1,
+%     bty = "l",
+%     mar = c(3, 3.5, 2, 1),
+%     mgp = c(2, 0.3, 0),
+%     tck = -0.01,
+%     cex = 0.8)
+% @
+% 
+% Siehe \texttt{?par} für weitere Infos.
+% \parend
+% 
+\subsection{Vectorised operations}
+In R, a \term{vector} is a specific number of numbers (or other objects)
+that are grouped together.
+Numbers and other objects can be grouped together into vector using the function \texttt{c()}
+(\textit{combine}).
+The object so created can be given a name by means of the assignment operator \texttt{<-};
+here, we'll call it \texttt{a}:
+<<>>=
+a <- c(-4, 2, 0.3, 2014)
+@
+The vector known as \texttt{a} now contains the four numbers listed.
+We can display the vector in its entirety by typing its name at the prompt:
+<<>>=
+a
+@
+Using \texttt{a[i]}, we can select the vector's $i$-th entry (i.e., $a_i$),
+$1 \leq i \leq n$. 
+Note that R uses \term{one-based indexing}, meaning that a vector's first component
+is accessed using $i = 1$. 
+This contrasts with the many other computer languages that use \term{zero-based indexing},
+that is, they access a vector's first component using $i = 0$.
+<<>>=
+a[1]         # 1st component
+a[-3]        # all components except for the 3rd one
+a[c(2, 4)]   # using c() to extract several components
+a[-c(2, 4)]  # all components except for the 2nd and 4th one
+@
+
+The sum of all components of a vector $a$ is expressed in \term{capital sigma notation} as
+\[
+  \sum_{i=1}^n a_i := a_1 + a_2 + \dots + a_n,
+\]
+where $n$ is the number of components of $a$.
+It can easily be computed using \texttt{sum()}:
+<<>>=
+sum(a)
+@
+The product of all components, i.e.,
+\[
+  \prod_{i=1}^n a_i := a_1 \cdot a_2 \cdot \dots \cdot a_n,
+\]
+can be computed using \texttt{prod()}:
+<<>>=
+prod(a)
+@
+
+The length of a vector, that is, the number of components it has,
+can be obtained using \texttt{length()};
+its maximum and minimum using \texttt{max()} and \texttt{min()}, respectively:
+<<>>=
+length(a)
+max(a)
+min(a)
+@
+
+The operations from Section \ref{sec:arithmetic} can also be applied to vectors.
+In this case, they are applied componentwise:
+<<>>=
+2 * a
+a - 7
+sqrt(a) # warning due to square root of negative number
+log(a, 2) # warning due to logarithm of non-positive number
+@
+
+If we define a second vector of the same length,
+we can run certain operations on the corresponding components:
+<<>>=
+b <- c(3, 8.2, -1.2, sqrt(20))
+a - b
+a + b
+a / b
+a * b
+a^b
+@
+
+To compute the componentwise maximum or minimum of two or more vectors,
+we need to use \texttt{pmax()} or \texttt{pmin()}, respectively (\textit{p} for \textit{parallel}):
+<<>>=
+pmax(a, b)
+pmin(a, b)
+@
+The function \texttt{max()} and \texttt{min()} compute the overall maximum and minimum
+entry across all vectors:
+<<>>=
+max(a, b)
+@
+
+\mypar[Vectors of different lengths]{Remark}
+  The second vector doesn't have to have the same length as the first
+  when running vectorised operations.
+  But when the vectors involved have different lengths, it can be difficult to
+  anticipate the results.
+  By way of an example, we define a vector $d$ that has three components
+  and add this vector to the vector $a$, which has four components.
+  (We don't name the vector \texttt{c} as there exists an R function called \texttt{c()}.)
+<<>>=
+d <- c(3, 8.2, -1.2)
+a + d
+@
+  Since the vectors involved have different lengths, and one of the lengths
+  isn't a multiple of the other,
+  the fourth addition uses
+  the fourth element of the first vector and the first element of the second vector.
+  This is bound to cause confusion.
+  
+  At least in this example, a warning pops up.
+  However, if one of the vectors' length had been a multiple of the other's,
+  then this warning wouldn't have appeared---despite the problem persisting!
+  
+  Don't put yourself in this situation.
+\parend
+
+\mypar[Sequences]{Remark}
+  We've seen that we can use \texttt{c()} to define vectors.
+  If you want to define a vector that represents a sequence, 
+  more practical alternatives are available.
+<<>>=
+z <- 3:12
+z
+z <- 7:-1
+z
+z <- seq(from = 1, to = 3.5, by = 0.25)
+z
+z <- seq(from = 0, to = 2, length.out = 7)
+z
+z <- seq(to = 2, by = 12, length.out = 5)
+z
+z <- seq_len(5)
+z
+@
+  Figure out what each of these commands does.
+\parend
+ 
+\section{*R as a programming language}\label{sec:rprogramming}
+We can extend the functionality of R by writing our own functions.
+We'll take a look at a few examples to show how this works;
+more examples follow in later chapters.
+
+\mypar[Scalar product]{Example} 
+Let $\bm x = (x_1, \dots, x_n)$ and $\bm y = (y_1, \dots, y_n)$ both be vectors
+with $n \geq 1$ real numbers as their components.
+The so-called (standard) \term{scalar product} assigns
+to this pair of vectors a real number (i.e., a scalar, hence the name), namely
+\[
+  \langle \bm x, \bm y \rangle := \bm x \cdot \bm y := \sum_{i=1}^n x_iy_i = x_1y_1 + x_2y_2 + \dots + x_ny_n.
+\]
+The standard scalar product is also known as the \term{dot product} due to one of the ways 
+it is commonly represented (namely $\bm x \cdot \bm y$).
+
+Let's write a simple R function \texttt{dot()} that takes two vectors as its arguments
+and outputs their dot product.
+To this end, we use the reserved keyword \texttt{function()} and specify that our
+function takes two inputs, \texttt{x} and \texttt{y}.
+The function computes the componentwise product of the input vectors,
+sums its entries, and outputs this sum:
+
+<<>>=
+dot <- function(x, y) {
+  sum(x * y)
+}
+@
+
+We can use the new function \texttt{dot()} as we would any other R function:
+<<>>=
+a <- c(4, 2, -1)
+b <- c(8, -2, 2)
+dot(a, b)
+@
+
+We can add some further features to this basic function.
+For instance, \texttt{dot()} should only work on numerical vectors
+(as opposed to on vectors of characters, or on other objects altogether)
+of the same length.
+Using \textit{if}-clauses and the \texttt{stop()} keyword,
+we can check if the input to the \texttt{dot()} function fulfils 
+these criteria.
+
+<<>>=
+dot <- function(x, y) {
+  if (!is.numeric(x)) stop("First input isn't numeric.")
+  if (!is.numeric(y)) stop("Second input isn't numeric.")
+  if (length(x) != length(y)) stop("Inputs have different lengths.")
+  sum(x * y)
+}
+@
+
+If the input vectors are incompatible, \texttt{dot()} now generates
+an error:
+<<>>=
+a <- c(4, 2, -1)
+b <- c(8, -2)
+dot(a, b)
+@
+\parend
+
+\mypar[Euclidean norm]{Exercise}
+  Let $\bm x = (x_1, \dots, x_n)$ be a numerical vector 
+  with $n \geq 1$ real numbers as its components.
+  The vector's \term{Euclidean norm} is defined as
+  \[
+    \norm{\bm x} := \sqrt{\langle \bm x, \bm x \rangle},
+  \]
+  where $\langle \cdot, \cdot \rangle$ is the standard
+  scalar product from the previous example.
+  A vector's Euclidean norm tells you how far the 
+  vector is removed from the coordinate system's origin.
+  
+  Write a function \texttt{norm()} that takes one numerical
+  input vector and outputs its norm.
+  Use the \texttt{dot()} function from the previous example when defining
+  your function.
+  
+  Hint: The norm of the vector \texttt{a} from the previous example is about 4.583.
+\parend
+
+\mypar[Decumulation]{Example}
+  Given a numerical vector $\bm x = (x_1, \dots, x_n)$,
+  we can compute the vector containing its cumulative sums, i.e.,
+  \[
+    (x_1, x_1 + x_2, x_1 + x_2 + x_3, \dots, x_1 + \dots + x_n).
+  \]
+  The built-in function \texttt{cumsum()} does just this:
+<<>>=
+a <- c(17, 21, -24, 8)
+cumsum(a)
+@
+  What if we want to reverse this operation, i.e., given a vector
+  of cumulative sums $\bm x$, 
+  we want to reconstruct the original vector, which we'll call $\bm y$?
+  Observe that $y_1 = x_1$ and $y_{i} = x_{i} - x_{i-1}$ for $i = 2, \dots, n$.
+  Using a \term{\textit{for}-loop}, we can define a function \texttt{decum()}
+  that reconstructs the decumulated vector like so:
+<<>>=
+decum <- function(x) {
+  y <- vector(length = length(x))
+  y[1] <- x[1]
+  for (i in 2:length(x)) {
+    y[i] <- x[i] - x[i - 1]
+  }
+  y
+}
+@
+
+  A quick check shows that this function does the trick:
+<<>>=
+decum(cumsum(a)) # same as 'a'
+@
+\parend
+
+\section{Add-on packages}
+There are thousands of free add-on packages that extend the functionality of R.
+We'll use a couple of these throughout this course.
+
+\mypar[Installing the \texttt{tidyverse}]{Activity}
+  Use the command below to install the \texttt{tidyverse} suite.
+  This is a bundle of different add-on packages that are based on a shared
+  philosophy and make working with datasets easier.
+<<eval = FALSE>>=
+install.package("tidyverse")
+@
+  You can find manuals, tutorials etc.\ of the packages included in the \texttt{tidyverse}
+  at \url{https://www.tidyverse.org/}.
+\parend
+
+\mypar[Installing \texttt{here}]{Activity}
+  A further useful package we'll use throughout is the \texttt{here} package.
+  Install it.
+\parend
+
+\mypar[Updating packages]{Remark}
+Both R and its add-on packages are in continuous development.
+To update the R packages you've installed, you can run
+the command \texttt{update.package()}.
+To upgrade to a newer version of R itself, I find it easiest
+to just uninstall the old version and install the new one from scratch.
+In this case, however, you will need to reinstall any add-on packages
+you need.
+This can be quite cumbersome, which is why I only do it during semester
+breaks.
+
+A word of warning, though.
+It occurs quite often that your R code won't work as before
+when you've updated your packages.
+For larger research projects, I recommend ticking the
+\texttt{Use renv with this project} option.
+Any packages you use in your project will then be stored
+along with your project.
+Even if you work with newer versions of these packages
+in other projects, the old versions will still be used for this one.
+This reduces the risk that your R code doesn't work a few years down the line.
+For more information, see \url{https://rstudio.github.io/renv/articles/renv.html}.
+
+You can find an overview of the software versions used for this booklet
+in the appendix.
+Such an overview can be generated using
+<<eval = FALSE>>=
+sessionInfo() # output not shown
+@
+\parend
+
+\mypar[Citing software and packages]{Remark}
+  R and R packages are free to use and are mostly developed by other researchers.
+  You can acknowledge their help by citing the packages you used.
+  You can obtain a reference to R by running the command \texttt{citation()}.
+  References to specific packages can be obtained by running the command
+  \texttt{citation("packagename")}, e.g.,
+<<eval = FALSE>>=
+citation("tidyverse") # output not shown
+@
+  To obtain a reference to R itself, use
+<<eval = FALSE>>=
+citation() # output not shown
+@
+  
+\parend
+
+\section{R projects}
+It's convenient to have all scripts, datasets, plots, etc.,
+related a project in the same directory.
+When working in RStudio, 
+I recommend setting up an R project for each project
+you're working on.
+Projects would include term papers, master theses, course materials,
+research projects, etc.
+You should also set up an R project for this course.
+
+\mypar[Setting up an R project]{Activity}
+  In RStudio, click on
+  \texttt{File > New Project..., New Directory, New Project}.
+  Navigate to somewhere on your compute where you want to 
+  create a new directory and give this directory
+  an informative name such as \texttt{statscourse}.
+  You will use this directory to store the data, scripts, etc.\
+  that you need for this course.
+  It's not necessary to tick the option \texttt{Use renv with this project}.
+  
+  When you’re done, close RStudio. 
+  Navigate to the directory you've just created. 
+  You should find an \texttt{.Rproj} file there. 
+  Double-click it. 
+  If all is well, RStudio should fire up.
+  Alternatively, you can use \texttt{File > Open Project...} in RStudio.
+  
+  Once you've opened your project, open the \texttt{Files} tab
+  in the bottom right corner.
+  Use \texttt{New Folder} to create the subdirectories
+  \texttt{data}, \texttt{figs}, \texttt{functions}, and \texttt{assignments}.
+  The datasets we'll use should be stored in the subdirectory \texttt{data};
+  we'll store the plots we'll create in \texttt{figs};
+  \texttt{functions} will contain some custom R functions;
+  and you can save your homework assignments in \texttt{assignments}.
+\parend
+
+The datasets, custom functions, etc.\ that we'll use are available
+from this course's Github page at \url{https://github.com/janhove/AnalysingQuantitativeData/}.
+
+\section{R Markdown reports}
+  R scripts can be compiled to reports.
+  This is useful for ensuring that your analyses are reproducible:
+  Only those commands that are present in the script get compiled,
+  and not some commands that you ran but for some reason didn't include 
+  in the script.
+  Moreover, scripts only compile if all commands can be parsed.
+  For this reason, you should submit your homework assignments both
+  as an script (with the \texttt{.R} extension) and as a compiled report.
+  See the next activity for details.
+  
+\mypar[Report templates]{Activity}
+  Save the \texttt{template.R} file to the \texttt{assignments} subdirectory
+  in your R project directory.
+  Compile it: \texttt{File > Compile Report\dots}.
+  Compare the .R file with the compiled HTML report.
+  Use this template for your homework assignments, changing
+  dates, names, titles, etc., as necessary.
+\parend

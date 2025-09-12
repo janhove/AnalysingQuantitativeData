@@ -1,0 +1,573 @@
+\chapter{Random samples}\label{ch:samples}
+When you've specified a probability distribution,
+you can make probabilistic claims about random variables
+that are distributed according to this distribution.
+\term{Inferential statistics}, though, is concerned with the inverse problem:
+Having observed some random variables (i.e., data points), what conclusions can we draw about
+the probability distribution they follow?
+
+This probability distribution could correspond to some population
+that we want to learn something about.
+For instance, the population in question could be all Swiss citizens with the vote, 
+and we'd like to figure out what percentage of them will
+vote in favour of the next federal referendum.
+Often, though, it makes more sense to think of the probability distribution not as a literal 
+population, but as an abstract data-generating mechanism: 
+a theoretical model that connects the data we see 
+to the real-world process we want to study.
+For instance, an astronomer could make a series of imperfect measurements
+about a celestial body's trajectory.
+The theoretical data-generating mechanism would then spell out how the trajectory
+and the imperfect measurements are presumed to be related to one another.
+The imperfect measurements can then be used to estimate the specifics of the trajectory.
+
+Typically, the data collected are only a small part of the data that could
+have been collected---be it because the population of interest is much larger
+or because the abstract data-generating mechanism could in principle generate
+an infinite amount of data.
+Such limited collections of data are known as \term{samples},
+and they necessarily only give you an incomplete picture about the distribution
+from which they stem.
+The goal of inferential statistics, then, is to use samples to infer properties
+about the parent distributions.
+Consequently, it's not so much, say, the central tendency and the spread
+in the sample that's of interest, but rather the central tendency and the
+spread of the parent distribution.
+
+In the following, we assume that we have access to a (simple) random sample
+and that the parent distribution is either a data-generating mechanism
+capable of producing an infinite amount of data or a population that can
+for all intents and purposes be considered infinitely large.
+
+\mypar{Definition}
+  Let $P$ be a probability distribution. Then a \term{(simple) random sample}
+  from $P$ of size $n$ consists of independent random variables 
+  $X_1, \dots, X_n$ that are all distributed according to $P$.
+\parend
+
+This chapter focuses on the estimation of the central tendency
+of the parent distribution $P$ (in particular its expected value)
+as well as its spread (in particular its variance and standard deviation)
+by means of a random sample.
+In practice, though, you rarely come across truly random samples;
+we'll discuss this further at the end of this chapter.
+
+\section{Sampling error}
+Random samples don't perfectly reflect every aspect of their parent distribution.
+To better appreciate this, 
+we'll draw some random samples from distributions whose properties we know
+and see how different they look both from each other
+and from their parent distributions.
+
+\mypar[Normal distribution]{Activity}\label{activity:normal}
+  The commands below draw nine random samples of size 20
+  from a normal distribution with mean 3 and standard deviation 7
+  and plot these in histograms.
+<<eval = FALSE>>=
+size <- 20
+mu <- 3
+sigma <- 7
+
+par(mfrow = c(3, 3)) # multiple graphs in one plot
+for (i in 1:9) {
+  x <- rnorm(n = size, mean = mu, sd = sigma)
+  hist(x, main = paste0("Sample ", i), freq = FALSE)
+}
+par(mfrow = c(1, 1)) # back to default plotting
+@
+
+  Run these commands a couple of times, also varying the sample sizes.
+  Pay attention to the differences between the histograms as well as to
+  how dissimilar they are to the normal distribution's bell-shaped density function.
+\parend
+
+\mypar[Uniform distribution]{Exercise}
+  Adapt the code from Activity \ref{activity:normal}
+  in such a way that it draws and plots random samples
+  from a continuous uniform distribution on $[-5, 5]$.
+  Run the code a couple of times, varying the sample size.
+  Again pay attention to the differences between the histograms
+  as well as to how dissimilar these are to the uniform distribution's flat density function.
+\parend
+
+In sum, random samples reflect the distributions 
+from which they are drawn imperfectly.
+This fact is referred to as \term{sampling error}.
+Consequently, any inferences we draw about the parent distribution 
+based on a random sample are estimates.
+Inferential statistics is concerned both with coming up with good estimation
+techniques as well as with quantifying the inherent uncertainty about the
+resulting estimates.
+
+\section{Estimating the expected value}
+In the following, we assume that the distribution $P$ that we've drawn a random
+sample from has an expected value (mean) and finite variance.
+As we've seen in Chapter \ref{ch:univariate}, 
+given a random sample $\bm X = (X_1, \dots, X_n)$ from $P$, 
+we can define the empirical distribution $\widehat P$ of $\bm X$.
+A natural way to estimate properties of $P$ is to calculate the corresponding
+properties of $\widehat P$.
+This raises the question of how good such so-called \textit{plug-in} estimators are.
+
+\mypar[Estimand, estimate, estimator]{Definition}
+  An \term{estimand} is a numerical property of a distribution
+  that we want to estimate using data.
+  
+  An \term{estimate} is a number that is based on data and prior knowledge
+  and that is intended as an approximation of an estimand.
+  
+  An \term{estimator} is an algorithm that specifies how data and prior
+  knowledge are to be combined in order to produce an estimate.
+\parend
+
+For instance, the (unknown) expected value of a distribution $P$ could
+be one's estimand of interest.
+A popular estimator would then be the instruction `sum all observations in the
+sample and divide the sum by the number of observations'.
+Since this is precisely how you'd compute the expected value of $\widehat P$,
+this estimator is the plug-in estimator of the expected value.
+The resulting number is the corresponding estimate.
+
+We can't make general claims about specific estimates.
+But we can meaningfully compare different estimators 
+on a number of quality criteria.
+The most important of these are the estimator's bias, consistency, and variance.
+
+\mypar[Bias]{Definition}
+  Consider an estimator $g$ and estimand $\theta$ of a distribution $P$.
+  The \term{bias} of $g$ as an estimator of $\theta$ is defined to be
+  \[
+    \E(g(X_1, \dots, X_n)) - \theta,
+  \]
+  where $X_1, \dots, X_n$ are independently distributed according to $P$.
+  
+  If $\E(g(X_1, \dots, X_n)) = \theta$ for each possible value of $\theta$,
+  then $g$ is known as an \term{unbiased} estimator of $\theta$.
+\parend
+
+In other words, an unbiased estimator yields the correct answer on average.
+
+To give a precise definition of consistency,
+we'd have to introduce some further mathematical concepts.
+For our purposes, though, the following more conceptual
+definition suffices.
+
+\mypar[Consistency]{Definition}
+  An estimator $g$ is a \term{consistent} estimator of $\theta$ if
+  \[
+    \E\left(|g(X_1, \dots, X_n) - \theta|\right)
+  \]
+  becomes arbitrarily small for large $n$, for all possible values of $\theta$.
+\parend
+
+That is, the differences between the estimates produced by a consistent
+estimator and the true parameter value are expected to become negligible
+as the sample size increases.
+
+\mypar[Variance of an estimator]{Definition}
+  The variance of an estimator $g$ is defined as
+  \[
+    \Var(g(X_1, \dots, X_n)). \parendeq
+  \]
+
+That is, an estimator's variance expresses how much the resulting estimates
+vary from sample to sample.
+
+Ideally, estimators are unbiased and consistent, and they should have low variance.
+However, not all estimands permit such ideal estimators.
+Further, as you'll see in Exercise \ref{ex:estimators},
+you can often decrease the variance by sacrificing unbiasedness.
+This phenomenon is known as the \term{bias--variance trade-off}.
+
+\mypar[Unbiased but useless]{*Example}
+  Unbiased estimators can be inconsistent, rendering them pretty useless
+  for practical purposes.
+  By way of an example, consider $P = \textrm{Binomial}(n, p)$
+  and define $\theta := (1-p)^n$ \citep[][p.\ 49]{Duembgen2016}.
+  We observe $X \sim P$.
+  One can show that there exists only one unbiased estimator $g(X)$ of $\theta$,
+  namely
+  \[
+    g(X) :=
+    \begin{cases}
+      1, & \textrm{if $X = 0$}, \\
+      0, & \textrm{otherwise}.
+    \end{cases}
+  \]
+  But depending on $p$, $\theta$ can take on any value in the interval $[0,1]$.
+  The value of $g(X)$, by contrast, is always either 0 or 1.
+  As a result, $g$ is not a consistent estimator of $\theta$.
+\parend
+
+The \term{sample mean} is the expected value of the sample's empirical distribution.
+It serves as an estimate of the parent distribution's expected value $\mu$:
+\[
+  \widehat{\mu} := \overline{X} := \frac{1}{N}(X_1 + \dots + X_n).
+\]
+In Section \ref{sec:clt}, we showed that
+\[
+  \E(\overline{X}) = \mu.
+\]
+Consequently, 
+the sample mean is an unbiased estimator of the parent distribution's expected value.
+Further, we know that the variance of $\overline{X}$ equals
+$\frac{\sigma^2}{n}$, where $\sigma^2$ is the parent distribution's variance.
+Hence, the variance of $\overline{X}$ becomes arbitrarily small for large $n$.
+This combined with the unbiasedness of the sample mean implies
+that the sample mean is a consistent estimator of $\mu$.
+Finally, the Gauss--Markov theorem tells us that, among all unbiased
+estimators of the population's expected value, the sample mean is the one
+with the lowest variance.
+
+\mypar[Gauss--Markov]{Theorem}\label{th:gauss}
+  Let $X_1, \dots, X_n$ be a simple random sample from a distribution $P$.
+  Then each unbiased estimator $g(X_1, \dots, X_n)$ of $\mu$ satisfies
+  \[
+    \Var(\overline{X}) \leq \Var(g(X_1, \dots, X_n)). \parendeq
+  \]
+
+It is, however, sometimes possible to come up with unbiased estimators
+with lower variance if the sample is not a simple random sample.
+
+\mypar{Example}
+  Let $X_1, \dots, X_n$ be independent Bernoulli($p$)-distributed
+  random variables.
+  Then $\frac{1}{n}(X_1 + \dots + X_n)$ is an unbiased and consistent estimator
+  of $p$.
+  Among all unbiased estimators of $p$, it has the lowest variance.
+\parend
+
+\mypar[Weighted mean]{Example}\label{example:weightedmean}
+  We assume that $P_1, P_2$ are distributions with the same unknown mean
+  $\mu$, but different and known variances:
+  $\Var(P_1) = 1, \Var(P_2) = 4$.
+  We now observe independent random variables
+  $X_1 \sim P_1, X_2 \sim P_2$ and want to use these to estimate $\mu$.
+  
+  The first option is to estimate $\mu$ as the mean of $X_1, X_2$.
+  This estimator is unbiased as
+  \[
+    \E\left(\frac{X_1 + X_2}{2}\right) = \frac{1}{2}(\E(X_1) + \E(X_2)) = \frac{1}{2}(\mu + \mu) = \mu.
+  \]
+  Since $X_1, X_2$ are independent, the variance of this estimator
+  is easily calculated:
+  \[
+    \Var\left(\frac{X_1 + X_2}{2}\right)
+    = \frac{1}{4}(\Var(X_1) + \Var(X_2)) = \frac{5}{4}.
+  \]
+  
+  A second option is to just ignore $X_2$ and use the value of $X_1$
+  as the estimate of $\mu$. This estimator, too, is unbiased: $\E(X_1) = \mu$.
+  Furthermore, its variance is lower than that of the first estimator:
+  $\Var(X_1) = 1 < 5/4$.
+  
+  But it would be even better to weight the observations $X_1, X_2$
+  by the inverses of their variance:
+  \[
+    g(X_1, X_2) := \frac{1}{1 + \frac{1}{4}}\left(X_1 + \frac{1}{4}X_2\right) = \frac{4}{5}\left(X_1 + \frac{1}{4}X_2\right).
+  \]
+  This estimator is also unbiased:
+  \[
+   \E(g(X_1, X_2)) = \frac{4}{5}\left(\E(X_1) + \frac{1}{4}\E(X_2)\right) = \mu.
+  \]
+  However, its variance is lower:
+  \[
+    \Var(g(X_1, X_2))
+    = \frac{4^2}{5^2}\left(\Var(X_1) + \frac{1}{4^2}\Var(X_2)\right)
+    = \frac{4}{5}.
+  \]
+  The Gauss--Markov theorem does not apply here since $X_1, X_2$
+  do not represent a simple random sample: The observations stem from
+  different distributions.
+  
+  This example corresponds to the realistic scenario in which
+  two random samples are drawn from the same distribution
+  with mean $\mu$ and variance $\sigma^2$, but we only know
+  their sample means $X_1, X_2$ and their sample sizes $n_1, n_2$.
+  In this case, $X_1, X_2$ are distributed with the same mean $\mu$
+  but different variances $\sigma^2/n_1$ and $\sigma^2/n_2$.
+  The expected value of the parent distribution is then best estimated
+  using the weighted mean.
+\parend
+
+\mypar[Comparison of estimators of $\mu$]{*Exercise}\label{ex:estimators}
+  Let $X_1, \dots, X_n$ be a simple random sample from a distribution $P$
+  with expected value $\mu$ and with finite variance.
+  Decide for each of the estimators below if they estimate $\mu$ in an unbiased way,
+  if they are consistent, and if their variance is smaller or larger than that of the sample mean $\overline X$.
+  You may assume in the following that $\Prob(X_1 = X_2) = 0$;
+  you may also use the fact that $1/n$ becomes arbitrarily small for large $n$.
+  \begin{align*}
+    g_1(X_1, \dots, X_n) &:= X_1; \\
+    g_2(X_1, \dots, X_n) &:= \overline{X} + \frac{1}{n}; \\
+    g_3(X_1, \dots, X_n) &:= \frac{n-1}{n}\overline{X}; \\
+    g_4(X_1, \dots, X_n) &:=
+    \begin{cases}
+      \overline{X} - 1, & \textrm{if $X_1 < X_2$}, \\
+      \overline{X},     & \textrm{if $X_1 = X_2$}, \\
+      \overline{X} + 1, & \textrm{if $X_1 > X_2$}.
+    \end{cases}
+  \end{align*}
+  Which of the estimators above could potentially be practically useful?
+
+  In addition,
+  define an estimator $g_5$ that estimates $\mu$ in an unbiased and consistent way,
+  but that has a larger variance than the sample mean.
+\parend
+
+\section{Estimating the variance and the standard deviation}
+The previous section showed that the plug-in estimator of the expected value
+has excellent properties.
+We'll now check if the plug-in estimator of the variance excels similarly.
+To that end, we consider a random sample $X_1, \dots, X_n$
+from a continuous uniform distribution on $[-5, 5]$.
+The variance of this distribution is
+\[
+  \sigma^2  = \frac{(5 - (-5))^2}{12} \approx 8.33.
+\]
+The function \texttt{var\_one\_run()} defined below generates a 
+single random sample of size \texttt{n} from this distribution and 
+computes the plug-in estimate of the variance.
+The \texttt{sim\_var()} function runs \texttt{var\_one\_run()} a couple
+of thousand times and outputs the mean of the variance estimates.
+<<>>=
+var_one_run <- function(n, min = -5, max = 5) {
+  x <- runif(n, min = min, max = max)
+  mean(x^2) - mean(x)^2
+}
+sim_var <- function(n_sample, min = -5, max = 5, n_runs = 50000) {
+  sample_vars <- replicate(n_runs, 
+                           var_one_run(n = n_sample, min = min, max = max))
+  mean(sample_vars)
+}
+@
+
+For $n = 25$, we obtain the following mean variance estimate:
+<<>>=
+sim_var(n_sample = 25)
+@
+Since this number is based on random sampling, you'll obtain a slightly different
+result.
+
+\mypar[Varying $n$]{Activity}\label{ex:estimate_var}
+  Run the same simulation for $n = 16, 9, 4, 1$.
+  You don't have to make any changes to \texttt{var\_one\_run()}
+  or \texttt{sim\_var()}!
+  Compare the mean variance estimate you obtain for each $n$ to the 
+  estimand's true value of $\sigma^2 \approx 8.33$.
+\parend
+
+As this simulation illustrates, the plug-in estimator of the variance
+is biased: On average, it produces estimates that are lower
+than the estimand's true value.
+This bias is more pronounced in smaller samples.
+As the next lemma shows, for a sample of size $n$, the bias of the (`naive') 
+plug-in estimator $s_n^2$ has a negative bias of $\sigma^2/n$.
+This naive estimator is, however, consistent.
+
+\mypar[Bias of the naive variance estimator]{*Lemma}
+  Let $\bm X = (X_1, \dots, X_n)$ be simple random sample from a distribution $P$
+  with expected value $\mu$ and variance $\sigma^2 < \infty$.
+  Denote by $\overline X$ the sample mean of $\bm X$.
+  Then
+  \[
+    s^2_n(\bm X) = \frac{1}{n}\sum_{i = 1}^{n}\left(X_i - \overline X\right)^2
+  \]
+  is a biased estimator of $\sigma^2$.
+  Specifically,
+  \[
+    \E\left(s^2_n(\bm X)\right) = \frac{n-1}{n}\sigma^2. \parendeq
+  \]
+\begin{proof}
+  We have
+  \begin{align*}
+    \frac{1}{n}\sum_{i = 1}^{n}\left(X_i - \overline X\right)^2 
+    &= \frac{1}{n}\sum_{i = 1}^{n}\left((X_i - \mu) - (\overline X - \mu)\right)^2 \\
+    &= \frac{1}{n}\sum_{i=1}^n (X_i - \mu)^2 - \frac{2(\overline X - \mu) }{n}\sum_{i=1}^n (X_i - \mu)
+        + \frac{1}{n}\sum_{i=1}^n (\overline X - \mu)^2 \\
+    &= \frac{1}{n}\sum_{i=1}^n (X_i - \mu)^2 - 2(\overline X - \mu)^2 + (\overline X - \mu)^2 \\
+    &= \frac{1}{n}\sum_{i=1}^n (X_i - \mu)^2 - (\overline X - \mu)^2.
+  \end{align*}
+  These identities can be verified by applying the binomial formula $(a - b)^2 = a^2-2ab+b^2$
+  and using $\overline X = (\sum_{i=1}^n X_i)/n$.
+  
+  Taking the expected values on both sides, we obtain
+  \begin{align*}
+    \E\left(\frac{1}{n}\sum_{i = 1}^{n}\left(X_i - \overline X\right)^2 \right)
+    &= \E\left(\frac{1}{n}\sum_{i=1}^n (X_i - \mu)^2 - (\overline X - \mu)^2\right) \\
+    &= \frac{1}{n}\sum_{i=1}^n\underbrace{\E (X_i - \mu)^2}_{= \Var(X_i) = \sigma^2} - \underbrace{\E\left((\overline X - \mu)^2\right)}_{= \Var(\overline X) = \sigma^2/n} \\
+    &= \sigma^2 - \sigma^2/n \\
+    &= \frac{n-1}{n}\sigma^2. \qedhere
+  \end{align*}
+\end{proof}
+
+The lemma suggests a straightforward way to correct the naive variance estimator
+so that it becomes unbiased: Multiply its estimates by the factor $n/(n-1)$.
+This results in the sample variance that was already introduced in the previous chapter:
+\[
+  s^2(\bm X) = \frac{n}{n-1}s_n^2(\bm X) = \frac{n}{n-1}\left(\frac{1}{n}\sum_{i=1}^n(X_i - \overline X)^2\right) = \frac{1}{n-1}\sum_{i=1}^n(X_i - \overline X)^2.
+\]
+The estimator $s^2$ estimates $\sigma^2$ in an unbiased and consistent way;
+we won't prove consistency, however. It can be computed using \texttt{var()}.
+
+While the central limit theorem allows us to make approximate claims about
+the distribution of the sample mean,
+the corresponding theorem about the large-sample distribution of the 
+sample variance is less practically useful.
+For samples drawn from a normal distribution, however, precise claims can
+be made. These are introduced in the following optional paragraphs.
+
+\mypar{*Remark}\label{remark:chisq}
+  Let $Z_1, \dots, Z_n$ be independent random variables following a standard
+  normal distribution.
+  Then the distribution of $Z_1^2 + \dots + Z_n^2$ is called 
+  the \term{chi-squared distribution} with $n$ degrees of freedom.
+  We write $\chi^2_n$. 
+  Figure \ref{fig:dchisq} shows density functions of a few $\chi^2$-distributions.
+  
+  Now, if $\bm X = (X_1, \dots, X_n)$ is a simple random sample drawn from a normal
+  distribution with mean $\mu$ and variance $\sigma^2$, then it can be shown
+  that the quantity
+  \[
+    (n-1)\frac{s^2(\bm X)}{\sigma^2}
+  \]
+  follows a $\chi^2_{n-1}$-distribution.
+  We can use this fact to make probabilistic claims about the sample variance
+  of normally distributed data.
+  For instance, if we draw a random sample of size $n = 10$ from a
+  $\mathcal{N}(3, 12)$-distribution, and we want to know the probability
+  that the sample variance will be no greater than 14, then we proceed as follows:
+  \begin{align*}
+    \Prob\left(s^2(\bm X) \leq 14\right)
+    &= \Prob\left(\frac{10-1}{12} s^2(\bm X) \leq \frac{(10-1)14}{12}\right) \\
+    &= \Prob\left(\frac{n-1}{\sigma^2} s(\bm X)^2 \leq 10.5\right) \\
+    &= \Prob(H^2 \leq 10.5),
+  \end{align*}
+  where $H^2 \sim \chi_{9}^2$. 
+  We use R to compute the exact value:
+<<>>=
+pchisq(10.5, df = 9)
+@
+That is, about 69\%.
+\parend
+
+<<echo = FALSE, warning = FALSE, fig.cap = "Probability density functions of the $\\chi^2$-distributions with 4, 9, and 16 degrees of freedom.\\label{fig:dchisq}", fig.width = 4, fig.height = 2.8, out.width=".4\\textwidth">>=
+my_col <- RColorBrewer::brewer.pal(3, "Set1")
+ggplot(data.frame(x = c(0, 40)),
+             aes(x)) +
+  stat_function(fun = function(x) dchisq(x, 4),
+                colour = my_col[1]) +
+  annotate("text", x = 2 + 2, y = dchisq(2, 4), label = bquote(chi[4]^2),
+           color = my_col[1]) +
+  stat_function(fun = function(x) dchisq(x, 9),
+                colour = my_col[2]) +
+  annotate("text", x = 7 + 1.55, y = dchisq(7, 9) + 0.007, label = bquote(chi[9]^2),
+           color = my_col[2]) +
+  stat_function(fun = function(x) dchisq(x, 16),
+                color = my_col[3]) +
+  annotate("text", x = 14, y = dchisq(14, 16) + 0.01, label = bquote(chi[16]^2),
+           color = my_col[3]) +
+  ylab("Density")
+@
+
+For the same reason why the sample variance is used instead of the 
+naive plug-in estimator when estimating the variance of a distribution,
+the sample standard deviation is used instead of the naive plug-in estimator
+when estimating the standard deviation of a distribution:
+\[
+ s(\bm X) = \sqrt{s^2(\bm X)} = \sqrt{\frac{1}{n-1} \sum_{i = 1}^{n} (X_i - \overline X)^2}.
+\]
+The R function \texttt{sd()} implements this formula.\label{comment:sd}
+The sample standard deviation is a consistent estimator of the distribution's
+standard deviation.
+However, it is \emph{not} an unbiased estimator.
+Even though the sample variance estimates the distribution variance in an unbiased way,
+the sample standard deviation still underestimates the distribution standard deviation
+slightly.
+Correcting for this bias is difficult at best and usually impossible,
+but it is of little practical importance.\footnote{Just because $g(X_1, \dots, X_n)$
+estimates the estimand $\theta$ in an unbiased way, doesn't mean that $h(g(X_1, \dots, X_n))$
+estimates the estimand $h(\theta)$ in an unbiased way.
+For instance, $\overline X$ is an unbiased estimator of $\mu$,
+but $(\overline X)^2$ overestimates $\mu^2$. 
+To convince yourself of this, consider a distribution with $\mu = 0$.}
+
+\mypar{*Exercise}
+  Let $\bm X = (X_1, \dots, X_{10})$ be a simple random sample from
+  a $\mathcal{N}(-4, 8)$-distribution.
+  Compute the probability that $s(\bm X)$ is at least 3.5.
+  To this end, you can proceed as in Remark \ref{remark:chisq}.
+\parend
+
+\section{Non-random samples}\label{sec:nonrandom}
+Random samples have two major advantages: 
+they yield unbiased estimates of the population mean and variance, 
+and they allow us to apply mathematical results such as the central limit theorem.
+
+In practice, however, drawing a genuine random sample from 
+any reasonably interesting population is extremely difficult.
+Take, for example, the task of assessing the English proficiency of adults of 
+Kosovar origin in the canton of St.\ Gallen. 
+To obtain a random sample, 
+we would first need a complete list of all such adults in the canton. 
+From that list, we would randomly select a group 
+and then persuade all of them to take part in the study. 
+But as soon as someone refuses, 
+the sample is no longer random with respect to the original population. 
+What we end up with is a sample of those who are willing to participate, 
+not of all adults of Kosovar origin in St.\ Gallen. 
+Our estimates therefore apply primarily to this new population, 
+not to the one we initially set out to study.
+Furthermore, the sample would not consist of independent observations, 
+since each individual can only be selected once.
+
+This example highlights an important consequence: 
+while a random sample 
+provides an unbiased estimate of the mean of the true population of interest, 
+nonresponse can distort results. 
+In our case, refusals may come disproportionately 
+from people who consider their English weak 
+or who find linguistic research irrelevant. 
+Those who remain are likely to have stronger English skills 
+or a greater interest in languages. 
+As a result, the sample mean will 
+tend to overestimate the average ability in the target population.
+
+In short, social science researchers rarely work with true random samples. 
+Instead, they rely on non-random samples,
+which means that far more care is needed 
+when interpreting results and generalising them to a broader population.
+\begin{itemize}
+  \item Social media surveys tend to reach people who share similar views. 
+        Even the most reputable polling institutes face the same problem: 
+        In the U.S., for instance, fewer than 10\% of people contacted 
+        in telephone surveys actually respond, according to an \href{https://www.pewresearch.org/short-reads/2019/02/27/response-rates-in-telephone-surveys-have-resumed-their-decline/}{article}
+        published by the Pew Research Center.
+  \item A person who completes a long questionnaire 
+        on their multilingual behaviour without compensation 
+        is likely to value multilingualism more than someone who closes 
+        the browser after three questions---or never receives the questionnaire 
+        at all, when snowball sampling is used.
+  \item Findings from a sample of highly educated, 
+        relatively affluent individuals (such as most university students) 
+        may not generalise to populations with lower levels of education 
+        or socioeconomic status. 
+        This is especially problematic 
+        when these factors are directly relevant to the research question. 
+        If we are willing to assume that they have only a minimal effect, 
+        generalisation may be defensible---but 
+        whether that assumption is justified is a matter of subject-matter knowledge, not statistics.
+\end{itemize}
+
+So should you despair and toss these lecture notes into the camp fire 
+halfway through the semester? 
+
+I'd wait till the end of the semester, if I were you.
+
+On the one hand, 
+the ideal case of the random sample provides a useful model for thinking about data. 
+When the data-generating process in a particular study does not fit that ideal, 
+the model can often be refined to better capture the reality at hand. 
+On the other hand, many of the insights still transfer well to common research 
+settings---for instance, experiments in which participants are not a random sample of any population
+but in which they \emph{are} randomly assigned to conditions within the study.

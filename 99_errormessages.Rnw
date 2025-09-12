@@ -1,0 +1,152 @@
+\chapter{Common error messages in R}\label{ch:fehlermeldungen}
+
+\mypar{Tip}
+Solve problems step by step!
+If your entire screen is full of red error messages, start with the very first one. 
+Often, the other errors are just consequences of the first.
+\parend
+
+\mypar[Debugging]{Tip}
+When asking someone for help, you should create a reproducible example 
+that illustrates the problem. 
+These examples should be as \emph{short} as possible; 
+see \url{https://stackoverflow.com/q/5963269/1331521}. 
+Often, trying to reduce a problem to a minimal reproducible example helps you 
+find the solution yourself.
+Another useful technique for debugging code is 
+\term{rubber duck debugging}; see \url{https://rubberduckdebugging.com/}.
+It often also helps to take a break or go for a walk, 
+so you can return the next day with a fresh perspective.
+\parend
+
+\section*{object `x' not found}
+This occurs when you try to access an object that is not in memory. 
+Typographical errors are a common cause. 
+It may also happen that you have not read in the object, 
+or that it has a different name than you expect.
+
+Example:
+<<>>=
+x <- c(1, 5, 4)
+mean(X)
+@
+In the first line, an object named \texttt{x} is created, 
+but the second line attempts to compute the mean of an object named \texttt{X}. 
+R is case-sensitive!
+
+If you are unsure which objects are currently in memory, you can use:
+<<eval = FALSE>>=
+ls()
+@
+The same information is available in RStudio in the top-right window.
+
+\section*{could not find function `x'}
+You are trying to use a function that does not exist or is not accessible. 
+First, check that you typed the function name correctly. 
+If the function comes from an external package, make sure that package is loaded.
+
+Example:
+<<>>=
+r.test(n = 50, r12 = 0.4)
+@
+The \texttt{r.test()} function is part of the \texttt{psych} package. 
+Either load the package first with \texttt{library(psych)} 
+or prefix the function with \texttt{psych::}.
+
+\section*{Error in library(x) : there is no package called `x'}
+You are trying to load a package that has not yet been installed.
+
+Example:
+<<>>=
+library(ggjoy)
+@
+Solution: install the package first:
+<<eval = FALSE>>=
+install.packages("ggjoy")
+@
+
+\section*{unexpected symbol}
+A common cause of this error is a missing comma.
+
+Example:
+\begin{verbatim}
+> library(ggplot2)
+> ggplot(data = iris
++        aes(x = Sepal.Width,
+Error: unexpected symbol in:
+"ggplot(data = iris
+       aes"
+\end{verbatim}
+A comma is missing after \texttt{data = iris}.
+
+Example:
+\begin{verbatim}
+> ggplot(data = iris)
+>        aes(x = Sepal.Width,
++            y = Sepal.Length)) +
+Error: unexpected ')' in:
+"       aes(x = Sepal.Width,
+           y = Sepal.Length))"
+\end{verbatim}
+The bracket at the end of the first line should be a comma.
+
+Example:
+\begin{verbatim}
+> ggplot(data = iris,
++        aes(x = Sepal.Width,
++            y = Sepal.Length))) +
+Error: unexpected ')' in:
+"       aes(x = Sepal.Width,
+           y = Sepal.Length)))"
+\end{verbatim}
+There is one too many closing brackets on the third line.
+
+\section*{It doesn't work, and there is no error message!}
+This usually happens when a bracket or similar character is missing.
+
+Example: this command produces no error message but also no plot:
+\begin{verbatim}
+> ggplot(data = iris,
++        aes(x = Sepal.Width,
++            y = Sepal.Length) +
++   geom_point()
++
+\end{verbatim}
+As you can see, the next line begins with a \texttt{+}, meaning the command is incomplete. 
+The problem is a missing closing bracket on line 3: the last bracket closes \texttt{aes()}, but the \texttt{ggplot()} call is not yet closed. Correct version:
+\begin{verbatim}
+> ggplot(data = iris,
++        aes(x = Sepal.Width,
++            y = Sepal.Length)) +
++   geom_point()
+>
+\end{verbatim}
+Notice that the next line starts with \texttt{>}, indicating that the command has been executed.
+
+Another example: this command also produces no error but no plot:
+\begin{verbatim}
+> ggplot(data = iris,
++        aes(x = Sepal.Width,
++            y = Sepal.Length))
+> geom_point()
+geom_point: na.rm = FALSE
+stat_identity: na.rm = FALSE
+position_identity
+\end{verbatim}
+Problem: the plus sign after line 3 is missing.
+
+\section*{The result of a calculation is `NA'}
+You want to calculate a mean or similar, 
+but the vector contains \texttt{NA} values (\emph{not available}). 
+R treats \texttt{NA} as an unknown number. 
+If a vector contains an unknown value, 
+its mean or standard deviation (etc.) will also be unknown (\texttt{NA}).
+<<>>=
+x <- c(5, 4, 18, NA, 3)
+mean(x)
+@
+If you wish, you can calculate the mean ignoring unknown values:
+<<>>=
+mean(x, na.rm = TRUE)
+@
+For more information on handling missing data, see \citet{Graham2009}.

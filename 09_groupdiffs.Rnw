@@ -1,0 +1,1324 @@
+<<echo = FALSE>>=
+options(digits = 5)
+@
+
+
+\chapter{Group differences}\label{ch:groupdifferences}
+The general linear model can be used to model differences between two or more
+groups with respect to some continuous outcome variable. We'll first take a
+look at how differences between two groups can be modelled.
+Then we'll deal with differences between three or more groups.
+
+\section{Differences between two groups}
+Our first example in this chapter stems from the field of social psychology.\footnote{Studies 
+with group comparisons in language-related fields either seem to be more complex than 
+\emph{just} a group comparison or don't share their data. 
+But if you know of a suitable dataset from the language sciences, please let me know!}
+\citet{Caruso2013} reported that American participants agree more strongly
+with statements that justify the US social system if they are reminded
+of money. Their participants responded to eight statements such as
+{\it Everyone has a fair shot at wealth and happiness} on a 7-point Likert
+scale. The eight responses per participant were averaged and submitted to
+analysis. For half of the participants, a faded but still visible dollar note
+was shown on the computer screen as they filled out the questionnaire;
+for the other half, this image was completely blurred. The authors reported
+that the mean system justification scores tended to be higher when a dollar
+note was visible than when it was blurred.
+\citet{Klein2014} attempted to replicate this finding in a 36 new samples.
+We'll work with the replication data from one such new sample:
+
+<<>>=
+d <- read_csv(here("data", "Klein2014_money_abington.csv"))
+@
+
+A sensible default choice when plotting a group comparison on a continuous
+outcome is to use \term{boxplots}. 
+Figure \ref{fig:defboxplot} shows an example of a boxplot of some set of observations $\bm X$.
+The median score is highlighted by a thick line.
+The 25th and 75th percentiles are highlighted by thinner lines and together
+form a box. The difference between the 75th and 25th percentile 
+(also known as the third and the first quartile) is
+called the \term{inter-quartile range} (\textsc{iqr}).
+The data points that don't fall in the box, that is, the data points that don't
+make up the middle 50\% of the data, are represented by a line protruding from
+the upper part of the box and by a line protruding from the lower part of the box.
+However, data points whose distance to the box exceeds 1.5 times the inter-quartile
+range are plotted separately. If such data points exist, the lines protruding from 
+the box only extend up to the lowest / highest data point whose distance to the 
+box is lower than 1.5 times the \textsc{iqr}.
+
+<<echo = FALSE, fig.width = 3.2*2, fig.height = 2*2.1, fig.cap = "Example of a boxplot.\\label{fig:defboxplot}", out.width = ".4\\textwidth">>=
+dat <- read_csv(here("data", "Vanhove2015_Vpn.csv"))
+old_ops <- par()
+par(mar = c(1, 4, 2, 1), las = 1, cex = 1.3)
+boxplot(dat$Wortschatz, boxwex = 0.25, staplewex = 0,
+        ylab = "Vocabulary test score", col = "white",
+        main = "Example boxplot", pars = list(boxwex=0.4), at=0.3, xlim=c(0.15,0.55))
+text(x = 0.45, max(dat$Wortschatz), "Maximum")
+text(x = 0.45, quantile(dat$Wortschatz, .75), "75th percentile", font=3)
+text(x = 0.45, median(dat$Wortschatz), "Median", font=2)
+text(x = 0.45, median(dat$Wortschatz)-0.8, "(= 50th percentile)")
+text(x = 0.45, quantile(dat$Wortschatz, .25), "25th percentile", font=3)
+text(x = 0.45, 27, "'Minimum'")
+text(x = 0.43, 25.5, "Data points more than\n1.5·IQR from the box")
+par(old_ops)
+@
+
+Figure \ref{fig:boxplotklein1} shows side-by-side boxplots of the Klein et al.\ data.
+But boxplots sometimes deceive
+Boxplots sometimes deceive, and for this reason, I prefer to add the individual
+data points to the plots, too.
+Doing so helps both us and our readers
+gauge what the data actually look like; see Figure \ref{fig:boxplotklein2};
+also see \citet{Weissgerber2015}.
+
+<<fig.width = 2*2, fig.height = 2*2.1, fig.cap = "Comparison of the system justification scores in both conditions in Klein et al.'s (2014) replication of Caruso et al.\\ (2013, Experiment 1). Data from the Abington sample.\\label{fig:boxplotklein1}", out.width = ".4\\textwidth">>=
+# standard boxplots
+p_boxplot <- ggplot(data = d,
+                    aes(x = MoneyGroup,
+                        y = Sysjust)) +
+  geom_boxplot() +
+  xlab("condition") +
+  ylab("system justification score")
+p_boxplot
+@
+
+
+<<fig.width = 2*2.2, fig.height = 2*2.1, fig.cap = "The same data but with the individual data points overlaid.\\label{fig:boxplotklein2}">>=
+# boxplots with individual data points added
+p_boxplotdeluxe <- ggplot(data = d,
+                          aes(x = MoneyGroup,
+                              y = Sysjust)) +
+  # don't plot outliers twice
+  geom_boxplot(outlier.shape = NA) +
+  # add some random noise to the x position of the points to reduce overlap
+  geom_point(shape = 1,
+             position = position_jitter(width = 0.2, height = 0)) +
+  xlab("bank note") +
+  scale_x_discrete(labels = c("without", "with")) +
+  ylab("system justification score")
+p_boxplotdeluxe
+@
+
+The setting \texttt{outlier.shape = NA} in the \texttt{geom\_boxplot()} command
+suppresses the drawing of potential outliers in the boxplot. 
+If we didn't do this, we would be plotting
+such potential outliers twice: once as part of the boxplot, and once 
+as individual data points. (There are no such outliers in this dataset, though.)
+Moreover, the data points are jittered horizontally so that
+they don't overlap as much.
+
+Let's also construct a table with the basic descriptive statistics for both of the
+experiment's conditions.
+<<>>=
+d |> 
+  group_by(MoneyGroup) |> 
+  summarise(n = n(),
+            mean = mean(Sysjust),
+            median = median(Sysjust),
+            stdev = sd(Sysjust))
+@
+
+Let's turn to the matter of modelling these data in a general linear model.
+The basic equation is the same as the simple regression equation 
+in Chapter \ref{ch:regression}:
+\begin{equation}
+  y_i = \beta_0 + \beta_1x_i + \varepsilon_i,\label{eq:dummy}
+\end{equation}
+for $i = 1, 2, \dots, n$. This time, $x_i$ is a \term{dummy variable} 
+that encodes whether the $i$-th
+participant is part of one group or the other.
+There are two common methods for encoding group membership using dummy
+variables when there are just two groups: treatment coding and sum coding.
+
+In \term{treatment coding}, we designate one group as the `treatment group'
+and the other as the `control group'. Then, we set $x_i = 1$ if the
+$i$-th participant is part of the treatment group and $x_i = 0$ if the
+$i$-th participant is part of the control group. In our current example,
+the treatment group has already been identified, and we just need to add
+another variable to the tibble that encodes this information numerically:
+
+<<>>=
+d$n.MoneyGroup <- ifelse(d$MoneyGroup == "treatment", yes = 1, no = 0)
+@
+
+Now, we can use the newly created dummy variable like the finer-grained
+predictor in Chapter \ref{ch:regression}:
+<<>>=
+money.lm <- lm(Sysjust ~ n.MoneyGroup, data = d)
+coef(money.lm)
+@
+\label{model:money.lm}
+Uncertainty estimates can be obtained just like in Chapter \ref{ch:regression}. 
+Here, we'll skip straight to the standard errors and confidence intervals
+based on the assumption that the $\varepsilon_i$ were sampled i.i.d.\
+from a normal distribution. 
+But there's an exercise towards the end of this chapter 
+where you verify the results obtained using a bootstrap 
+that doesn't assume identical, normal error distributions.
+<<>>=
+summary(money.lm)$coefficients
+confint(money.lm)
+@
+
+What do these parameter estimates actually refer to?
+Inspecting Equation \ref{eq:dummy}, we notice that if $x_i = 0$,
+then
+\[
+  y_i = \widehat{\beta}_0 + \widehat{\varepsilon}_i,
+\]
+or, put differently,
+\[
+  \widehat{y}_i = \widehat{\beta}_0.
+\]
+That is, the estimated intercept term shows us the estimated conditional
+mean for the group coded as 0, which should come as no surprise given
+what we've seen in the previous chapter.
+From the previous chapter, 
+we also know that $ \widehat{\beta}_0 + \widehat{\beta}_1$
+gives us the estimated conditional mean for the group coded as 1.
+The estimated $\beta_1$ parameter, then, tells us how much higher
+the estimated mean for the 1-group is compared to the 0-group.
+In our example,
+\[
+  y_i = 3.53 - 0.006x_i + \widehat{\varepsilon}_i.
+\]
+So from the output above, we can glean that the mean of the control group
+is $3.53 \pm 0.14$, whereas the estimated mean difference between
+the treatment and the control groups is $-0.006 \pm 0.20$. It is usually
+the latter estimate that is relevant.
+
+\mypar{Exercise}
+How would the parameter estimates change 
+if we coded the treatment group as 0 and the control group as 1? 
+Try to answer this question without using the computer.
+\parend
+
+The second commonly used method for coding dummy variables is
+\term{sum coding}. In sum coding, the value of the dummy variable is $+0.5$
+for the participants in one condition and $-0.5$ for the participants in the 
+other conditions. (Alternatively, $\pm 1$ is used.)
+<<>>=
+d$n.MoneyGroup2 <- ifelse(d$MoneyGroup == "treatment", yes = 0.5, no = -0.5)
+money.lm2 <- lm(Sysjust ~ n.MoneyGroup2, data = d)
+summary(money.lm2)$coefficients
+confint(money.lm2)
+@
+\label{model:money.lm2}
+We can use these estimates to compute the conditional means for the treatment and control groups. The estimated regression equation now is given by
+\[
+  y_i = 3.53 - 0.006x_i + \widehat{\varepsilon}_i.
+\]
+Due to rounding, this is the same equation as before,
+but the actual estimate for the intercept is slightly different between the two models. 
+To obtain the estimate for the conditional mean for the treatment group, 
+we use $x_i = 0.5$; 
+to obtain the estimated conditional mean for the control group, 
+we use $x_i = -0.5$:
+\[
+  \widehat{y}_{\textrm{treatment}} = 3.53 - 0.006\cdot 0.5
+\]
+and
+\[
+  \widehat{y}_{\textrm{control}} = 3.53 + 0.006\cdot 0.5.
+\]
+The difference between these estimates is exactly the parameter estimate for the slope:
+\[
+\widehat{y}_{\textrm{treatment}} - \widehat{y}_{\textrm{control}} = (3.53 - 0.006\cdot 0.5) - (3.53 + 0.006\cdot 0.5) = -0.006.
+\]
+As for the interpretation of the intercept estimate, 
+consider the following:
+\begin{align*}
+  \widehat{\beta}_0
+  &= \frac{\widehat{\beta}_0 + \widehat{\beta}_0}{2} \\
+  &= \frac{(\widehat{\beta}_0 + \widehat{\beta}_1\cdot 0.5) + (\widehat{\beta}_0 - \widehat{\beta}_1 \cdot 0.5)}{2} \\
+  &=  \frac{\widehat{y}_{\textrm{treatment}} +  \widehat{y}_{\textrm{control}}}{2}.
+\end{align*}
+That is, when using sum-coding, the estimated intercept corresponds
+to the average of the conditional means for both groups, that is, to the {\bf grand mean}.
+
+\mypar{Tip}
+  If you want to use treatment coding, you don't actually have to 
+  code the dummy variables yourself---R can take care of this for you.
+  However, by default, R codes such variables in alphabetical order.
+  For instance, if your two groups are called `French' and `German', 
+  the French group would be coded as 0 and would be incorporated into the intercept estimate. 
+  But if your two groups are called `Französisch' and `Deutsch', 
+  the German (Deutsch) group would be coded as 0.
+  I recommend you code your dummy variables by hand, 
+  so you know what's going on.
+\parend
+
+\mypar{Exercise}
+How would the parameter estimates change 
+if we coded the treatment group as 1 and the control group as $-1$? 
+How could you interpret the slope estimate?
+Try to answer these questions without using the computer.
+\parend
+
+\mypar{Exercise}\label{ex:gambler}
+One of the other findings that \citet{Klein2014} sought to replicate
+  was the gambler's fallacy as studied by \citet{Oppenheimer2009}. \citet{Klein2014} summarise
+  this experiment as follows:
+ \begin{quote}
+ ``\citet{Oppenheimer2009a} investigated whether the rarity of an independent, chance
+ observation influenced beliefs about what occurred before that event.
+ Participants imagined that they saw a man rolling dice in a casino.
+ In one condition, participants imagined witnessing three dice being rolled
+ and all came up 6's. In a second condition two came up 6's and one came up 3.
+ In a third condition, two dice were rolled and both came up 6's.
+ All participants then estimated, in an open-ended format, how
+ many times the man had rolled the dice before they
+ entered the room to watch him. Participants estimated
+ that the man rolled dice more times when they had
+ seen him roll three 6's than when they had seen him
+ roll two 6's or two 6's and a 3. For the replication,
+ the condition in which the man rolls two 6's was removed leaving two conditions.''
+ \end{quote}
+ 
+ You can find the data for this replication study in \texttt{Klein2014\_gambler.csv}.
+ Analyse these data in light of the research question, but only consider the data
+ from the \texttt{ufl} sample. Summarise your findings in two to three sentences.
+\parend
+
+\section{Differences between more than two groups}\label{sec:unterschiede_mehrere_gruppen}
+In \citet{Vanhove2017}, I investigated how German gender
+assignment by Belgian speakers of Dutch is affected by
+their native dialect. For example, I wanted to find out
+if speakers of Belgian Dutch dialects would more often
+pick the German masculine article {\it der} for {\it Knie} (`knee')
+if, in their own Dutch dialect, {\it knie} was masculine rather
+than feminine. (Belgian Dutch dialects differ somewhat in terms of
+gender assignment, though speakers don't seem to be really aware of this.
+German {\it Knie} is neuter, by the way.)
+It turned out that the German gender assignments of the informants
+hardy betrayed any influence of their own dialect at all. 
+In a follow-up study \citep{Vanhove2018}, I tested my hunch
+that speakers of a Belgian Dutch dialect don't rely on their
+own dialect when assigning gender to German nouns because they
+lack metalinguistic knowledge about grammatical gender in their
+own dialect.
+To this end, I devised a small experiment with three conditions:
+\begin{itemize}
+  \item Strategy: In the first condition, participants were furnished
+  with a simple strategy for figuring out the grammatical
+  gender of nouns in their own dialect.
+  
+  \item Information: In the second condition, participants were told that their
+  own dialect, like German but unlike Standard Dutch, makes a 
+  three-way adnominal gender distinction. They weren't told
+  how they could identify the grammatical gender of nouns in
+  their own dialect, however.
+  
+  \item No information: Participants in this condition were
+  provided with accurate information about some grammatical aspect of their dialect that was irrelevant to the task at hand.
+\end{itemize}
+Then, the participants assigned German gender to 29 German nouns
+with Dutch cognates, and I tallied how often their German gender assignments were congruent with the nouns' gender in the participants' native dialect. 
+I expected that participants in the strategy condition would provide more congruent
+responses than those in the other conditions.
+
+Let's read in the data and draw some boxplots (Figure \ref{fig:vanhove2018}). Note the use of the \texttt{limits} parameter in
+the \texttt{scale\_x\_discrete()} call to change the order of the boxplots to something more meaningful than the default alphabetical one.
+<<out.width = ".7\\textwidth", fig.width = 6*1.1, fig.height = 2.3*1.1, fig.cap = "Proportion of L1-congruent gender assignments in L2 German by experimental condition in Vanhove (2019).\\label{fig:vanhove2018}">>=
+d <- read_csv(here("data", "Vanhove2018.csv"))
+ggplot(d,
+       aes(x = Condition,
+           y = ProportionCongruent)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(shape = 1,
+             position = position_jitter(width = 0.2, height = 0)) +
+  scale_x_discrete(limits = c("no information", "information", "strategy")) +
+  xlab("Learning condition") +
+  ylab("Proportion L1-L2 congruent\ngender assignments")
+@
+
+A descriptive numerical summary is obtained easily enough:
+<<>>=
+d |> 
+  group_by(Condition) |> 
+  summarise(N = n(),
+            Mean = mean(ProportionCongruent),
+            Median = median(ProportionCongruent),
+            StDev = sd(ProportionCongruent))
+@
+
+In the previous section, we recoded a variable with two levels (treatment and control)
+as a binary dummy variable. When we have a variable with $k$ levels, we need
+$k-1$ binary dummy variables to code all conditions unambiguously.
+In our present example, we will use treatment coding to identify both whether participants were assigned to the strategy condition and whether they were assigned to the information condition;
+if both dummy variables read 0, then the participant was assigned to the no information condition:
+<<>>=
+d$Strategy <- ifelse(d$Condition == "strategy", 1, 0)
+d$Information <- ifelse(d$Condition == "information", 1, 0)
+
+# quick check
+xtabs(~ Strategy + Condition, data = d)
+xtabs(~ Information + Condition, data = d)
+@
+
+The general linear model can deal with several
+predictors: The principles from the previous chapters carry over,
+just with $d = 3$ $\beta$ parameters rather than $d \in \{1, 2\}$. 
+So we can add both dummy variables to the model.
+The resulting model equation looks like this:
+\[
+ y_i = \beta_0 + \beta_1 \cdot x_{1,i} + \beta_2 \cdot x_{2,i} + \varepsilon_i,
+\]
+for $i = 1, \dots, n$.
+$x_{1,i}$ represents the value of the $i$-th participant on the first dummy variable;
+$x_{2,i}$ represents their value on the second dummy variable.
+<<>>=
+mod.lm <- lm(ProportionCongruent ~ Information + Strategy, data = d)
+mod.lm
+@
+The interpretation of these parameter estimates is analogous to what we've discussed
+in the previous section. The intercept estimate is the conditional mean
+for the group that was coded as 0 on both dummy variables, i.e., the no information
+condition. 
+The estimate for information is the difference between the estimated conditional
+means for the information and the no information conditions;
+the estimate for strategy is the difference between the estimated
+conditional means for the strategy and the no information conditions.
+You can verify
+this by reconstructing the condition means in the descriptive statistics using
+the model output.
+
+We can estimate the uncertainty about these parameter estimates using
+bootstrap methods (see the exercise below). If we're comfortable assuming that the
+residuals were all drawn from the same normal distribution, we can use \texttt{summary()}
+as before to obtain standard errors:\label{sec:strategy}
+<<>>=
+summary(mod.lm)$coefficients
+@
+Confidence intervals can be computed using \texttt{confint()}. The confidence interval
+about the intercept estimate isn't of too much interest here, but it is computed by default. That doesn't mean you have to report it in your papers, though. (Relevance!)
+<<>>=
+confint(mod.lm, level = 0.90)
+@
+
+\mypar[Obtaining directly interpretable regression coefficients]{Tip}
+While we used treatment coding here, other coding systems exist, and these
+may be more directly useful for you, depending on what you want to find out.
+For instance, we could code the dummy variables in such a way that $\widehat{\beta}_2$
+estimates the difference between the conditional means for the third and second condition
+rather than between those for the third and first condition. \citet{Schad2020}
+explain how this can be accomplished; also see the entry on my blog 
+\href{https://janhove.github.io/posts/2020-05-05-contrast-coding/}{\textit{Tutorial: Obtaining directly interpretable regression coefficients by recoding categorical predictors}} (5 May 2020).
+This technique is extremely useful as it often enables you to read off
+the answers to your research questions directly from the model output,
+as opposed to your having to piece together an answer based on several
+parameter estimates.
+\parend
+
+\mypar{Tip}
+\emph{Know what your parameter estimates refer to.} 
+It is vital that you know what the numbers in the output of your model 
+literally mean before you try to
+interpret them in terms of your subject matter.
+\parend
+
+\mypar[Recoding categorical predictors]{*Exercise}
+  Read Example 1 on \url{https://janhove.github.io/posts/2020-05-05-contrast-coding/}.
+  Now recode the conditions in the \citet{Vanhove2017} data in such a way
+  that the $\beta_0$ parameter expresses the grand mean of \texttt{ProportionCongruent}
+  (that is, the mean of the three condition means), the $\beta_1$ parameter expresses
+  the difference between the mean in the \texttt{no information} condition
+  and the mean of the means of the other two conditions, 
+  and the $\beta_2$ parameter expresses the difference between the mean of the
+  \texttt{information} condition and that of the \texttt{strategy} condition.
+  Fit the model and verify if the estimated parameters are correct by comparing
+  them to the condition means.
+\parend
+
+\mypar[Semiparametric bootstrap without i.i.d.\ assumption]{*Exercise}\label{exercise:heteroskedastic}
+  In the analyses in this chapter, we estimated standard errors and constructed
+  confidence intervals based on the assumption that the residuals were i.i.d.\ normal. 
+  We can check whether we obtain similar results when making different assumptions.
+  To that end, we can run a semiparametric bootstrap in which the bootstrapped residuals
+  in a given condition are only sampled from that condition. 
+  This way, we don't assume that the residuals are drawn from a normal distribution, 
+  and we acknowledge the possibility 
+  that the residuals in different conditions are drawn from different distributions.
+  
+  The code below is similar to that of the previous semiparametric bootstraps;
+  the only thing that was added is the \texttt{group\_by(Condition)} call in the \textit{for}-loop.
+  This splits up the dataset into groups by \texttt{Condition} so that the 
+  resampling of the \texttt{Residual} values on the next line only happens 
+  within each condition.
+  In other words, a residual value in the information condition can only 
+  be reassigned to another observation in the information condition, 
+  and similarly for the other conditions.
+  
+  Copy this code (ideally by typing rather than copy-pasting it; you'll learn more this way)
+  and run it. How would the conclusions you draw from this analysis differ from the ones
+  you would draw from the analysis in the main text?
+
+<<eval = FALSE>>=
+# Read in data, fit model
+d <- read_csv(here("data", "Vanhove2018.csv"))
+d$Strategy <- ifelse(d$Condition == "strategy", 1, 0)
+d$Information <- ifelse(d$Condition == "information", 1, 0)
+mod.lm <- lm(ProportionCongruent ~ Information + Strategy, data = d)
+
+# Extract predictions, residuals
+d$Prediction <- predict(mod.lm)
+d$Residual <- resid(mod.lm)
+
+# Semi-parametric bootstrap w/o homoskedasticity assumption
+n_bootstrap <- 20000
+bs_b <- matrix(nrow = n_bootstrap, ncol = 3)
+
+for (i in 1:n_bootstrap) {
+  d <- d |> 
+    group_by(Condition) |> 
+    mutate(bs_outcome = Prediction + sample(Residual, replace = TRUE))
+  bs_mod <- lm(bs_outcome ~ Information + Strategy, data = d)
+  bs_b[i, ] <- coef(bs_mod)
+}
+
+apply(bs_b, 2, sd)
+apply(bs_b, 2, quantile, prob = c(0.025, 0.975))
+@
+Now adapt this code in order to double-check the confidence
+intervals from the money priming example.
+\parend
+
+
+% Im vorigen Kapitel haben wir uns mit der Frage
+% beschäftigt, wie man den Zusammenhang zwischen
+% einem kontinuierlichen Prädiktor und einem
+% kontinuierlichen outcome modellieren kann.
+% In diesem Kapitel widmen wir uns der Frage,
+% wie Zusammenhänge zwischen \textbf{kategorischen}
+% Prädiktoren und einem kontinuierlichen outcome
+% modelliert werden können. Das typische Beispiel
+% eines kategorischen Prädiktors ist die Konditionzugehörigkeit in einem Experiment:
+% Wie stark unterscheiden sich die Ergebnisse von Teilnehmenden
+% in der Experimentalgruppe im Schnitt von jenen von Teilnehmenden
+% in der Kontrollgruppe? Das Vorgehen ist nahezu identisch
+% mit dem aus dem letzten Kapitel.
+% 
+% \section{Unterschiede zwischen zwei Gruppen}
+% Das Beispiel, dem wir uns hier widmen, stammt nicht aus der
+% Sprachwissenschaft, sondern aus der Sozialpsychologie.
+% \citet[][Experiment 1]{Caruso2013} berichteten, dass
+% amerikanische Versuchspersonen Aussagen, die das US-amerikanische
+% Sozialsystem rechtfertigen, stärker zustimmen, wenn
+% man sie an Geld erinnert (sogenanntes \textit{currency priming}).
+% Ihr Design sah wie folgt aus. Es gab acht Aussagen im Stil von
+% \textit{Everyone has a fair shot at wealth and happiness}.
+% Die Teilnehmenden deuteten am Bildschirm
+% ihre Zustimmung zu diesen Aussagen
+% auf einer 7-stufigen Likertskala an (1 = überhaupt nicht einverstanden,
+% 7 = vollständig einverstanden). Pro Versuchsperson wurden
+% die acht Zustimmungswerte gemittelt.
+% Die Hälfte der Versuchspersonen sah im Hintergrund ein verblasstes
+% aber ersichtliches Bild einer Banknote; bei der anderen Hälfte
+% war dieses Bild verwischt.
+% Die Versuchspersonen, welche die Banknote im Hintergrund sahen,
+% stimmten den Aussagen stärker zu, als jene, bei denen das Bild
+% verwischt war.
+% \citet{Klein2014} versuchten, dieses Ergebnis in 36 neuen
+% Stichproben zu replizieren.
+% In der Datei \texttt{Klein2014\_money\_abington.csv} finden Sie
+% die Ergebnisse einer dieser Stichproben (84 Teilnehmende).
+% Diese Daten werden wir analysieren.
+% 
+% \mypar{Aufgabe} Lesen Sie diese Datei in R ein.
+% Den Datensatz können Sie einfach \texttt{d} nennen.
+% Vergessen Sie nicht zu kontrollieren, ob das Einlesen
+% geklappt hat.
+% \parend
+% 
+% <<echo = FALSE, message = FALSE>>=
+% d <- read_csv(here("data", "Klein2014_money_abington.csv"))
+% @
+% 
+% \subsection{Grafische Darstellung und beschreibende Statistik}
+% Eine nützliche grafische Darstellung, um unterschiedliche
+% Gruppen hinsichtlich eines mehr oder weniger kontinuierlichen
+% outcomes zu vergleichen, ist der \term{Boxplot}
+% (zu Deutsch auch \textit{Kastengrafik}).
+% Abbildung \ref{fig:boxplot} zeigt als Beispiel
+% einen Boxplot der Ergebnisse bei einem Wortschatztest
+% der 80 Versuchspersonen von \citet{Vanhove2016}.
+% Die dickere Linie in der Mitte liegt beim Median
+% und das Kästchen reicht vom 25.\ bis zum 75.\ Perzentil
+% und umfasst somit die Hälfte der Datenpunkte.
+% Manchmal gibt es (wie hier) auch Kreischen in einem Boxplot.
+% Diese stellen Extremwerte dar, die mehr als 1.5 Mal
+% die Distanz zwischen dem 25.\ und dem 75.\ Perzentil
+% vom 25.\ oder 75.\ Perzentil entfernt liegen.
+% Diese Extremwerte sind mögliche (!) Ausreisser.
+% Mit einem Dotplot kann man besser überprüfen, ob sie tatsächlich
+% auch Ausreisser sind. In diesem Beispiel liegen die zwei
+% möglichen Ausreisser nicht sehr weit von anderen Datenpunkten
+% entfernt, sodass sie nicht als Ausreisser gelten.
+% 
+% <<fig.width = 3.2, fig.height = 3, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Erklärung Boxplot.\\label{fig:boxplot}">>=
+% dat <- read_csv(here("data", "Vanhove2015_Vpn.csv"))
+% old_ops <- par()
+% par(mar = c(1, 4, 2, 1), las = 1, cex = 0.7)
+% boxplot(dat$Wortschatz, boxwex = 0.25,
+%         ylab = "Wortschatzergebnis",
+%         main = "Beispiel Boxplot", pars = list(boxwex=0.4), at=0.3, xlim=c(0.15,0.6), ylim=c(24,40))
+% text(x = 0.47, max(dat$Wortschatz), "höchster Datenpunkt\nnah genug beim 75. Perzentil")
+% text(x = 0.47, quantile(dat$Wortschatz, .75), "75. Perzentil", font=3)
+% text(x = 0.47, median(dat$Wortschatz), "Median", font=2)
+% text(x = 0.47, median(dat$Wortschatz)-0.8, "(= 50. Perzentil)")
+% text(x = 0.47, quantile(dat$Wortschatz, .25), "25. Perzentil", font=3)
+% text(x = 0.47, 27, "niedrigster Datenpunkt\nnah genug beim 25. Perzentil")
+% text(x = 0.43, 25.5, "Mögliche Ausreisser?", col="red")
+% par(old_ops)
+% @
+% 
+% Mit \texttt{ggplot()} können solche Boxplots mithilfe des
+% \texttt{geom\_boxplot()}-Befehls erzeugt werden.
+% Weiter ist zu bemerken, dass wir die Grafik zunächst einmal als ein Objekt
+% namens \texttt{p\_boxplot} in die Arbeitsumgebung speichern.
+% Um die Grafik dann tatsächlich zu zeichnen, müssen wir lediglich
+% diesen Objektnamen eintippen.
+% Das Ergebnis steht in Abbildung \ref{fig:boxplotklein1}.
+% 
+% <<fig.width = 2*2, fig.height = 2*2.1, fig.cap = "Vergleich der Systemrechtfertigungsscores in den beiden Konditionen in Klein et al.'s (2014) Replikation von Caruso et al. (2013, Experiment 1). Daten aus der Abington-Stichprobe.\\label{fig:boxplotklein1}", out.width = ".4\\textwidth">>=
+% p_boxplot <- ggplot(data = d,
+%                     aes(x = MoneyGroup,
+%                         y = Sysjust)) +
+%   geom_boxplot() +
+%   xlab("Kondition") +
+%   ylab("Systemrechtfertigungsscore")
+% p_boxplot
+% @
+% 
+% Ich finde es oft eine gute Idee,
+% dem Boxplot auch noch die einzelnen Datenpunkte
+% hinzuzufügen \citep[siehe auch][]{Weissgerber2015}.
+% Insbesondere bei eher kleinen Datensätzen
+% beeinträchtigt dies die Interpretierbarkeit der Grafik nicht
+% und hilft es den Lesenden, einzuschätzen, wie die
+% Daten tatsächlich verteilt sind. Boxplots können
+% in dieser Hinsicht nämlich manchmal täuschen;
+% siehe auch \href{https://www.cedricscherer.com/2021/06/06/visualizing-distributions-with-raincloud-plots-and-how-to-create-them-with-ggplot2/}{\textit{Visualizing distributions with raincloud plots (and how to create them with ggplot2)}}
+% unter \url{https://www.cedricscherer.com/}.
+% 
+% Der Code unten zeigt Ihnen, wie Sie dies machen können.
+% Dem \texttt{geom\_boxplot()}-Befehl wird der Parameter
+% \texttt{outlier.shape = NA} übergeben, womit verhindert wird,
+% dass allfällige Extremwerte zwei Mal dargestellt werden: ein Mal
+% als Kreischen beim Boxplot und ein Mal als einzelner Datenpunkt.
+% Mit \texttt{geom\_point()} werden die Datenpunkte einzeln dargestellt.
+% Der Parameter \texttt{shape = 1} sorgt dafür, dass sie als leere Kreischen
+% gezeichnet werden
+% (siehe \texttt{?pch $\rightarrow$ `pch' values} für andere mögliche Werte).
+% Die Einstellung \texttt{position = position\_jitter(width = ?, height = ?)}
+% verschiebt die Punkte etwas horizontal und vertikal, damit überlappende
+% Punkte sichtbar werden. Mit den Einstellungen unten werden die Punkte
+% nur horizontal etwas verschoben, aber nicht vertikal.
+% Zu guter Letzt werden die Defaultwerte auf der x-Achse (`control' und `treatment'; siehe Abbildung \ref{fig:boxplotklein1}) mit
+% dem Befehl \texttt{scale\_x\_discrete()} durch `ohne' bzw.\ `mit' ersetzt.
+% Das Resultat zeigt Abbildung \vref{fig:boxplotklein2}.
+% 
+% <<fig.width = 2*2.2, fig.height = 2*2.1, fig.cap = "Nochmals die gleichen Daten, aber mit den einzelnen Datenpunkten.\\label{fig:boxplotklein2}">>=
+% p_boxplotdeluxe <- ggplot(data = d,
+%                     aes(x = MoneyGroup,
+%                         y = Sysjust)) +
+%   geom_boxplot(outlier.shape = NA) +
+%   geom_point(shape = 1,
+%              position = position_jitter(width = 0.2, height = 0)) +
+%   xlab("Banknote") +
+%   scale_x_discrete(labels = c("ohne", "mit")) +
+%   ylab("Systemrechtfertigungsscore")
+% p_boxplotdeluxe
+% @
+% 
+% Mehr Informationen zu Befehlen wie \texttt{position\_jitter()} und \texttt{scale\_x\_discrete()} finden Sie unter \url{https://ggplot2.tidyverse.org/reference/}.
+% Siehe auch meinen Blogeintrag \href{https://janhove.github.io/posts/2015-01-07-some-alternatives-to-barplots/}{\textit{Some alternatives to bar plots}} (7.1.2015).
+% 
+% Eine Tabelle mit den üblichen beschreibenden Statistiken pro Gruppe
+% können wir leicht mit \texttt{group\_by()} und \texttt{summarise()} herstellen.
+% <<>>=
+% d |>
+%   group_by(MoneyGroup) |>
+%   summarise(AnzahlVpn = n(),
+%             Mittel = mean(Sysjust),
+%             Median = median(Sysjust),
+%             StdAbw = sd(Sysjust))
+% @
+% 
+% \subsection{Modellierung}\label{sec:money_model}
+% % \subsubsection{Dummy-Variablen}
+% Die grafische Darstellung zeigt, dass der Median der `mit Banknote'-Kondition
+% zwar höher ist als jener der `ohne Banknote'-Kondition, aber das die
+% Überlappung zwischen beiden Konditionen erheblich ist.
+% Die numerische Zusammenfassung zeigt ausserdem, dass sich die Mittel kaum unterscheiden.
+% Trotzdem können wir diese Daten -- ähnlich wie im letzten Kapitel -- in ein Modell giessen.
+% Dieses Modell wird ebenfalls von Gleichung \vref{eq:simpleregression} beschrieben, die hier wiederholt wird:
+% \begin{equation}
+% y_i = \beta_0 + \beta_1 x_i + \varepsilon_i,
+% \end{equation}
+% für $i = 1, \dots, n$.
+% $y_i$ stellt nun den Systemrechtfertigungsscore der $i$-ten Versuchsperson dar;
+% $x_i$ stellt die Gruppenzugehörigkeit dieser Versuchsperson dar, d.h.,
+% ob die Versuchsperson zu der `control'- oder `treatment'-Gruppe gehört.
+% Genau wie vorher müssen $\beta_0$ und $\beta_1$ (und als Konsequenz
+% davon auch $\varepsilon_i$) geschätzt werden.
+% 
+% Gleichungen wie diese können natürlich schwer mit Wörtern
+% wie `control' und `treatment' umgehen, aber die Lösung ist erstaunlich einfach:
+% Eine Gruppe bezeichnen wir als $0$ und die andere als $1$.
+% Zum Beispiel können wir festlegen, dass $x_i = 0$, wenn die $i$-te Versuchsperson
+% zur `control'-Kondition gehört, und dass $x_i = 1$, wenn sie zur `treatment'-Kondition
+% gehört. (Wir könnten auch festlegen, dass $x_i = 1$ für Versuchspersonen
+% in der Kontrollkondition und $x_i = 0$ für Versuchspersonen in der Experimentalkondition.
+% Das macht eigentlich nichts aus.) Wenn wir dies gemacht haben,
+% können wir den Vektor von Nullen und Einsen als Prädiktor in ein lineares Regressionsmodell
+% aufnehmen. Wenn man kategorische Variablen (hier: Gruppenzugehörigkeit)
+% als Zahlenreihen umschreibt, spricht man von \term{Dummy-Variablen}.
+% 
+% Gezeigt werden hier zwei Möglichkeiten, um die Dummy-Variable \texttt{n.Kondition}
+% zu kreieren. Die erste funktioniert mit \texttt{ifelse()}:
+% <<>>=
+% d$n.Kondition <- ifelse(d$MoneyGroup == "treatment", yes = 1, no = 0)
+% @
+% Die zweite verwendet die tidyverse-Funktionen \texttt{mutate()} und \texttt{case\_when()}.
+% Beide Möglichkeiten liefern das gleiche Ergebnis; die Idee hier ist nur, die Funktion
+% \texttt{case\_when()} vorzustellen.
+% <<>>=
+% d <- d |>
+%   mutate(n.Kondition = case_when(
+%     MoneyGroup == "treatment" ~ 1, # falls MoneyGroup == "treatment"
+%     TRUE                      ~ 0  # sonst
+%   ))
+% @
+% Zur Kontrolle ist eine Kreuztabelle mit der ursprünglichen und der Dummy-Variablen
+% nützlich:
+% <<>>=
+% xtabs(~ MoneyGroup + n.Kondition, d)
+% @
+% 
+% Jetzt können wir die Dummy-Variable als Prädiktor in
+% einem linearen Modell verwenden:
+% <<>>=
+% money.lm <- lm(Sysjust ~ n.Kondition, data = d)
+% @
+% Wie gehabt können die geschätzten Parameter abgerufen
+% werden, indem man den Namen des Modells eintippt.
+% <<>>=
+% money.lm
+% @
+% Die zwei Parameterschätzungen sind $\widehat{\beta_0}$ bzw.\
+% $\widehat{\beta_1}$. Ihre Bedeutung kann aus der Regressionsgleichung hergeleitet werden:
+% \[
+%  y_i = 3.53 - 0.006 \cdot x_i + \widehat{\varepsilon_i},
+% \]
+% für $i = 1, \dots, n$.
+% Für Versuchspersonen in der Kontrollgruppe ist $x_i = 0$.
+% Für solche Versuchspersonen wird die Gleichung zu
+% \[
+%   y_i = 3.53 - 0.006 \cdot 0 + \widehat{\varepsilon_i} = 3.53 + \widehat{\varepsilon_i},
+% \]
+% sodass $\widehat{y_i} = 3.53$.
+% $\widehat{\beta_0}$ ist also das Gruppenmittel der Gruppe, die als $0$ bezeichnet wurde.
+% Für Versuchspersonen in der Experimentalgruppe ist $x_i = 1$.
+% Für sie wird die Gleichung zu
+% \[
+%   y_i = 3.53 - 0.006 \cdot 1 + \widehat{\varepsilon_i},
+% \]
+% sodass $\widehat{y_i} = 3.53 - 0.006$. 
+% Durch Rundungsfehler ergibt dies eigentlich auch 3.53. 
+% $\widehat{\beta_1}$ ist also der Unterschied zwischen den Mitteln der beiden Gruppen. 
+% Ist dieser Wert negativ, dann hat die Gruppe, die als $1$ bezeichnet wurde, 
+% ein niedrigeres Mittel als die Gruppe, die als $0$ bezeichnet wurde.
+% 
+% \mypar{Aufgabe} 
+% Ändern Sie die Befehle oben, sodass nun die Kontrollgruppe als 1 bezeichnet wird und die Experimentalgruppe als 0. 
+% Was ändert sich im Output?
+% \parend
+% 
+% \subsubsection{Unsicherheit in den Parameterschätzungen quantifizieren}
+% Den minimalen Unterschied zwischen den zwei Gruppenmitteln hätten wir auch einfach
+% von Hand berechnen können. Der Mehrwert des allgemeinen linearen Modells besteht
+% aber darin, dass wir auch die Unsicherheit in den Parameterschätzungen schätzen
+% können; dies machen wir hier. Ausserdem können dem allgemeinen linearen Modell
+% mehrere Prädiktoren hinzugefügt werden; dies machen wir in einem nächsten Kapitel.
+% 
+% \paragraph{Bootstrappen ohne Normalitätsannahme.}
+% Die `neuen' $y$-Werte ($y^{*}$)
+% stellen sich aus den vom Modell `vorhergesagten' $y$-Werten ($\widehat{y}$)
+% und einer Bootstrap-Stichprobe aus $\widehat{\varepsilon}$ zusammen
+% (\textit{sampling with replacement}).
+% <<eval = TRUE, cache = TRUE>>=
+% runs <- 20000
+% bs_beta <- matrix(nrow = runs, ncol = 2)
+% predictions <- predict(money.lm)
+% residuals <- resid(money.lm)
+% 
+% for (i in 1:runs) {
+%   neu_Sysjust <- predictions + sample(residuals, replace = TRUE)
+%   bs_money.lm <- lm(neu_Sysjust ~ n.Kondition, data = d)
+%   bs_beta[i, ] <- coef(bs_money.lm)
+% }
+% @
+% Siehe Seite \pageref{sec:histogrammebootstrapdekeyser} für eine Erklärung;
+% das Ergebnis dieser Befehle steht in Abbildung \ref{fig:bootstrapdistributionmoney}.
+% <<echo = TRUE, fig.width = 1.2*6, fig.height = 1.2*2, fig.cap = "Verteilung der Bootstrap-Schätzungen der Parameter im Regressionsmodell \\texttt{money.lm}.\\label{fig:bootstrapdistributionmoney}", out.width = ".9\\textwidth">>=
+% bs_beta_tbl <- tibble(Schnittpunkt = bs_beta[, 1],
+%                       Unterschied = bs_beta[, 2])
+% 
+% bs_beta_tbl |>
+%   pivot_longer(cols = everything(),
+%                names_to = "Parameter",
+%                values_to = "Estimate") |>
+%   ggplot(aes(x = Estimate)) +
+%   geom_histogram(fill = "lightgrey", col = "black", bins = 50) +
+%   facet_wrap(vars(Parameter), scales = "free") +
+%   xlab("Bootstrapschätzung") +
+%   ylab("Anzahl")
+% @
+% Die Standardabweichungen der Bootstrapverteilungen von $\widehat{\beta}$
+% können wiederum als Schätzungen der Standardfehler dienen:
+% <<>>=
+% apply(bs_beta, 2, sd)
+% @
+% Ebenso können Konfidenzintervalle berechnet werden. In Fällen wie diesen
+% interessiert man sich in der Regel hauptsächlich für den Standardfehler
+% und das Konfidenzintervall um die Unterschiedsschätzung:
+% <<>>=
+% # 80% Konfidenzintervall
+% quantile(bs_beta[, 2], probs = c(0.1, 0.9))
+% @
+% 
+% \mypar[Alternative für heteroskedastische Daten]{Bemerkung}\label{bm:heterosk}
+% Im obigen Beispiel konnten
+% $\widehat{\varepsilon}$-Werte aus der Kontrollkondition auch neu der Experimentkondition
+% zugeordnet werden und umgekehrt. Dies entspricht der Homoskedastizitätsannahme
+% (siehe Seite \pageref{homoskedasticity}) des allgemeinen linearen Modells:
+% Die Fehlervarianz ist überall gleich gross, sodass ein bestimmter
+% Restfehler genau so gut in der anderen Kondition hätte vorkommen können.
+% Man könnte den Bootstrap aber auch so durchführen, dass $\widehat{\varepsilon}$-Werte
+% aus der Kontrollkondition nur der Kontrollkondition zugewiesen werden können
+% und $\widehat{\varepsilon}$-Werte aus der Experimentalkondition nur der Experimentalkondition.
+% Hiermit würde man die Möglichkeit berücksichtigten,
+% dass die Fehlervarianz in der einen Gruppe von jener in der
+% anderen Gruppe abweichen könnte.
+% 
+% In unserem Beispiel schaut diese Variante so aus:
+% <<eval = TRUE, cache = TRUE>>=
+% runs <- 20000
+% bs_beta <- matrix(nrow = runs, ncol = 2)
+% predictions <- predict(money.lm)
+% residuals <- resid(money.lm)
+% bs_resid <- residuals
+% 
+% for (i in 1:runs) {
+%   # Residuen innerhalb jeder Kondition resamplen
+%   bs_resid[d$n.Kondition == 1] <- residuals[d$n.Kondition == 1] |> 
+%     sample(replace = TRUE)
+%   bs_resid[d$n.Kondition == 0] <- residuals[d$n.Kondition == 0] |> 
+%     sample(replace = TRUE)
+%   
+%   # Wie gehabt
+%   neu_Sysjust <- predictions + bs_resid
+%   bs_money.lm <- lm(neu_Sysjust ~ n.Kondition, data = d)
+%   bs_beta[i, ] <- coef(bs_money.lm)
+% }
+% @
+% Wie Sie selber kontrollieren können, ist das 80\%-Konfidenzintervall jetzt
+% etwas breiter.
+% \parend
+% 
+% \mypar[Konfidenzintervall für Unterschied zwischen Medianen]{Aufgabe}
+%   Wie würden Sie vorgehen, um mithilfe des Bootstraps
+%   ein Konfidenzintervall für den Unterschied
+%   zwischen den Medianen beider Konditionen zu konstruieren?
+%   Probieren Sie Ihren Vorschlag zu implementieren.
+%   
+%   Hinweis: Die \texttt{lm()}-Funktion nutzt hier nichts. Verwenden Sie
+%   stattdessen \texttt{median()}.
+% \parend
+% 
+% \paragraph{Bootstrappen mit Normalitätsannahme.}
+% Ähnlich wie in den letzten zwei Kapiteln kann man die Residuen
+% auch aus einer Normalverteilung generieren.
+% <<eval = TRUE, cache = TRUE>>=
+% runs <- 20000
+% bs_beta <- matrix(nrow = runs, ncol = 2)
+% predictions <- predict(money.lm)
+% sigma_eps <- sigma(money.lm)
+% n_obs <- length(predictions)
+% for (i in 1:runs) {
+%   neu_Sysjust <- predictions + rnorm(n_obs, sd = sigma_eps)
+%   bs_money.lm <- lm(neu_Sysjust ~ n.Kondition, data = d)
+%   bs_beta[i, ] <- coef(bs_money.lm)
+% }
+% @
+% Die Histogramme werden nicht nochmals gezeichnet.
+% <<>>=
+% apply(bs_beta, 2, sd)
+% quantile(bs_beta[, 2], probs = c(0.1, 0.9))
+% @
+% 
+% \paragraph{Mit $t$-Verteilungen.}
+% Wenn man ohnehin
+% davon ausgehen will, dass der Restfehler aus einer Normalverteilung
+% stammt, kann man wiederum die \texttt{summary()}-Funktion verwenden,
+% um die Standardfehler abzurufen:
+% <<>>=
+% summary(money.lm)$coefficients
+% @
+% Die Konfidenzintervalle um $\widehat{\beta}$ können mit \texttt{confint()}
+% abgerufen werden:\label{sec:money}
+% <<>>=
+% confint(money.lm, level = 0.8)
+% @
+% Der minimale Unterschied zwischen den Gruppenmitteln von bloss
+% $-0.006$ Punkten auf einer 7er-Skala hat also ein 80\%-Konfidenzintervall
+% von $[-0.26, 0.25]$ und könnte nach einer saloppen Interpretation von Konfidenzintervallen 
+% fast genau so gut positiv als auch negativ sein. 
+% In dieser Stichprobe bestätigt sich also das Ergebnis eines positiven Unterschiedes
+% von \citet{Caruso2013} nicht. Die Bootstrapmethoden liefern ein nahezu identisches Ergebnis.
+% 
+% \subsection{Treatment coding und sum-coding}\label{sec:sumcoding}
+% Wenn man, wie oben, eine Gruppe als 0 und die andere als 1 bezeichnet,
+% spricht man von \term{treatment coding}. Das Intercept
+% stellt dann das Mittel der 0-Gruppe dar und die Steigung den Unterschied
+% zwischen den Gruppenmitteln.
+% Eine Alternative ist \term{sum-coding}. Hierzu wird die eine Gruppe
+% als $-0.5$ und die andere als $0.5$ bezeichnet:
+% <<>>=
+% d <- d |>
+%   mutate(n.Kondition = case_when(
+%     MoneyGroup == "treatment" ~ 0.5,
+%     TRUE                      ~ -0.5
+%   ))
+% money.lm <- lm(Sysjust ~ n.Kondition, data = d)
+% money.lm
+% @
+% $\widehat{\beta_1}$ stellt nach wie vor den Unterschied zwischen
+% den beiden Gruppenmitteln dar, aber das Intercept ($\widehat{\beta_0}$)
+% stellt nun den \term{Gesamtmittelwert} (\textit{grand mean}) dar.
+% Dies ist das Mittel der Gruppenmittel.
+% Achtung: Dies ist nicht unbedingt das Mittel sämtlicher Daten!
+% 
+% \mypar{Aufgabe}
+% Manche Forschende verwenden beim sum-coding lieber $-1$ und $1$ als $-0.5$ und $0.5$.
+% Was würde sich im Output ändern, wenn man dies machen würde?
+% Was würde der geschätzte Parameter für \texttt{n.Kondition} jetzt bezeichnen?
+% \parend
+% 
+% \mypar[\textit{Alabama first}]{Bemerkung}
+% Eigentlich braucht man die Dummy-Variablen
+% nicht selber zu kreieren: R macht dies automatisch, wenn Sie eine
+% nicht-numerische Variable direkt dem Modell hinzufügen:
+% <<>>=
+% money.lm2 <- lm(Sysjust ~ MoneyGroup, data = d)
+% money.lm2
+% @
+% Defaultmässig hantiert R treatment coding. Aber Achtung:
+% Welche Gruppe als 0 bezeichnet wird und welche als 1, wird
+% nach dem Alphabet festgelegt. `treatment' kommt nach `control',
+% sodass `control' die 0-Gruppe wird und `treatment' die 1-Gruppe.
+% Verlieren Sie dies bitte nicht aus dem Auge!
+% Wenn Ihr Datensatz
+% auf Deutsch zusammengestellt wurde, käme in einer \texttt{L1}-Variablen
+% `Deutsch' vor `Französisch'; auf Englisch käme aber
+% `German' nach `French'.\label{sec:alphabet}
+% Pflegen Sie besser die Gewohnheit,
+% Ihre Dummy-Variablen selber zu kodieren, statt dies R zu überlassen.
+% \parend
+% 
+% 
+% \subsection{Annahmen überprufen}
+% Die wichtigsten Annahmen dieses Modells sind die folgenden.
+% \begin{enumerate}
+%   \item Die Datenpunkte sind unabhängig voneinander.
+%   Ein klassisches Beispiel von Datensatzen mit \emph{abhängigen}
+%   Datenpunkte sind Erhebungen in unterschiedlichen Schulklassen:
+%   Kinder aus derselben Klasse sind sich ähnlicher (aufgrund
+%   vorheriger Selektion, gemeinsamer Lehrkräfte, usw.) als Kinder
+%   aus unterschiedlichen Klassen. Die Konsequenz davon ist,
+%   dass Kinder aus derselben Klasse dem Modell keine vollständig
+%   neue Information hinzufügen. Das Modell `weiss' dies aber nicht
+%   und würde deswegen fälschlicherweise davon ausgehen, dass
+%   jeder Eintrag den gleichen Informationswert hat. Dadurch würde
+%   der Standardfehler unterschätzt.
+%   Für weitere Diskussion und Lösungen, siehe \citet{Vanhove2015}.
+% 
+%   Ein anderes Beispiel sind \textit{within-subject}-Experimente,
+%   in denen Versuchspersonen in beiden/mehreren Konditionen getestet
+%   werden. \textit{Within-subject}-Experimente bieten in der Regel
+%   mehr statistische Genauigkeit, sind aber schwieriger zu analysieren.
+%   Eine Option ist die Verwendung gemischter Modelle;
+%   siehe \textcolor{blue}{Ausblickskapitel} für Literaturempfehlungen.
+%   Wenn alle Versuchspersonen in zwei Konditionen getestet
+%   werden und es nur zwei Konditionen gibt, ist eine einfache Option,
+%   den Wert jeder Versuchsperson in der einen Kondition von ihren Wert
+%   in der anderen abzuziehen und diese Unterschiede zu analysieren.
+%   Siehe hierzu Kapitel \ref{ch:withinsubjects}.
+% 
+%   Die Unabhängigkeitsannahme lässt sich meistens schwer überprüfen:
+%   Sogar kaum merkbare Abhängigkeiten können sich verheerend auf die 
+%   statistischen Inferenzen auswirken.
+%   Die Gültigkeit der Unabhängigkeitsannahme muss auf der Basis von Sachwissen eingeschätzt
+%   werden: Man muss eben \emph{wissen}, ob die Datenpunkte
+%   Klümpchen bilden oder nicht.
+%   In kontrollierten Experimenten kann man davon ausgehen,
+%   dass die Unabhängigkeit gegeben ist, wenn die Teilnehmenden
+%   auf individueller Basis den Konditionen zufällig zugeordnet wurden.
+% 
+%   \item Wenn die Konfidenzintervalle anhand von $t$-Verteilungen 
+%   konstruiert werden, gehen wir auch davon aus, dass
+%   die Restfehler aus einer Normalverteilung stammen.
+%   In diesem Fall heisst dies, dass die outcome-Werte innerhalb
+%   jeder Kondition etwa normalverteilt sind, aber in komplexeren
+%   Modellen müsste man sich hierzu die Verteilung der Restfehler selber
+%   anschauen. Die Konstruktion der Konfidenzintervalle anhand
+%   von $t$-Verteilungen setzt normalverteilte Restfehler voraus,
+%   aber wie das Beispiel oben zeigt, kann eine Bootstrapmethode,
+%   die eben keine normalverteilten Restfehler voraussetzt, recht
+%   ähnliche Ergebnisse liefern, insbesondere, wenn die Datenmenge
+%   ausreichend ist. Meines Erachtens wichtiger ist aber, dass Restfehler, die
+%   nicht ungefähr normalverteilt sind, darauf hinweisen dürften, dass
+%   die Gruppenmittel, die man vergleicht, keine relevanten Masse
+%   der zentralen Tendenz sind.
+%   Siehe hierzu
+% \href{https://janhove.github.io/posts/2019-04-11-assumptions-relevance/}{\textit{Before worrying about model assumptions, think about model relevance}} (11.4.2019).
+% 
+%   \item Die Restfehler haben in jeder Gruppe die gleiche
+%   Streuung (Homoskedastizität). In etwa scheint dies in diesem
+%   Fall schon zu stimmen. Zum Vergleich:
+%   Die Boxplots in Abbildung
+%   \ref{fig:heteroskedasticity_groups} wären ein Grund, sich über diese Annahme Sorgen
+%   zu machen. Mögliche Lösungen finden sich bei \citet[][Kapitel 4]{Zuur2009}.
+%   Eine andere Lösung wäre, dass man den Bootstrap so durchführt, dass
+%   die Residuen der einen Gruppe nicht der anderen Gruppe zugeordnet werden;
+%   siehe Bemerkung \ref{bm:heterosk}.
+%   Auch hier wiederhole ich mein Credo: \href{https://janhove.github.io/analysis/2019/04/11/assumptions-relevance}{\textit{Before worrying about model assumptions, think about model relevance}}.
+% <<echo = FALSE, fig.cap = "Beispiel von heteroskedastischen Daten.\\label{fig:heteroskedasticity_groups}", out.width = ".4\\textwidth">>=
+% df <- data.frame(x = c(rep("a", 20),
+%                        rep("b", 20)),
+%                  y = c(rnorm(20, 2, sd = 0.5),
+%                        rnorm(20, 2, sd = 2)))
+% ggplot(df,
+%        aes(x = x,
+%            y = y)) +
+%   geom_boxplot(outlier.shape = NA) +
+%   geom_point(shape = 1,
+%              position = position_jitter(width = 0.1, height = 0))
+% @
+% \end{enumerate}
+% Zur Überprüfung dieser Annahmen, siehe noch \citet{Vanhove2018b}.
+% 
+% \mypar{Aufgabe}
+% \citet{Berthele2011b} spielte 155 angehenden Lehrpersonen eine Lautaufnahme vor,
+%  angeblich von einem Jungen, der Französisch als Fremdsprache spricht.
+%  An\-schliess\-end wurden sie gebeten, das akademische Potenzial des Buben einzuschätzen (Skala von 1--6).
+%  In etwa der Hälfte der Fälle enthielt die Lautaufnahme Codeswitches (also ein paar deutsche Wörter);
+%  in den anderen nicht. Ausserdem wurde der Hälfte der angehenden Lehrpersonen erzählt,
+%  der Junge hiesse Luca (ein gängiger Name in der Deutschschweiz);
+%  der anderen Hälfte wurde erzählt, er hiesse Dragan (ein Name, der man eher mit dem Balkan assoziiert).
+%  Die Frage war, ob dieses Labelling die Einschätzungen der angehenden Lehrpersonen beeinflusst,
+%  ggf.\ in Kombination mit den Codeswitches.
+% 
+%  Hier fokussieren wir uns zunächst auf der Frage, wie gross der Unterschied in der durchschnittlichen Bewertung
+%  für Aufnahmen mit dem Dragan- und dem Luca-Label ist, wenn die Aufnahme Codeswitches enthält.
+% 
+%  \begin{enumerate}
+%   \item Lesen Sie die Datei \texttt{berthele2011.csv} in R ein.
+%   \item Filtern Sie die Aufnahmen ohne Codeswitches heraus, sodass nur die Aufnahmen mit Codeswitches übrig bleiben.
+%   \item Analysieren Sie die Bewertungen hinsichtlich der Frage, ob diese vom `Luca'- vs.\ `Dragan'-Label beeinflusst werden.
+%         Vergessen Sie nicht, die Daten grafisch darzustellen!
+%   \item Fassen Sie Ihre Befunde in 2--3 Sätzen zusammen. \parend
+%  \end{enumerate}
+%  
+% \mypar{Aufgabe}\label{ex:gambler}
+%  Ein anderer Befund, den \citet{Klein2014} zu replizieren
+%  versuchten, war der \textit{gambler's fallacy}, der in einem
+%  Experiment von \citet{Oppenheimer2009a} belegt wurde. \citet{Klein2014}
+%  fassen dieses Experiment zusammen:
+%  \begin{quote}
+%  ``\citet{Oppenheimer2009a} investigated whether the rarity of an independent, chance
+%  observation influenced beliefs about what occurred before that event.
+%  Participants imagined that they saw a man rolling dice in a casino.
+%  In one condition, participants imagined witnessing three dice being rolled
+%  and all came up 6's. In a second condition two came up 6's and one came up 3.
+%  In a third condition, two dice were rolled and both came up 6's.
+%  All participants then estimated, in an open-ended format, how
+%  many times the man had rolled the dice before they
+%  entered the room to watch him. Participants estimated
+%  that the man rolled dice more times when they had
+%  seen him roll three 6's than when they had seen him
+%  roll two 6's or two 6's and a 3. For the replication,
+%  the condition in which the man rolls two 6's was removed leaving two conditions.''
+%  \end{quote}
+% 
+%  Die Daten der Replikationsstudie finden Sie in der Datei
+%  \texttt{Klein2014\_gambler.csv}. Analysieren Sie den Datensatz
+%  hinsichtlich der Forschungsfrage, aber beschränken Sie sich
+%  dabei auf die Stichprobe der University of Florida (\texttt{ufl}
+%  in der Spalte \texttt{Sample}). Fassen Sie Ihre Befunde in 2--3 Sätzen
+%  zusammen.
+% \parend
+% 
+% \section{Unterschiede zwischen mehreren Gruppen}\label{sec:unterschiede_mehrere_gruppen}
+% In \citet{Vanhove2017} untersuchte ich, inwiefern die Genuszuordnungen
+% im Deutschen (`Heisst es \textit{der}, \textit{die} oder \textit{das Knie}?')
+% bei flämischen
+% Dialektsprecher:innen von ihrem Dialekt beeinflusst werden.
+% Zum Beispiel: Sagen Informant:innen, in deren Dialekt \textit{knie} männlich ist,
+% eher \textit{der Knie}, verglichen mit Informant:innen, in deren
+% Dialekt \textit{knie} weiblich ist?
+% Ich kam zum Schluss, dass dies kaum der Fall ist, sodass sich
+% die Frage stellte, woran dies liegt. Eine Vermutung war, dass
+% den Dialektsprecher:innen metalinguistische Kenntnisse über
+% Genuszuordnungen in ihrem eigenen Dialekt fehlen, sodass sie
+% nicht auf diese zurückgreifen können, wenn sie deutschen Nomen
+% ein Genus zuordnen. In \citet{Vanhove2018} überprüfte ich diese
+% Vermutung, indem ich flämischen Dialektsprecher:innen metalinguistische
+% Informationen über ihren Dialekt verschaffte. Konkret gab es
+% drei Konditionen:
+% \begin{itemize}
+%  \item Versuchspersonen in der ersten Kondition wurde eine Strategie
+%  erklärt, mit der sie das Genus eines Wortes in ihrem Dialekt erschliessen
+%  können.
+% 
+%  \item Versuchspersonen in der zweiten Kondition wurde mitgeteilt,
+%  dass ihr Dialekt (nicht aber das Standardniederländische) die gleiche
+%  Anzahl Genera wie das Deutsche hat. Ihnen wurde aber nicht erklärt,
+%  wie sie das Genus eines Wortes erschliessen können.
+% 
+%  \item Versuchspersonen in der dritten Kondition erhielten Informationen
+%  über einen irrelevanten Aspekt ihres Dialektes. Diese Kondition dient
+%  als Kontrollkondition.
+% \end{itemize}
+% 
+% Dann wurde geschaut, ob die Genuszuordnungen sich zwischen den Konditionen
+% unterschieden. Getestet wurden 29 deutsche Nomen mit niederländischen
+% Kognaten und es wurde gezählt, wie viele Genuszuordnungen im Deutschen
+% pro Versuchsperson kongruent mit dem Genus des Kognats in
+% ihrem Dialekt waren.
+% Erwartet wurde insbesondere, dass Versuchspersonen in der
+% ersten Kondition (`strategy') sich nach den Instruktionen eher
+% am Dialekt orientieren als Versuchspersonen in den beiden anderen Konditionen
+% (`information' und `no information').
+% 
+% \mypar{Aufgabe}
+% Lesen Sie die Daten in der Datei \texttt{Vanhove2018.csv} ein;
+% den Datensatz können Sie wieder \texttt{d} nennen.
+% Die Spalte \texttt{ProportionCongruent}
+% listet die Proportion kongruenter Genuszuordnungen pro Versuchsperson
+% auf.
+% \parend
+% 
+% <<message = FALSE, warning = FALSE, echo = FALSE>>=
+% d <- read_csv(here("data", "Vanhove2018.csv"))
+% @
+% 
+% 
+% \subsection{Grafische Darstellung und beschreibende Statistik}
+% Ob zwei oder mehrere Gruppen, die Boxplots kann man
+% mit dem gleichen Befehl zeichnen.
+% Das Einzige, was ich hier anders mache, ist,
+% dass ich mit \texttt{scale\_x\_discrete()} die
+% Konditionen in einer Reihenfolge
+% aufliste, die m.E.\ sinnvoller ist als die alphabetische.
+% Dazu verwende ich den Parameter \texttt{limits}.
+% 
+% <<out.width = ".7\\textwidth", fig.width = 6*1.1, fig.height = 2.3*1.1, fig.cap = "Boxplots der Daten von \\citet{Vanhove2018}.\\label{fig:vanhove2018}">>=
+% ggplot(d,
+%        aes(x = Condition,
+%            y = ProportionCongruent)) +
+%   geom_boxplot(outlier.shape = NA) +
+%   geom_point(shape = 1,
+%              position = position_jitter(width = 0.2, height = 0)) +
+%   scale_x_discrete(limits = c("no information", "information", "strategy")) +
+%   xlab("Lernkondition") +
+%   ylab("Proportion L1-L2 kongruenter\nAntworten")
+% @
+% 
+% Die numerische Zusammenfassung machen wir wie gehabt:
+% <<>>=
+% d |>
+%   group_by(Condition) |>
+%   summarise(AnzahlVpn = n(),
+%             Mittel = mean(ProportionCongruent),
+%             Median = median(ProportionCongruent),
+%             StdAbw = sd(ProportionCongruent))
+% @
+% 
+% \subsection{Modellierung}
+% Eine kategorische Variable mit zwei Ausprägungen
+% konnten wir als eine binäre Dummy-Variable (0 vs.\ 1) umkodieren.
+% Auch um eine kategorische Variable mit drei Ausprägungen
+% in einem allgemeinen linearen Modell zu modellieren,
+% brauchen wir Dummy-Variablen, aber wie viele?
+% Man könnte die Zugehörigkeit zu jeder Kondition
+% binär festlegen:
+% 
+% \begin{center}
+% \begin{tabular}{lccc}
+% \toprule
+% Kondition      & Strategy? & Information? & (NoInformation?) \\
+% \midrule
+% Strategy       & 1         & 0            & (0)              \\
+% Information    & 0         & 1            & (0)              \\
+% No information & 0         & 0            & (1)             \\
+% \bottomrule
+% \end{tabular}
+% \end{center}
+% 
+% Die letzte Spalte brauchen wir gar nicht:
+% Wenn in der \texttt{Strategy?}- und in der \texttt{Information?}-Spalte
+% eine Null steht, wissen wir schon, dass in der \texttt{NoInformation?}-Spalte
+% eine Eins folgt. Wir brauchen also nur zwei Dummy-Variablen.
+% 
+% <<>>=
+% d$Strategy <- ifelse(d$Condition == "strategy", 1, 0)
+% d$Information <- ifelse(d$Condition == "information", 1, 0)
+% 
+% # Kontrolle:
+% d |> slice_head(n = 5)
+% @
+% Das allgemeine lineare Modell kann problemlos mit mehreren Prädiktoren
+% umgehen, sodass wir beide Prädiktoren dem Modell hinzufügen können. Die
+% Modellgleichung schaut so aus:
+% \[
+%  y_i = \beta_0 + \beta_1 \cdot x_{1,i} + \beta_2 \cdot x_{2,i} + \varepsilon_i,
+% \]
+% für $i = 1, \dots, n$. Hier stellt $x_{1,i}$ den Wert der $i$-ten Versuchsperson
+% bei der ersten Dummy-Variablen dar;
+% $x_{2,i}$ stellt ihren Wert bei der zweiten Dummy-Variablen dar.
+% So kann $x_{1,4} = 0$ sein, wenn die 4.\ Versuchsperson
+% nicht der \texttt{Information}-Kondition zugeordnet wurde
+% und $1$, wenn sie schon dieser Kondition zugeordnet wurde.
+% <<>>=
+% mod.lm <- lm(ProportionCongruent ~ Information + Strategy, data = d)
+% mod.lm
+% @
+% 
+% \mypar{Aufgabe} 
+% Vergleichen Sie die geschätzten Parameter
+% mit den Werten in der numerischen Zusammenfassung oben. Was stellt
+% die Parameterschätzung für \texttt{(Intercept)} (also $\widehat{\beta_0}$)
+% dar? Was bedeuten die Parameterschätzungen für \texttt{Information} ($\widehat{\beta_1}$)
+% und \texttt{Strategy} ($\widehat{\beta_2}$)?
+% \parend
+% 
+% \mypar{Aufgabe} 
+% Dem Modell kann die kategorische Variable der Konditionzugehörigkeit
+% auch direkt hinzufügt werden. Warum ergibt dies andere Parameterschätzungen?
+% <<>>=
+% mod.lm2 <- lm(ProportionCongruent ~ Condition, data = d)
+% mod.lm2
+% @
+% \parend
+% 
+% \subsection{Die Unsicherheit in den Parameterschätzungen quantifizieren}
+% Die Bootstrapmethoden sollen mittlerweile ihrem didaktischen Zweck
+% gedient haben, weshalb ich sie den interessierten Leser:innen als Übung überlasse.
+% Die Standardfehler
+% der Parameterschätzungen können wie gehabt mit \texttt{summary()}
+% abgerufen werden:
+% <<>>=
+% summary(mod.lm)$coefficients
+% @
+% Konfidenzintervalle lassen sich einfach mit \texttt{confint()} berechnen.
+% Die Konfidenzintervalle um $\widehat{\beta_0}$ sind in der Regel weniger
+% interessant, aber werden automatisch mitberechnet.\label{sec:strategy}
+% <<>>=
+% confint(mod.lm, level = 0.90)
+% @
+% Wir könnten hier schlussfolgern, dass der Einfluss der metalinguistischen Instruktion
+% eher ungewiss bleibt. Zwar gaben Versuchspersonen in der `strategy'-Kondition
+% mehr kongruente Antworten als jene in der `no information'-kondition (7 Prozentpunkte
+% mehr), aber die Unsicherheit in dieser Schätzung ist von der Grösse, dass
+% auch negative Unterschiede oder Unterschiede nahe bei Null recht plausibel sind
+% (vgl.\ das Konfidenzintervall).
+% 
+% \subsection{Andere Kodierungssysteme}\label{sec:kodierungssysteme}
+% In dieser Analyse wurde treatment coding verwendet,
+% sodass die Parameterschätzungen für $\beta_1$ und $\beta_2$ stets in Bezug zum
+% Schnittpunkt ($\beta_0$) zu interpretieren sind. Dieser Schnittpunkt
+% stellt den $\widehat{y}$-Wert für Versuchspersonen in der Gruppe,
+% die als $(0,0)$ kodiert wurde, dar.
+% 
+% Manchmal sind aber andere Kodierungssysteme nützlich. Zum Beispiel
+% könnte es sinnvoll sein, die Parameter so schätzen zu lassen, dass
+% $\widehat{\beta_2}$ den Unterschied zwischen der dritten und der zweiten Gruppe
+% und nicht den Unterschied zwischen der dritten und der ersten Gruppe
+% darstellt. Dies sei hier der Vollständigkeit halber erwähnt.
+% Eine detaillierte (aber sehr nützliche!) Behandlung findet sich in \citet{Schad2020}.
+% Siehe auch den Blogeintrag \href{https://janhove.github.io/posts/2020-05-05-contrast-coding/}{\textit{Tutorial: Obtaining directly interpretable regression coefficients by recoding categorical predictors}} (5.5.2020).
+% % 
+% % \medskip
+% % 
+% \begin{framed}
+% \noindent \textbf{Merksatz:}
+% Stellen Sie sicher, dass Sie wissen, worauf sich die Zahlen im Modelloutput
+% überhaupt beziehen, bevor Sie diese theoretisch interpretieren!
+% \end{framed}
+% % 
+% % \medskip
+% % 
+% \begin{framed}
+% \noindent \textbf{Empfehlung:}
+% Probieren Sie, die Dummy-Variablen so zu kodieren, dass Sie die Antwort
+% auf jede Forschungsfrage direkt aus einer Parameterschätzung (statt aus einer
+% Kombination von mehreren) ablesen können. (Siehe dazu die Aufgaben.)
+% Dann erhalten Sie bei jeder Antwort nämlich auch direkt ein Mass der Unsicherheit.
+% Wenn Sie die Antwort aus mehreren Parameterschätzungen zusammenkombinieren müssen,
+% ist dies nicht der Fall.
+% \end{framed}
+% 
+% \mypar{Aufgabe}
+%  Im Folgenden arbeiten wir mit Daten aus einer Längsschnittstudie
+%  mit drei Erhebungen. Im
+%  Projekt wurde u.a.\ die Lesefähigkeit Portugiesisch--Deutsch- und Portugiesisch--Französisch-zweisprachiger
+%  Kinder untersucht \citep{Lambelet_HELASCOT_umbrella,Pestana_HELASCOT_reading}.
+%  Die Datei \texttt{helascot\_skills.csv} enthält die Ergebnisse
+%  der teilnehmenden Kinder bei mehreren Tests an den unterschiedlichen Erhebungen;
+%  \texttt{helascot\_background.csv} enthält weitere Hintergrundsinformationen zu den Kindern.
+%  \begin{enumerate}
+%   \item Lesen Sie die Datensätze \texttt{helascot\_skills.csv} und \texttt{helascot\_background.csv} ein
+%   und fügen Sie diese zusammen.
+% 
+%   \item Kreieren Sie einen tibble, in dem nur die Angaben zu den Portugiesischtests (Variable \texttt{LanguageTested}) zur zweiten Erhebung (Variable \texttt{Time}) vorkommen.
+% 
+%   \item Vergleichen Sie die Leistung von Kindern in Portugal
+%   (Variable \texttt{LanguageGroup: Control group Portuguese}) mit jener von Kindern in der Romandie (\texttt{Bilingual group French})
+%   und in der Deutschschweiz (\texttt{Bilingual group German}) bei der portugiesischen Leseaufgabe (\texttt{Reading}) zur zweiten Erhebung.
+%   Tun Sie dies sowohl grafisch als auch in einem linearen Modell mit selbst kodierten
+%   Dummy-Variablen.
+%   Kodieren Sie die Dummy-Variablen dabei so, dass das Intercept das Mittel der Scores
+%   der Kinder aus Portugal zeigt und die beiden anderen Parameter jeweils den durchschnittlichen
+%   Unterschied zwischen den Kindern aus Portugal und den Kindern aus der Romandie bzw.\
+%   aus der Deutschschweiz zeigen.\\
+%   Achtung: Die Teilnehmenden in dieser Studie sind Schülerinnen und Schüler in Klassen.
+%   Die Beobachtungen verletzen somit vermutlich die Unabhängigkeitsannahme.
+%   Für diese Übung dürfen Sie diese Verletzung aber ignorieren.
+% 
+%   \item Fakultativ: Kodieren Sie die Dummy-Variablen so, dass das Intercept das Mittel
+%   der Scores der Kinder aus der Deutschschweiz zeigt, der nächste Parameter den durchschnittlichen
+%   Unterschied zwischen Kindern aus der Deutschschweiz und Kindern aus der Romandie zeigt,
+%   und der dritte Parameter den durchschnittlichen Unterschied zwischen Kindern aus der Romandie
+%   und Kindern aus Portugal zeigt. Rechnen Sie anhand des Modelloutputs kurz nach, ob die erhaltenen
+%   Schätzungen auch stimmen. (Tipp: Siehe meinen Blogeintrag oder \citet{Schad2020}.)
+% 
+%   \item Fakultativ (schwierig): Kodieren Sie die Dummy-Variablen so, dass das Intercept das Mittel
+%   der Scores der Kinder aus Portugal zeigt, der nächste Parameter den durchschnittlichen Unterschied zwischen Kindern aus Portugal und Kindern aus der Schweiz (sowohl Romandie als auch Deutschschweiz)
+%   und der letzte Parameter den durchschnittlichen Unterschied zwischen der Romandie und der Deutschschweiz. Rechnen Sie anhand des Modelloutputs nach, ob die erhaltenen
+%   Schätzungen auch stimmen. (Tipp: Siehe meinen Blogeintrag oder \citet{Schad2020}.)\\
+%   (Eine solche Kodierung wäre geeignet, wenn Sie sich für diese zwei Forschungsfragen interessieren: (1) Wie stark unterscheidet sich die Leistung von Kindern in Portugal und portugiesischstämmigen Kindern in der Schweiz? (2) Wie stark unterscheidet sich die Leistung von portugiesischstämmigen Kindern in der Schweiz je nach Sprachregion?) \parend
+%   \end{enumerate}
+% 
+% 
+% \subsection{Annahmen überprüfen}
+% Die Annahmen beim Vergleichen mehrerer Gruppen sind identisch
+% mit den Annahmen beim Vergleichen von zwei Gruppen.
+% 
+% In \citet{Vanhove2018} wurden diese Daten übrigens anders
+% analysiert, da der outcome eigentlich nicht
+% kontinuierlich ist, sondern sich aus 29 binären Antworten pro
+% Versuchsperson zusammensetzt. Diese Analyse führte aber zu
+% den gleichen Schlussfolgerungen.

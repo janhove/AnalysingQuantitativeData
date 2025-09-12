@@ -1,0 +1,1048 @@
+\chapter{Descriptive statistics of a univariate sample}\label{ch:univariate}
+The aim of \term{descriptive statistics} is to describe and summarise 
+characteristics of some pieces of information that were collected or observed.
+We'll call such a collection of pieces of information a \term{sample},
+even though this term will make more sense in the next chapters.
+In the present chapter, we focus on the case where we've obtained
+$n$ observations $(x_1, \dots, x_n)$ of some numeric property;
+we want to show both ourselves and our audience what the key features 
+of these observations are.
+From the next chapter onwards, our focus will lie on \term{inferential statistics}.
+In inferential statistics, we treat the $n$ observations as a sample
+drawn from some distribution or generated according to some mechanism
+and try to use them to learn something about this distribution or this mechanism.
+Don't let the fact that only one chapter is devoted to descriptive statistics
+compared to several that are devoted to inferential statistics 
+fool you into thinking that descriptive statistics is less important 
+than inferential statistics, though:
+A solid description of the data will often be more insightful
+than the inferential analysis itself, 
+and it will usually be easier to understand, too.
+In the chapters on inferential statistics, the necessity for a descriptive
+analysis will therefore often be stressed.
+
+Throughout this chapter, we'll use the small dataset that I collected
+for my Bachelor's thesis.
+I gave 23 learners of Swedish as a foreign language four reading tasks:
+one in Swedish, one in Danish, and one in each of
+the two written standards of Norwegian (\textit{bokm\aa{}l}, \textit{nynorsk}).
+Sadly, the different reading tasks can't directly be compared with each other (I was young!),
+and I couldn't retrieve the \textit{nynorsk} data any more (it was a long time ago\dots).
+The dataset also contains some further pieces of information regarding the 
+participants' language skills.
+Our goal is to communicate the key properties of the participants'
+scores on the \textit{bokm\aa{}l} test, which are stored in the column
+called \texttt{Norwegian} in the \texttt{jv\_bachpap.csv} file.
+I assume that you've loaded the \texttt{tidyverse} and that the dataset
+is stored in the \texttt{data} subdirectory of your project directory.
+
+<<message = FALSE>>=
+d <- read_csv(here("data", "jv_bachpap.csv"))
+d |>
+  slice_head(n = 3)
+@
+
+Of course, we could just report the 23 values in the \texttt{Norwegian} column
+and call it a day. Note the use of the dollar sign to access a column in a data frame/tibble.
+<<>>=
+d$Norwegian
+@
+
+But little insight can be gleaned from this.
+Some progress can be made by considering the empirical distribution that
+the sample gives rise to (as defined next) and applying the techniques
+for visualising and summarising a distribution that we've covered in the
+previous chapter to this empirical distribution.
+
+\mypar[Empirical distribution]{Definition}
+  Let $\bm x = (x_1, \dots, x_n)$ be a real-valued vector.
+  Its \term{empirical distribution} is the distribution of 
+  a random variable $Y$ on the (finite) sample space 
+  \[
+    \Omega := \{x_1, \dots, x_n\}
+  \]
+  with 
+  \[
+    \Prob(Y = y) = \frac{1}{n}\# \{i : x_i = x\}
+  \]
+  for all real numbers $y$.
+  That is, the probability of observing $Y = y$ corresponds exactly 
+  to the proportion of $x_i$ values for which $x_i = y$.
+  
+  The corresponding \term{empirical (cumulative) distribution function}
+  is defined by
+  \[
+    \widehat{F}(r) := \frac{1}{n}\#\{i : x_i \leq r\}
+  \]
+  for all real numbers $r$.
+\parend
+
+For instance, the empirical distribution of the Norwegian data assigns
+a probability of about 13\% to the event that the score equals 4;
+the probability of obtaining a score no more than 4 is about 35\%
+according to this empirical distribution.
+
+<<>>=
+mean(d$Norwegian == 4)
+mean(d$Norwegian <= 4)
+@
+
+The empirical distribution can be visualised by means of its distribution function.
+This can be drawn using the \texttt{ecdf()} command, which we've already encountered
+in the simulations in the previous chapter; see Figure \ref{fig:ecdf}.
+While distribution functions are popular among statisticians,
+researchers and laypeople don't seem to be overly enamoured with them,
+possibly partly because distribution functions can be difficult to compare between datasets.\footnote{Consider two numeric vectors $\bm x = (x_1, \dots, x_m)$ and $\bm y = (y_1, \dots, y_n)$. If the empirical distribution function curve of $\bm x$ lies \emph{above} the one of $\bm y$, then the values in $\bm x$ tend to be \emph{lower} than those in $\bm y$.}
+So let's take a look at some visualisations that may be more useful.
+
+<<echo = FALSE, fig.cap = "The empirical (cumulative) distribution function\\label{fig:ecdf}", fig.width = 6, fig.height = 3,  out.width = '.6\\textwidth'>>=
+plot(ecdf(d$Norwegian),
+     xlab = "Norwegian score", ylab = "Cumulative probability",
+     main = "Empirical distribution function")
+@
+
+\section{Visualisations}
+\subsection{Dotplots}
+A first such visualisation is the \term{(Cleveland) dot plot};
+see Figure \ref{fig:dotchart}.
+The observed values are shown as dots on separate lines along the $x$-axis;
+each line has a label that's shown along the $y$-axis.
+<<echo = FALSE, fig.cap = "A (Cleveland) dot plot of the participants' Norwegian scores sorted by their IDs (left) and one sorted by their scores (right). There are no values lying suspiciously far from the bulk of the data.\\label{fig:dotchart}", fig.width = 6, fig.height = 3,  out.width = '.8\\textwidth'>>=
+theme_set(theme_bw())
+p1 <- ggplot(data = d,
+       aes(x = Norwegian,
+           y = Participant)) +
+  geom_point() +
+  xlab("Norwegian score") +
+  ylab("Participant ID")
+
+p2 <- ggplot(data = d,
+       aes(x = Norwegian,
+           y = reorder(Participant, Norwegian))) +
+  geom_point() +
+  xlab("Norwegian score") +
+  ylab("Participant ID")
+
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+@
+
+To draw the graph on the left, you can use the commands below.
+The comments following the \# symbol explain how the graph is built up.
+I recommend that you use such comments liberally at the start of your R career.
+This way, you'll still be able to understand your code months later.
+As you get more proficient in R, your comments can become more high-level.
+<<eval = FALSE>>=
+ggplot(data = d,                # dataset containing the variables
+       # aes() = aesthetics = how to plot which variable
+       aes(x = Norwegian,       # variable along x-axis
+           y = Participant)) +  # variable along y-axis
+  geom_point() +                # show data as points
+  xlab("Norwegian score") +     # esp. for papers/presentations:
+  ylab("Participant ID")        #     label your axes
+@
+
+Make sure that you've loaded the \texttt{tidyverse} and \texttt{here} packages:
+Even if you've already installed them, you need to load them again 
+using \texttt{library()} in each session in which you need them.
+Also mind capitalisation, brackets, commas, and the plus signs.
+The latter are used to add new layers to a graph produced using \texttt{ggplot()}.
+The first four lines of the code snippet above (\texttt{ggplot(\dots)})
+merely draw the canvas on which the graph is constructed.
+The command after the first plus sign (\texttt{geom\_point(\dots)}) draws
+the data as points on this canvas.
+The commands \texttt{xlab(\dots)} and \texttt{ylab(\dots)} add labels to the axes.
+Note that these different layers are strung together using plus signs
+rather than using the pipe (\texttt{|>}).
+
+To draw the graph on the right, replace the 
+\texttt{y = Participant} on the fourth line by
+\texttt{y = reorder(Participant, Norwegian)}. (Don't forget the bracket!)
+
+When you run the commands above, you'll notice that the plots generated
+have a grey background. 
+I don't particularly like this default setting, which is why I override
+it using the following line.
+You only need to run it once per session, and then all subsequent plots
+will be plotted in black on a white background.
+<<>>=
+theme_set(theme_bw())
+@
+
+ 
+\mypar[Coding style]{Remark}
+  You could also use the code snippet below to generate a dotplot
+  as R mostly ignores empty spaces and line breaks.
+<<eval = FALSE>>=
+ggplot(data=d,aes(x=
+Norwegian,y=Participant))+geom_point(
+)+xlab("Ergebnis Norwegisch")+ylab("ID Versuchsperson")
+@
+  But the original code snippet is much clearer
+  since the code's structure (including indentations) reflect
+  the logical structure of the command.
+  Further, the use of empty spaces makes the code snippet easier on the eye.
+  
+  Try to adhere to a clear and consistent coding style,
+  even as you start to dabble in R.
+  You could adopt my style or you could follow a style guide
+  (e.g., \url{https://style.tidyverse.org/}).
+\parend
+
+
+\mypar[Saving plots]{Remark}
+  Once you've drawn a plot using \texttt{ggplot()},
+  you can store it using \texttt{ggsave()}.
+  Consult this function's help page for guidance (\texttt{?ggsave}).
+  
+  There's also a more general way to save plots, including plots that weren't
+  drawn using \texttt{ggplot()}.
+  To save the plot on the left in Figure \ref{fig:dotchart},
+  you can put the \texttt{ggplot()} commands between the commands \texttt{pdf()}
+  and \texttt{dev.off()}, like so:
+<<eval = FALSE>>=
+pdf(here("figs", "dotchart.pdf"),
+    width = 5, height = 4) # width and height in inches
+ggplot(data = d,
+       aes(x = Norwegian,
+           y = Participant)) +
+  geom_point() +
+  xlab("Norwegian score") +
+  ylab("Participant ID")
+dev.off()
+@
+This saves the plot as a PDF file named \texttt{dotchart.pdf} in the subdirectory
+\texttt{figs} of your project directory.
+You can replace \texttt{pdf()} by \texttt{svg()}, \texttt{png()}, \texttt{tiff()} or
+\texttt{bmp()} to export your graph to a different format.
+
+Alternatively, you can use the \texttt{Export} menu in the \texttt{Plots} tab
+in the bottom right pane in RStudio.
+However, I encourage you to embrace the use of \texttt{pdf()} and its cousins.
+By using these functions, you document the settings you've used to export the 
+graph. 
+This is a considerable time-saver if you then ever have to redraw the graph with 
+somewhat different settings, for instance in order to satisfy publisher guidelines.
+\parend
+
+In the present example, the dot plot is particularly useful
+because of something it does not show:
+There aren't any data points, or clusters of data points, that lie far
+from the bulk of the data.
+Such data points would be called \term{outliers} and can considerably affect
+the outcome of an analysis.
+As the analyst, you need to be aware of their existence.
+Outliers can (not `have to') be due to technical errors and it therefore pays
+to double-check them.
+Figure \ref{fig:outlier} shows a made-up example 
+the average number of morphological errors per page per learner for a group of learners.
+One data point lies so far removed from the others that the analyst ought to 
+double-check if it was entered correctly.
+Don't just remove data points because they are outliers, though!
+<<echo = FALSE, fig.cap = "An example of an outlier. Here, the analyst ought to check if the outlying data point was entered correctly and isn't just a typo (17.6 instead of 1.76).\\label{fig:outlier}", fig.height=2.5>>=
+# fiktive Daten eintragen
+df <- data.frame(fehler = c(1.35, 2.54, 17.6, 1.75, 1.98, 2.09, 2.43),
+                 id = paste("Learner", LETTERS[1:7]))
+ggplot(data = df,
+        aes(x = fehler,
+            y = reorder(id, fehler))) +
+   geom_point() +
+   xlab("Average number of errors per page") +
+   ylab("Participant ID") +
+   annotate(geom = "text",
+            x = 17.6, y = 6.5,
+             hjust = "right", vjust = "top",
+             label = "Outlier:\ndata entry error?")
+@
+
+\subsection{Histograms}
+A commonly used and useful plot is the \term{histogram}.
+To draw a histogram, we define a number of intervals called bins that jointly
+cover the range of the observed values.
+We then count the number of observations that fall within each bin,
+and visualise this count as rectangles above the respective bins;
+see Figure \ref{fig:histogram} for an example.
+As in this example, the vast majority of histograms you'll encounter
+will use bins of constant width.
+When drawing a histogram, you need to set the width of the bins
+or, alternatively, their number, yourself.
+Finding a suitable bin width is a matter of trial and error,
+as the following examples illustrate.
+
+<<eval = FALSE>>=
+ggplot(data = d,
+       aes(x = Norwegian)) +
+  # default settings (always 30 bins)
+  geom_histogram()
+
+ggplot(data = d,
+       aes(x = Norwegian)) +
+  # define number of bins
+  geom_histogram(bins = 10)
+
+ggplot(data = d,
+       aes(x = Norwegian)) +
+  # define bin width
+  geom_histogram(binwidth = 3)
+
+ggplot(data = d,
+       aes(x = Norwegian)) +
+  # define breaks between bins, e.g., 0, 4, 8, 12, 16:
+  # seq(from = 0, to = 16, by = 4).
+  # You can also override the colours yourself.
+  geom_histogram(breaks = seq(from = 0, to = 16, by = 4),
+                 fill = "lightgreen",
+                 colour = "darkgreen") +
+  # Label your axes
+  xlab("Ergebnisse cloze-Test Norwegisch") +
+  ylab("Anzahl Studierende")
+@
+
+Compared to a Cleveland dot plot, a major advantage of the histogram
+is that it can summarise a large number of observations in a single graph.
+
+<<fig.cap = "Three histograms for the Norwegian scores. In the left plot, the breakpoints between the bins are 0, 1, 2, \\dots, 15, 16. In the middle plot, the breakpoints are 0, 2, \\dots, 16. In the right plot, they are 0, 4, 8, 12, 16; the histogram is coloured in for good measure. In my opinion, both the plots on the left and the one in the middle are decent choices; the one on the right is a bit too coarse. There aren't any hard and fast rules for choosing the number of bins or their width.\\label{fig:histogram}", echo = FALSE, fig.width = 8, fig.height = 2, out.width="\\textwidth">>=
+breaks <- seq(from = 0, to = 16, by = 1)
+p1 <- ggplot(data = d,
+       aes(x = Norwegian)) +
+  geom_histogram(breaks = breaks,
+                 fill = "lightgrey",
+                 colour = "black") +
+  xlab("Norwegian score") +
+  scale_x_continuous(breaks = seq(from = 0, to = 16, by = 2)) +
+  scale_y_continuous(breaks = seq(0, 100, 2)) +
+  ylab("Number of learners")
+
+breaks <- seq(from = 0, to = 16, by = 2)
+p2 <- ggplot(data = d,
+       aes(x = Norwegian)) +
+  geom_histogram(breaks = breaks,
+                 fill = "lightgrey",
+                 colour = "black") +
+  xlab("Norwegian score") +
+  scale_x_continuous(breaks = breaks) +
+  scale_y_continuous(breaks = seq(0, 100, 2)) +
+  ylab("Number of students")
+
+breaks <- seq(from = 0, to = 16, by = 4)
+p3 <- ggplot(data = d,
+       aes(x = Norwegian)) +
+  geom_histogram(breaks = seq(from = 0, to = 16, by = 4),
+                 fill = "lightgreen",
+                 colour = "darkgreen") +
+  xlab("Norwegian score") +
+  scale_x_continuous(breaks = breaks) +
+  scale_y_continuous(breaks = seq(0, 100, 2)) +
+  ylab("Number of students")
+
+gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+@
+
+\mypar{Exercise}
+  Take a closer look at the middle histogram in Figure \ref{fig:histogram}.
+  This histogram uses eight bins.
+  These bins are half-open intervals, that is, intervals that include
+  only one of the endpoints.
+  But are these intervals of the form
+  \[
+    (0, 2], (2, 4], \dots, (14, 16],
+  \]
+  in which the left endpoint isn't included in the interval,
+  or of the form
+  \[
+    [0, 2), [2, 4), \dots, [14, 16),
+  \]
+  in which the right endpoint isn't included in the interval?
+  (Hint: Inspect Figure \ref{fig:dotchart}.)
+
+  Now draw the histogram again, but this time in such a way that
+  the other endpoint belongs to the interval.
+  To this end, you can set the \texttt{closed} parameter in 
+  \texttt{geom\_histogram()}.
+  Look up how this parameter works on the function's help page.
+\parend
+
+In the histograms above, the value along the $y$-axis show the number
+of observations in the bin in question.
+But if you want to compare different histograms (for instance, showing
+different groups) with each other, it could make sense to 
+convert these counts into a relative frequency or something similar.
+This doesn't change the shape of the histogram.
+A popular choice is to choose these relative numbers in such a way
+that the area of the entire histogram (the sum of the rectangle heights
+times their width) equals 1.
+The histogram then shows a density function of sorts (see Section \ref{sec:density}),
+though empirical distributions are discrete and not absolutely continuous.
+
+Figure \ref{fig:histogramdensity} shows some examples.
+The bin width in the plot on the right is 4.
+The rectangle heights are roughly 0.09, 0.105, 0.045, and nearly 0.015.
+Indeed,
+$(4 \cdot 0.09) + (4 \cdot 0.105) + (4 \cdot 0.045) + (4 \cdot 0.015) \approx 1$.
+<<fig.cap = "Three histograms of the Norwegian scores using densities rather than counts.\\label{fig:histogramdensity}", echo = FALSE, fig.width = 8.5, fig.height = 2.2, out.width="\\textwidth">>=
+grenzen <- seq(from = 0, to = 16, by = 1)
+p1 <- ggplot(data = d,
+       aes(x = Norwegian,
+           y = after_stat(density))) +
+  # Grenzen selbst festlegen, hier etwa bei
+  # 0, 4, 8, 12, 16 und 20
+  geom_histogram(breaks = grenzen,
+                 fill = "lightgrey",
+                 colour = "black") +
+  xlab("Norwegian score") +
+  scale_x_continuous(breaks = seq(from = 0, to = 16, by = 2)) +
+  ylab("Density")
+
+grenzen <- seq(from = 0, to = 16, by = 2)
+p2 <- ggplot(data = d,
+       aes(x = Norwegian,
+           y =  after_stat(density))) +
+  # Grenzen selbst festlegen, hier etwa bei
+  # 0, 4, 8, 12, 16 und 20
+  geom_histogram(breaks = grenzen,
+                 fill = "lightgrey",
+                 colour = "black") +
+  xlab("Norwegian score") +
+  scale_x_continuous(breaks = grenzen) +
+  ylab("Density")
+
+grenzen <- seq(from = 0, to = 16, by = 4)
+p3 <- ggplot(data = d,
+       aes(x = Norwegian,
+           y =  after_stat(density))) +
+  # Grenzen selbst festlegen, hier etwa bei
+  # 0, 4, 8, 12, 16 und 20
+  geom_histogram(breaks = seq(from = 0, to = 16, by = 4),
+                 fill = "lightgrey",
+                 colour = "black") +
+  xlab("Norwegian score") +
+  scale_x_continuous(breaks = grenzen) +
+  ylab("Density")
+
+gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+@
+
+To use such relative frequencies (`densities'), set the \texttt{y} parameter
+in the \texttt{aes()} call to \texttt{after\_stat(density)}:
+
+<<eval = FALSE>>=
+ggplot(data = d,
+       aes(x = Norwegian,
+           y = after_stat(density))) +
+  geom_histogram(bins = 10)
+@
+
+\mypar[Densities]{Exercise}
+  Imagine that we were to express the \texttt{Norwegian} scores shown
+  in Figure \ref{fig:histogramdensity} as percentages.
+  A score of 10 corresponds to a percentage of 50, 
+  one of 14 to a percentage of 70, etc.
+  That is, multiply the Norwegian score by 5 to obtain the percentage.
+  We then draw a histogram using four bins spanning the percentage range
+  of 0 to 80.
+  
+  Compute the densities for each bins without drawing the histogram.
+  
+  What would the densities be if we had expressed the same scores
+  as proportions rather than as percentages?
+\parend
+
+% \subsection{*Kernel density estimation}
+% Work in progress.
+
+\section{Numerical descriptions}
+\subsection{*Quantiles}
+In the previous chapter, we encountered the quantile \emph{function}
+(Section \ref{sec:distributionfunction}).
+We can define the notion of a quantile more generally, though:
+
+\mypar[Quantiles]{Definition}\label{def:quantile}
+  Let $X$ be a random variable
+  and let $\gamma \in (0,1)$.
+  A number $q$ is a \term{$\gamma$-quantile} of the distribution of $X$
+  if
+  \[
+    \Prob(X \leq q) \geq \gamma
+  \]
+  \emph{and}
+  \[
+    \Prob(X \geq q) \geq 1 - \gamma.
+  \]
+  
+  For $p \in (0, 100)$, we say that a number $q$ is a \term{$p$-percentile} of
+  the distribution of $X$ if $q$ is a $p/100$-quantile of the distribution of $X$.
+  
+  A number $q$ is a \term{first/second/third quartile}
+  if it is a 0.25-/0.50-/0.75-quantile.
+  A second quartile (i.e., a 0.50-quantile) is also called a \term{median}.
+\parend
+
+For the Norwegian data, we see that 21.7\% of the participants had a score
+no higher than 3, and that 91.3\% had a score no lower than 3.
+<<>>=
+mean(d$Norwegian <= 3)
+mean(d$Norwegian >= 3)
+@
+Since $0.217 \geq 0.2$ and $0.913 \geq 1-0.2$, $3$ is a 0.2-quantile of the 
+empirical distribution of the Norwegian scores.
+But note that $3$ is also a 0.1-quantile of this distribution!
+Further, as you can verify using the definition, $3.4$ is also both a 0.1- and
+a 0.2-quantile of this distribution.
+By contrast, neither $3$ nor $3.4$ are 0.05- or 0.25-quantiles,
+for $0.217 < 0.25$ and $0.913 < 1 - 0.05$.
+
+As these examples show, quantiles defined in this sense aren't necessarily unique.
+Consequently, the built-in \texttt{quantile()} function, which can be used to
+obtain quantiles of an empirical distribution, accommodates different algorithms
+for choosing a single number from among the $\gamma$-quantiles.
+See the \texttt{type} parameter on the help page of the \texttt{quantile()} function.
+<<>>=
+# different choices of type lead to different quantiles output
+quantile(d$Norwegian, probs = 0.2, type = 1)
+quantile(d$Norwegian, probs = 0.2, type = 5)
+quantile(d$Norwegian, probs = 0.2, type = 7)
+quantile(d$Norwegian, probs = 0.2, type = 9)
+@
+
+
+\subsection{Averages}
+\term{Averages} (or a \term{measures of central tendency}) represent attempts
+to express numerically what a typical value of a distribution or of a sample is.
+Since `typical' is a pretty vague term, different kinds of average exist.
+We'll take a look at some of the most popular ones, but the list is far from exhaustive.
+
+\subsubsection{The arithmetic mean}
+When talking about the `average', 
+people typically have the \term{(arithmetic) mean} in mind.
+The mean of a sample is the expected value of the empirical distribution defined by this sample.
+In practical terms, the sample mean $\overline x$ of a sample $\bm x = (x_1, \dots, x_n)$ is computed
+as
+\[
+  \overline x = \frac{1}{n}\sum_{i = 1}^n x_i.
+\]
+For the Norwegian data,
+<<>>=
+sum(d$Norwegian) / length(d$Norwegian)
+@
+Or more simply:
+<<>>=
+mean(d$Norwegian)
+@
+
+The mean inherits from the expected value introduced in the previous chapter 
+the linearity property.
+
+A second useful property is the following one.
+Let $\bm x = (x_1, \dots, x_m)$ and $\bm y = (y_1, \dots, y_n)$ be samples.
+We concatenate these samples:
+$\bm z = (x_1, \dots, x_m, y_1, \dots, y_n)$.
+Then the mean of $\bm z$ is the \term{weighted mean} of $\bm x$ and $\bm y$:
+\[
+  \overline z = \frac{m\overline x + n\overline y}{m + n}.
+\]
+
+A third useful property of the sample mean concerns the Central Limit Theorem (Section \ref{sec:clt}).
+This theorem allows us to make approximate probabilistic claims about where the mean
+of a random sample from a distribution will end up based solely on the 
+expected value and the variance of this distribution.
+
+The main drawback of the mean is that it is highly sensitive to outliers.
+Indeed, a single outlying value can cause the mean to lie far from the 
+bulk of the data, in which case the mean fails to be a good measure of central tendency.
+To see this, consider the data in Figure \ref{fig:outlier}.
+The mean of the reported values is about 4.2---even though six of the seven values
+are no larger than 2.6 and the remaining value is considerably higher than 4.2.
+If we remove the outlying value, the mean of the remaining six values is about 2.0,
+which appropriately captures the central tendency of these six values.
+The problem, however, is that it is not always clear whether it is defensible to
+remove the outlying values before computing the mean.
+
+\subsubsection{The median}
+Another commonly used kind of average is the \term{median}.
+As mentioned in Definition \vref{def:quantile}, \emph{a} median
+is any value $q$ such that at least half of the observed values are no greater than it
+and at least half of the observed values are no lower than it.
+If the sample consists of an even number of observations, it is possible for
+there to be no unique median.
+In this case, the mean of all the medians is computed and referred to as \emph{the}
+median.
+
+In practical terms, to compute the median, sort the observations by their value.
+If there are an uneven number of observations (i.e., $n = 2m + 1$ for some natural
+number $m$), take the middle value (i.e., the $m+1$-th one) as the median.
+Else, if there are an even number of observations (i.e., $n = 2m$),
+take the mean of the two middle values (i.e., the $m$-th and the $m+1$-th)
+as the median.\footnote{More efficient computer algorithms exist that do not rely on sorting.}
+For the Norwegian data, $n = 23 = 2\cdot 11 + 1$, so we sort the observations and
+read out the 11th one:
+<<>>=
+sort(d$Norwegian)[11]
+@
+Of course, we can use the built-in \texttt{median()} function:
+<<>>=
+median(d$Norwegian)
+@
+
+The median is highly robust to outlying values.
+For the data in Figure \ref{fig:outlier}, 
+the median with the outlying value is 2.09; 
+the median without the outlier is 2.035.
+Both of these values are good indicators of where the bulk of the observations lie in this example.
+
+However, the median doesn't have any of the nice properties that the mean has.
+First, the median is not linear.
+For instance, the medians of $\bm x = (-1, 0, 1)$ and $\bm y = (0, -1, 1)$
+are both 0. But the median of $\bm x + \bm y = (-1, -1, 1)$ is $-1$.
+
+Second, the median of a concatenated vector $(\bm x, \bm y)$ can't be computed
+from the medians of $\bm x$ and $\bm y$.
+For instance, the median of $\bm x = (0, 1)$ is 0.5;
+that of $\bm y = (0, 0)$ is 0.
+But the median of $(0, 1, 0, 0)$ is again 0, not $0.25$ or something similar.
+
+Third, the Central Limit Theorem does not apply to the sample median.\footnote{Some \clt-like statement for the sample median does, in fact, exist. But it applies only to distributions with a density function, and it requires knowledge of this density function.}
+
+The absence of these nice properties makes the median more difficult
+to handle mathematically than the mean.
+
+Large differences between the mean and the median are often due to
+outliers or to asymmetric distributions.
+In either case, don't compute averages without having visualised the data first.
+Even though the computations may be technically correct,
+they may not make much sense.
+
+\subsubsection{The mode}
+The mode is encountered less frequently than the mean and the median.
+It defines the most typical values quite straightforwardly as those that occur most often.
+There is no built-in mode function in R, but we can tabulate the frequencies of 
+occurrence of the different Norwegian scores straigthforwardly:
+<<>>=
+table(d$Norwegian)
+sort(table(d$Norwegian))
+@
+We see that the values 5 and 6 both occur four times, whereas all other values
+occur less frequently. Hence, 5 and 6 are the modes of the Norwegian scores.
+
+If you're dealing with fine-grained data,
+each value will likely only occur once or twice in the data.
+For such data, it doesn't make much sense to compute the mode as defined here.
+
+
+\mypar{Exercise}\label{ex:stocker}
+  The file \texttt{stocker2017.csv} contains part of the data
+  from an on-line study by \citet{Stocker2017}.
+  She asked 160 participants to rate the credibility of claims
+  uttered by talkers with different accents (English, French, German, Italian)
+  on a scale from 0 to 100 by means of a slider.
+  These responses are contained in the \texttt{score} column.
+    \begin{enumerate}
+      \item Read in this file in R.
+
+      \item Compute the mean and the median of the \texttt{score} data.
+            Are they similar?
+
+      \item Visualise the distribution of the \texttt{score} data in a 
+            histogram with 10 bins.
+            Describe the form of this histogram.
+
+      \item Visualise the distribution of the \texttt{score} data in a
+            histogram with 100 bins.
+            Describe the form of this histogram.
+            Are the mean and the median good measures of the central tendency of these data?
+
+      \item Which value is the third most frequent? Why is that, do you think?
+
+      \item What do the fourth, fifth, sixth etc.\ most frequent values have in common?\parend
+    \end{enumerate}
+
+\subsubsection{*Other averages}
+Several other kinds of average exist.
+Some of these, 
+such as the \term{harmonic mean} and the \term{geometric mean},
+are useful in situations 
+where neither the ordinary (arithmetic) mean nor the median gives a meaningful answer---for example, when combining rates, ratios, or growth factors. 
+These two averages are introduced in the following exercises.
+
+\mypar[Harmonic mean]{Exercise}
+ Say you travelled three kilometres. You completed the first kilometre
+  at 5 km/h, the second at 10 km/h and the third at 2 km/h.
+  As you can verify, you needed 48 minutes to complete these three kilometres.
+  Hence, your average speed was 3.75 km/h.
+  You can compute this average speed using the harmonic mean.
+  
+  Let $\bm x = (x_1, x_2, \dots, x_n)$ be a vector with strictly positive entries.
+  The harmonic mean of $\bm x$ is defined as
+    \[
+      H(\bm x) = \frac{n}{\sum_{i=1}^n \frac{1}{x_i}}.
+    \]
+  
+  Write your own R function called \texttt{harmonic\_mean()}
+  that takes in a vector of arbitrary length containing strictly positive entries
+  and outputs their harmonic mean.
+  
+  Hint:
+  If your function works correctly, the following command should output 3.75:
+<<eval = FALSE>>=
+harmonic_mean(c(5, 10, 2))
+@
+\parend
+
+\mypar[Geometric mean]{Exercise}
+Let's say you buy CHF 1,000 worth of shares of some company.
+  At the end of the first year, the shares are worth CHF 1,100, for an 
+  increase of 10\%. 
+  At the end of the second year, the shares' worth has dropped to CHF 1,045---a 5\%-drop
+  relative to the previous year.
+  One year later, the shares are worth CHF 1,139---a 9\%-increase relative to the previous
+  year.
+  Over the course of these three years, the shares' annualised return is about 4.44\%.
+  This means that, starting with a CHF 1,000 investment, you'd obtain CHF 1,139
+  after three years if the yearly growth rate was constant at 4.44\%
+  ($1000 \cdot 1.0444 \cdot 1.0444 \cdot 1.0444 \approx 1139$).
+  This differs from the average of the yearly returns (about 3.5\%).
+  The annualised return can be computed as the geometric mean 
+  of the ratios of the closing price to the opening price for each year.
+  
+  Let $\bm x = (x_1, x_2, \dots, x_n)$ be a vector with strictly positive entries.
+  The geometric mean of $\bm x$ is defined as
+    \[
+      G(\bm x) = \sqrt[n]{x_1x_2\dots x_n} = (x_1x_2\dots x_n)^{1/n},
+    \]
+    that is, as the $n$-th root of the product of the entries.
+    
+  Write your own R function called \texttt{geometric\_mean()}
+  that takes in a vector of arbitrary length containing strictly positive entries
+  and outputs their geometric mean.
+  
+  Hint: 
+  If your function works correctly, the following command should output 1.0444.
+<<eval = FALSE>>=
+geometric_mean(c(1.1, 0.95, 1.09))
+@
+\parend
+
+Then, there is a whole class of averages that are designed to reduce
+the influence of extreme values on the result while still retaining 
+some more sensitivity to differences in the data than the median.
+Two examples are the \term{trimmed mean} and the \term{winsorised mean}.
+% and the \term{Hodges--Lehmann estimator}.
+Admittedly, you'll rarely explicitly run across these in the language sciences.
+% The Hodges--Lehmann estimator, though, has an interesting connection to
+% a fairly commonly used significance test that we'll encounter later.
+
+\mypar[Trimmed mean]{Definition}\label{def:trimmedmean}
+  Let $\bm x = (x_1, \dots, x_n)$ be a numeric vector.
+  For $\alpha \in (0, 0.5)$, the trimmed mean with trimming factor $\alpha$
+  is defined as
+  \[
+    \overline x_{\alpha} := \frac{1}{n - 2k}\sum_{i = k+1}^{n-k}x_{(i)},
+  \]
+  where $k = \lfloor \alpha n \rfloor$ (i.e., $\alpha n$ rounded down to the 
+  nearest integer) and $(x_{(1)}, \dots, x_{(n)})$ is the vector with
+  the same entries as $\bm x$ but sorted by ascending value.
+  
+  For $\alpha = 0$, the trimmed mean is defined as the arithmetic mean;
+  for $\alpha = 0.5$, it is defined as the median.
+\parend
+
+For instance, the Norwegian data have $n = 23$.
+If we set $\alpha = 0.1$, then $k = \lfloor 0.1 \cdot 23 \rfloor = \lfloor 2.3 \rfloor = 2$.
+To compute the trimmed mean with trimming factor $0.2$, then,
+we compute mean of the Norwegian data but ignoring the two smallest
+and the two largest observations:
+<<>>=
+(sort(d$Norwegian)[-c(1, 2, 22, 23)] |> sum()) / (23 - 2*2)
+mean(d$Norwegian, trim = 0.1)
+@
+
+Trimmed means, then, are a compromise between the mean and the median.
+Winsorised means serve a similar purpose.
+
+\mypar[Winsorised mean]{Definition}
+  Let $\bm x = (x_1, \dots, x_n)$ be a numeric vector,
+  and let $\alpha \in (0, 0.5)$ be a trimming factor.
+  Define $k = \lfloor \alpha n \rfloor$.
+  Let $(x_{(1)}, \dots, x_{(n)}$ be the vector with the same entries
+  as $\bm x$ but sorted by ascending value.
+  In this vector, 
+  replace the values $x_{(1)}, \dots, x_{(k)}$ by the value of $x_{(k+1)}$,
+  and replace the values $x_{(n-k+1)}, \dots, x_{(n)}$ by the value of $x_{(n-k)}$.
+  The arithmetic mean of the vector so created is the winsorised mean
+  of $\bm x$ using trimming factor $\alpha$.
+\parend
+
+If we again use a trimming factor of $\alpha = 0.1$ for the Norwegian data,
+we would compute winsorised mean like so:
+<<>>=
+n <- length(d$Norwegian) # i.e., 23
+k <- floor(0.1 * n) # i.e., 2
+norwegian_sorted <- sort(d$Norwegian)
+norwegian_sorted[1:k] <- norwegian_sorted[k+1]
+norwegian_sorted[(n-k+1):n] <- norwegian_sorted[n-k]
+mean(norwegian_sorted)
+@
+
+\iffalse
+\mypar[Hedges--Lehmann estimator]{Definition}
+  Let $\bm x = (x_1, \dots, x_n)$ be a numeric vector.
+  Compute the $n(n+1)/2$ pairwise averages
+  \[
+    \frac{x_i + x_j}{2}
+  \]
+  for each $i = 1, \dots, n$ and $j = i, \dots, n$.
+  The median of these pairwise averages is known as the 
+  Hodges--Lehmann estimator of the central tendency of $\bm x$.
+\parend
+
+We can use a double \textit{for}-loop
+to compute the Hodges--Lehmann estimator for the Norwegian scores:
+<<>>=
+pw_avg <- vector(length = n * (n + 1) / 2)
+x <- d$Norwegian
+k <- 1 # initialise counter
+for (i in 1:n) {
+  for (j in i:n) {
+    pw_avg[k] <- (x[i] + x[j]) / 2
+    k <- k + 1 # increase counter
+  }
+}
+median(pw_avg)
+@
+
+\mypar{Exercise}
+  Write your own R functions \texttt{winsor\_mean(x, alpha)}
+  and \texttt{hl(x)} that compute the winsorised mean of a vector \texttt{x}
+  (with trimming factor \texttt{alpha}) and the Hodges--Lehmann estimator
+  of \texttt{x}, respectively.
+\parend
+\fi
+
+\subsection{Measures of spread}
+Measures of spread seek to quantify how strongly the observations
+tend to deviate from their central tendency.
+
+\subsubsection{The range}
+A very simple measure of spread is the \term{range}, defined
+as the difference between the largest and the lowest observed value.
+<<>>=
+min(d$Norwegian)
+max(d$Norwegian)
+range(d$Norwegian) # interval of min, max
+range(d$Norwegian) |> diff() # length of interval
+@
+The range, or the interval it spans, are sometimes reported in summary tables,
+but it is rarely used as the measure of spread of choice.
+This is for good reason: It is highly sensitive to outliers.
+For a critique on the use of the range in the field of second language
+acquisition, see \citet{Vanhove2019b}.
+
+\subsubsection{The variance}
+We've defined the variance in the previous chapter.
+We can apply this definition to the empirical distibution defined by the sample.
+This quantity is called the \term{uncorrected (sample) variance}, sometimes written as $s_n^2$,
+and can be computed as follows:
+\[
+  s^2_n(\bm x) = \frac{1}{n}\sum_{i = 1}^n (x_i - \overline x)^2.
+\]
+
+For the Norwegian scores, the variance of the empirical distribution is
+about 8.17:
+<<>>=
+mean((d$Norwegian - mean(d$Norwegian))^2)
+mean(d$Norwegian^2) - mean(d$Norwegian)^2
+@
+
+For reasons that will become clearer in the next chapter, though, the 
+\term{(corrected) (sample) variance} is typically used instead.
+It is defined as
+\[
+  s^2(\bm x) = \frac{1}{n-1}\sum_{i = 1}^n (x_i - \overline x)^2,
+\]
+that is, with $n-1$ instead of $n$ in the denominator.
+For large $n$, $s^2_n$ and $s^2$ hardly differ, though.
+
+The built-in \texttt{var()} function computes the corrected variance:
+<<>>=
+sum((d$Norwegian - mean(d$Norwegian))^2) / (n - 1)
+var(d$Norwegian)
+@
+
+
+\subsubsection{The standard deviation}
+Similarly, we can apply the definition of the standard deviation provided
+in the previous chapter to the empirical distribution of $\bm x$.
+This results in the \term{uncorrected (sample) standard deviation}, and we have
+\[
+  s_n(\bm x) = \sqrt{s_n^2(\bm x)}.
+\]
+Typically, though, the \term{(corrected) (sample) standard deviation} is used instead,
+which is defined as
+\[
+  s(\bm x) = \sqrt{s^2(\bm x)}.
+\]
+
+The built-in \texttt{sd()} function computes the corrected standard deviation:
+<<>>=
+sqrt(sum((d$Norwegian - mean(d$Norwegian))^2) / (n - 1))
+sd(d$Norwegian)
+@
+
+Both the variance and the standard deviation are highly sensitive to outliers.
+For instance, for the numbers shown in Figure \vref{fig:outlier},
+the variance with the outlier is about 34.8;
+without, it is only 0.19.
+
+\mypar[Don't summarise data purely numerically!]{Remark}
+Imagine reading a study in which 39 respondents answered
+a question on a 6-point scale from 0 to 5.
+The study reports that their mean response was 2.43.
+
+Perhaps you picture in your mind's eye that most 
+respondents ticked `2' or `3' as their response.
+But many different data patterns can produce the same mean of 2.43 (see Figure \ref{fig:samemean}),
+and you'd have to draw different conclusions depending on the data pattern.
+Perhaps the respondents were unanimous in picking response options in the middle
+of the scale---possibly suggesting widespread indifference.
+Or perhaps the question touched on a hugely controversial
+topic, causing respondents to pick the extreme response options.
+Alternatively, a whole range of opinions and strength
+of conviction may be represented among the 39 respondents.
+
+<<fig.cap = "Three different distributions with 39 observations. All three have the same mean after rounding.\\label{fig:samemean}", echo = FALSE, fig.width = 6, fig.height = 2, out.width = "\\textwidth">>=
+op <- par(no.readonly = TRUE)
+par(mfrow = c(1, 3), las = 1,
+    oma = c(0, 0, 1, 0),
+    bg = "white")
+
+x <- c(0, 0, 22, 17, 0, 0)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+x <- c(20, 0, 0, 0, 0, 19)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+x <- c(7, 6, 4, 8, 13, 1)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Reponse",
+        ylab = "Number")
+
+title("All plots: mean ≈ 2.43",
+      outer = TRUE)
+par(op)
+@
+
+If, in addition to the mean, a standard deviation is reported,
+the number of possible data patterns compatible with the
+numerical summary is reduced.
+But nonetheless, a variety of different data patterns
+can give rise to the same mean and the same standard deviation (see Figure \ref{fig:samemeansd}).\footnote{I generated these distributions using the R code provided by Richard Morey on \url{https://bayesfactor.blogspot.com/2016/03/how-to-check-likert-scale-summaries-for.html}.}
+
+<<fig.cap = "Six different distributions of 39 observations. All six have the same mean and the same standard deviation after rounding.\\label{fig:samemeansd}", echo = FALSE, fig.width = 6, fig.height = 4, out.width = "\\textwidth">>=
+par(mfrow = c(2, 3), las = 1,
+    oma = c(0, 0, 1, 0),
+    bg = "white")
+
+x <- c(0, 0, 33, 0, 1, 5)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+x <- c(0, 10, 7, 18, 3, 1)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+x <- c(1, 10, 2, 23, 3, 0)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+x <- c(0, 9, 11, 12, 7, 0)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+x <- c(5, 1, 5, 28, 0, 0)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+x <- c(3, 4, 7, 24, 0, 1)
+names(x) <- 0:5
+barplot(x, ylim = c(0, 40),
+        xlab = "Response",
+        ylab = "Number")
+
+title("All plots: mean ≈ 2.43, SD ≈ 1.05",
+      outer = TRUE)
+par(op)
+@
+
+The upshot of this is clear:
+Draw graphs of your data so that both you and your audiennce 
+knows what they actually look like.
+Averages and measures of spread don't tell the whole story.
+Don't blindly run computations.
+\parend
+
+\subsubsection{*The mean and median absolute deviation}
+The standard deviation isn't \emph{quite} the average deviation of the observations
+from their mean. The \term{mean absolute deviation around the mean}, however,
+does exactly what it says on the tin: On average, the Norwegian data lie 
+about 2.26 points removed from the mean.
+<<>>=
+(d$Norwegian - mean(d$Norwegian)) |> 
+  abs() |> # absolute differences between obs. and mean
+  mean()
+@
+Similarly, you can compute, say, the \term{mean absolute deviation around the median},
+or around any other measure of central tendency that you're interested in.
+<<>>=
+(d$Norwegian - median(d$Norwegian)) |> 
+  abs() |> # absolute differences between obs. and median
+  mean()
+@
+By the same token, the \term{median absolute deviation} around a central tendency measure
+can be computed, e.g., around the median:
+<<>>=
+(d$Norwegian - median(d$Norwegian)) |> 
+  abs() |>
+  median()
+@
+R's \texttt{mad()} function by default computes the median absolute deviation around
+the median but multiplies the result by 1.4826.
+The reason for this seemingly odd choice is that
+the so-adjusted median absolute deviation around the median approximately agrees
+with the standard deviation for large samples of normally distributed data.
+While there are some practical use cases for this,
+this adjustment makes the result more difficult to interpret for non-statisticians.
+
+Of the measures of spread introduced above, the median absolute deviation around
+the median is the least sensitive to outliers.
+For the data in Figure \ref{fig:outlier},
+it is 0.34 both with and without the outlier.
+The other mean and median absolute deviations change an order of magnitude
+depending on whether the outlier is in- or excluded.
+
+\section{*Further reading}
+\citet{Huff1954} (\textit{How to lie with statistics})
+is a short and entertaining booklet that's still worth reading.
+Among other things, it discusses how different kinds of averages
+are used manipulatively in everyday life.
+
+\citet{Healy2019} is an excellent resource for learning how to think
+about graphs and then draw them using \texttt{ggplot2}.
+This book is also freely available from \url{https://socviz.co/}.
+I also wrote a tutorial myself that focuses exclusively on drawing
+descriptive graphs.
+You can find it on \url{https://github.com/janhove/DatasetsAndGraphs}.

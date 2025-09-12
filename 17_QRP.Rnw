@@ -1,0 +1,99 @@
+\chapter{*Questionable research practices}\label{ch:QRP}
+When dealing with significance tests---whether 
+because you use them yourself or because you frequently encounter them
+in the research literature---it is important to be aware of 
+several common misapplications that can undermine 
+the purported meaning of $p$-values. 
+The overarching problem behind these questionable research practices is that 
+researchers and journal editors tend to prefer certain results (read: 
+significant results), and the research and publication process is therefore 
+geared towards producing and publishing such findings. If one is sufficiently 
+flexible during data collection, analysis, and reporting, it becomes very 
+easy to find and report significant patterns without those `findings' 
+necessarily reflecting reality.
+
+To inform yourself about questionable research practices related to 
+significance testing, several key articles are highlighted here. 
+Comprehensive overviews in book form include \citet[][\textit{The Seven Deadly Sins of Psychology}]{Chambers2017} 
+and \citet[][\textit{Science Fictions}]{Ritchie2021}.
+
+\section{Sterling et al.~(1995) on publication bias}
+\citet[][4 pages of text]{Sterling1995} counted how often significance tests 
+reported significant $p$-values in medical and psychological journals. 
+In the medical journals, the null hypothesis was rejected in 85\% of cases, 
+and in the psychology journals, this figure was a striking 96\%. 
+
+As \citeauthor{Sterling1995} explain, these numbers indicate that researchers 
+and editors discriminate against non-significant findings. Even if the null 
+hypothesis were never true, it would be impossible for so many tests to 
+yield significant results. Their hypothesis is that researchers tend to 
+write up studies that produce significant (rather than non-significant) 
+results, and editors tend to reject articles reporting non-significant findings. 
+
+This \term{publication bias} can lead to the literature overestimating both 
+the evidence for and the magnitude of a particular effect (for example, 
+`bilingualism leads to cognitive advantages'; see also \citealp{DeBruin2015}).
+
+\section{Kerr (1998) on \textit{hypothesizing after the results are known}}
+\citet[][20 pages]{Kerr1998} discusses the reasons for and drawbacks of a common practice in scientific writing: researchers search their data for interesting patterns, but instead of presenting their findings as the outcome of exploratory analysis, the report is written as if the observed pattern had been predicted in advance. 
+Kerr labels this practice \term{HARKing}---hypothesizing after the results are known. 
+He identifies several costs of HARKing (p.~211), including:
+\begin{itemize}
+ \item ``Translating Type I errors into hard-to-eradicate theory.''
+ \item ``Disguising post hoc explanations as a priori explanations
+ (when the former tend also to be more ad hoc, and consequently, less useful).''
+ \item ``Not communicating valuable information about what did not work.''
+ \item ``Encouraging retention of too-broad, disconfirmable old theory.''
+ \item ``Inhibiting identification of plausible alternative hypotheses.''
+ \item ``Implicitly violating basic ethical principles.''
+\end{itemize}
+
+HARKing is closely linked to cherry picking. In this practice, researchers examine (explicitly or implicitly) different patterns---which could be group differences, correlations, or other effects---and report only the strongest or otherwise most striking ones. The problem is illustrated in the xkcd cartoon in Figure \ref{fig:xkcd_significant}.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width = .5\textwidth]{figs/significant}
+\caption{Source: \url{https://xkcd.com/882/}.}
+\label{fig:xkcd_significant}
+\end{center}
+\end{figure}
+
+These and related issues are also discussed in an accessible manner by 
+\citet[][originally published in Dutch in 1956; 3.5 pages text + 3 pages commentary]{DeGroot2014}. 
+See also \citet{Berthele2019} for similar problems in applied linguistics.
+
+\section{Simmons et al.~(2011) on undisclosed flexibility}
+\citet[][7 pages]{Simmons2011} demonstrate, using both a real example and simulations, 
+that certain common practices can lead to a very high probability of 
+rejecting the null hypothesis even when it is true. 
+The practices they examine include:
+\begin{itemize}
+ \item analysing multiple outcomes but reporting only the one that yields the `best' results;
+
+ \item examining the data after the first wave of collection to check for significance, and collecting more data if no significant result is found;\footnote{If you intend to do this yourself, see \citet{Lakens2014} for guidance on how to analyse the data. Crucially, the relevant decisions must be made before data collection, not afterwards.}
+
+ \item including control variables in the analysis only if the result without them is not significant;\footnote{The problem is not including control variables per se, but doing so selectively based on whether they lead to significance. Including relevant controls is good practice, but the decision should not depend on the outcome.}
+
+ \item designing multiple conditions but omitting some if doing so produces `better' results.
+\end{itemize}
+
+Of course, other practices can also inflate the error rate---for example, 
+handling outliers inconsistently. 
+The overarching problem is that researchers treat significant results as 
+`good' or `informative' and non-significant results as `bad' or `uninformative.' 
+This mindset then justifies flexible decisions during data collection or analysis 
+(e.g., including or omitting a control variable, or keeping or discarding certain outliers) 
+when they lead to significance, 
+even if such decisions would not have been made had the results been non-significant.
+
+It is worth noting that the authors no longer endorse their 
+second recommendation 
+(\textit{Authors must collect at least 20 observations per cell or else provide a compelling cost-of-data-collection justification}); see \citet{Simmons2018}.
+
+Complementary to this article are \citet{Gelman2013} and \citet{Steegen2016}, 
+which show how much flexibility researchers have in data analysis (see also \citealp{Poarch2018}). 
+Scientific hypotheses often correspond to multiple statistical hypotheses (and vice versa). 
+This underdetermination can lead researchers, even unconsciously, to focus on patterns 
+that seem compatible with their theory, 
+while overlooking alternative analyses that might produce results incompatible with the theory. 
+A similar phenomenon is documented in an ethnographic study by \citet{Peterson2016}.

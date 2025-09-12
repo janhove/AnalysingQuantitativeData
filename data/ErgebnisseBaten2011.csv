@@ -1,0 +1,13 @@
+"Grade","TargetCase","Position","Accuracy"
+"10th","accusative","fixed-preposition",0.22
+"10th","accusative","wechsel-preposition",0.15
+"11th","accusative","fixed-preposition",0.67
+"11th","accusative","wechsel-preposition",0.51
+"12th","accusative","fixed-preposition",0.61
+"12th","accusative","wechsel-preposition",0.44
+"10th","dative","fixed-preposition",0.02
+"10th","dative","wechsel-preposition",0.02
+"11th","dative","fixed-preposition",0.51
+"11th","dative","wechsel-preposition",0.33
+"12th","dative","fixed-preposition",0.62
+"12th","dative","wechsel-preposition",0.35

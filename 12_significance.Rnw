@@ -1,0 +1,1418 @@
+<<echo = FALSE>>=
+set.seed(2025-09-09)
+options(digits = 6)
+@
+
+\chapter{The logic of significance testing}\label{ch:logic}
+This chapter explains the basic logic
+behind $p$-value-based inferential statistics.\footnote{Large parts 
+of this chapter are copied or adapted from the chapter \textit{Inferential statistics 101}
+in my booklet \href{https://github.com/janhove/QuantitativeMethodology}{\textit{Quantitative methodology: An introduction}}.}
+It does so by explicitly linking the computation of $p$-values
+to the random assignment of participants to conditions
+in experimental research. If you have ever taken an introductory
+statistics class, chances are $p$-values were explained to you
+in a different fashion, presumably by making assumptions about
+how the observations in the sample were sampled from a larger
+population and by making reference to the central limit theorem.
+For the explanation in this chapter, however, we're going to take
+a different tack and we will ignore the sampling method and
+the larger population.
+Instead, we're going to leverage what we know about how the
+observations, once sampled, were \emph{assigned} to the different
+conditions of an experiment. The advantages of this approach
+are that it connects the design of a study more explicitly to the analysis of its data
+and that it is less math-intensive while permitting one
+to illustrate several key concepts about inferential statistics.
+
+% For many researchers, the main purpose of statistical analysis
+% seems to be the production of a `significant' $p$-value.
+% In my view, this comes from a misunderstanding of what $p$-values actually mean. 
+% To avoid such misconceptions, 
+% this chapter introduces $p$-values on a purely conceptual level, 
+% without bringing in any extra maths. (???)
+% 
+\section{Randomisation as a basis for inference}
+Imagine the following experiment.
+To study the effect of alcohol on speaking speed,
+ten students (L1 German, L2 English)
+are randomly assigned to either the control or the experimental condition (five each);
+they don't know which condition they're assigned to.
+(Ten participants is obviously a very low number of participants, 
+but it keeps things more tractable here.)
+Participants in the experimental condition drink one pint of ordinary beer;
+those in the control condition drink one pint of alcohol-free beer.
+Afterwards, they watch a video clip and relate what happens in it in English.
+This description is taped,
+and two independent raters who don't know which condition the participants were assigned to
+count the number of syllables uttered by the participants during the first minute.
+The mean of these two counts serves as the verbal fluency/speech rate variable.
+
+By chance, Sandra, Nicole, Maria, Yves, and Daniel were assigned
+to the experimental group, while Nadja, Laura, Lukas, Thomas, and Michael
+ended up in the control group.
+Figure \ref{fig:experiment} shows their speech rates.
+On average, the experimental group uttered 4.3 syllables per second,
+compared to the 3.7 syllables per second uttered on average by the control group.
+But can we conclude from this mean difference of 0.6 syllables per second
+that the drinking alcoholic versus alcohol-free beer affects speech rate in an L2---or
+might it just be due to random chance?
+
+<<echo = FALSE, fig.width = 1.2*3, fig.height = 1.2*3, fig.cap = "Results from a fictitious experiment.\\label{fig:experiment}">>=
+d <- data.frame(
+  Name = c("Sandra", "Nicole", "Maria", "Yves", "Daniel",
+           "Nadja", "Laura", "Lukas", "Thomas", "Michael"),
+  Rate = c(5.0, 4.4, 4.2, 4.1, 3.8,
+           4.2, 4.1, 3.7, 3.4, 3.1),
+  Condition = rep(c("with", "without"), each = 5)
+)
+
+ggplot(d, aes(x = Rate, y = reorder(Name, Rate))) +
+  geom_point() +
+  facet_wrap(~ Condition, ncol = 1, scales = "free_y") +
+  xlab("Speech rate\n(syllables/second)") +
+  ylab("") +
+  scale_shape_manual(values = c(16, 3), guide = "none")
+@
+
+The participants were assigned to one of the groups at random.
+This ensures that the results were not systematically biased.
+For instance, the control group happened to contain only two women,
+whereas the experimental group contained three.
+But this difference is purely accidental.
+The aim of randomisation is not to create perfectly equivalent groups,
+but rather to prevent systematic bias---whether
+from known or unknown confounding variables.
+See \citet{Vanhove2015} on this common misunderstanding.
+
+In addition, this is a double-blind experiment:
+neither the participants themselves nor the staff evaluating
+the data knew who was assigned to which condition.
+This helps to avoid distortions of the results due to
+expectancy effects on the part of the participants
+or on the part of the researchers.
+
+Of course, we could have refined this design further---for example,
+by ensuring that the participants' regional background was
+balanced across the two groups (e.g., one from Graubünden,
+one from Zurich, and one from Berne in each group),
+or by measuring participants' speaking speed before the experiment
+(`pre-test’), so that we could take it into account in the analysis.
+But even without such refinements, thanks to randomisation and
+blinding, this design still permits valid inferences.
+
+The difference between the group means is
+0.6 syllables per second. Because we carried out a randomised
+experiment and thus prevented systematic bias in the results,
+we might conclude that this difference was at least partly
+\emph{caused} by our experimental manipulation:
+drinking a pint of alcoholic beer increases speech rate.
+Before making such a causal claim, however,
+we need to consider a more trivial explanation:
+perhaps the difference is simply due to chance.
+This is our \term{null hypothesis} ($H_0$),
+which we contrast with a deliberately vague
+\term{alternative hypothesis} ($H_A$):
+\begin{itemize}
+  \item $H_0$: The difference between the two means is \emph{only}
+  due to chance.
+  \item $H_A$: The difference is \emph{not only} due to chance.
+\end{itemize}
+
+
+In the so-called `frequentist' tradition of null hypothesis testing,
+one calculates how likely it is to observe the given pattern
+(here: the difference between the group means),
+or an even more extreme pattern,
+if the null hypothesis were in fact true.
+This probability is called the $p$-value
+($p$ for \textit{probability}).
+If this probability is small, the usual conclusion is that
+the assumption that the null hypothesis holds is probably not justified,
+and that some systematic effect is also at play.
+In practice, one typically works with an arbitrary threshold $\alpha$
+(often $\alpha = 0.05$),
+below which the $p$-value is considered too small.
+ 
+Before turning to some conceptual problems with this approach
+and discussing a few complications,
+let us first look at a method for calculating the $p$-value.
+If we assume the null hypothesis is true,
+then the difference between the groups is purely the result
+of randomisation---in other words, chance.
+Under this assumption, Michael would also have produced
+3.1 syllables per second had he been in the experimental group;
+likewise Sandra would have produced 5.0 syllables per second
+had she been in the control group.
+So if the randomisation had assigned Sandra rather than Michael
+to the experimental group, and alcohol had no effect on speaking speed,
+then the experimental group's mean would have been 3.92
+and the control group's mean 4.08.
+In that case we would have found the experimental group
+to speak 0.16 syllables per second faster.
+
+Altogether there are 252 possible ways in which the experimental
+and control groups could have been formed.
+This number can be calculated using the binomial coefficient
+(see Section \ref{sec:binomial}):\footnote{For larger
+groups this number becomes too large to present clearly.
+For instance, there are 137,846,528,820 possible ways
+to split a group of 40 participants into two groups of equal size.}
+\[
+  {10\choose 5} = \frac{10!}{(10-5)!5!} = \frac{3628800}{120^2} = 252.
+\]
+Or in R:
+<<>>=
+choose(n = 10, k = 5)
+@
+
+Nine of these 252 possibilities are shown in Figure \ref{fig:20moeglichkeiten}.
+For each case, we can calculate the size of the group difference.
+The R code is not important here, which is why I do not show it;
+only the logic matters.
+
+<<echo = FALSE, fig.width = 10, fig.height = 13, out.width=".8\\textwidth", fig.cap = "Nine of the 252 possible outcomes under the assumption that any difference between the conditions is due only to the random assignment.\\label{fig:20moeglichkeiten}">>=
+possible_control_groups <- combn(d$Name, 5)
+selection <- possible_control_groups[, sample(1:252, 9)]
+
+p <- list()
+Rate <- d$Rate
+Name <- d$Name
+for (i in 1:9) {
+  control_group <- selection[, i]
+  Condition <- rep("with alcohol", 10)
+  Condition[Name %in% control_group] <- "without alcohol"
+  df <- data.frame(Rate, Name, Condition)
+  unterschied <- format(round(-diff(t.test(Rate ~ Condition, df)$estimate), 2), nsmall = 2)
+
+  p[[i]] <- ggplot(df, aes(x = Rate, y = reorder(Name, Rate))) +
+  geom_point() +
+  facet_wrap(~ Condition, ncol = 1, scales = "free_y") +
+  xlab("Speech rate") +
+  ylab("") +
+  scale_shape_manual(values = c(16, 3), guide = "none") +
+    ggtitle(paste("Difference:", unterschied))
+}
+do.call(gridExtra::grid.arrange, p)
+@
+
+Figure \ref{fig:alldiffs}
+shows all 252 possible group differences that could have arisen if the null hypothesis
+were actually true.
+On average, under the null hypothesis, the group difference would be 0.
+But depending on
+which participant was assigned to which condition,
+one could have observed smaller, or indeed larger,
+differences between the groups.
+From this figure we can see how unusual it would be
+to obtain group differences at least as large
+as the one we actually found, if the null hypothesis held.
+The dashed lines indicate that 
+in eleven out of 252 cases, the mean difference is at least 0.6
+syllables per second in favour of the experimental group,
+and in another eleven out of 252 cases, it is at least 0.6 syllables
+per second in favour of the control group.
+Therefore, even if the null hypothesis were in fact true
+in our example, we would still obtain a group difference
+of 0.6 syllables per second---or even larger---in 22 out of
+the 252 possible samples, i.e., $22/252 = $ 8.7\% of the time.
+This is our $p$-value.
+
+Using the threshold $\alpha = 0.05$,
+we would find that $p = 0.087 > \alpha$ and conclude
+that a difference of $0.6$ or more is still likely enough
+to occur under the null hypothesis of chance alone.
+Hence, we would see little need to revisit the
+assumption that the results may be due to chance alone.
+Crucially, this doesn't mean that we have shown $H_0$ to be true.
+It's just that $H_0$ would account reasonably well for these data.
+The absence of evidence for a difference
+is not the same as evidence for the absence of a difference.
+
+<<echo = FALSE, fig.cap = "The differences between the group means in all 252 possible assignments. The vertical dashed lines indicate the actually observed difference of $0.6$ syllables per second and its opposite number ($-0.6$).\\label{fig:alldiffs}">>=
+# Define a function that computes the difference
+# in means (adaptable to other functions)
+# between one part of a vector (indices in Group1)
+# and the remaining part (indices NOT in Group1)
+mean.diff <- function(data, Group1) {
+  diff.mean <- mean(data[Group1]) -
+                mean(data[- Group1])
+  return(diff.mean)
+}
+alkohol <- 1:5
+# mean.diff(rates, alkohol)
+# For the 1st, 2nd ... 10th data points
+combinations <- combn(1:10,
+# Allocate 3 data points to Group 1
+                      5,
+# (and return output as a list)
+                      simplify = FALSE)
+
+# uncomment next line to show allcombinations
+# combinations
+
+# apply function mean.diff
+diffs <- mapply(mean.diff,
+# for every combination of indices in combinations
+                Group1 = combinations,
+# apply to actual.data
+                MoreArgs = list(data = d$Rate))
+diffs <- sort(diffs)
+df_diffs <- data.frame(diffs, sample = 1:length(diffs))
+df_diffs <- df_diffs |>
+  mutate(extreme = ifelse(abs(diffs) >= abs(mean.diff(d$Rate, alkohol)), 1, 0))
+ggplot(df_diffs,
+       aes(diffs, y = sample)) +
+  geom_point(pch = 21) +
+  xlab("Difference between group means") +
+  ylab("possible assignment") +
+  geom_vline(xintercept = mean.diff(d$Rate, alkohol), linetype = 2) +
+  geom_vline(xintercept = -mean.diff(d$Rate, alkohol), linetype = 2)
+@
+
+\mypar[One- and two-sided $p$-values]{Remark}\label{remark:onetwosided}
+  In the example above, 
+  we computed a two-sided $p$-value: we counted
+  the rerandomisations that resulted in differences
+  as least as extreme as the one observed in either direction.
+  If we had hypothesised in advance that we would observe a difference
+  in favour of the \textit{with alcohol} condition, we could have
+  computed a one-sided (right-sided) $p$-value and only have counted
+  the eleven rerandomisations resulting in a mean difference as least as large
+  as $0.6$.
+  The resulting $p$-value would have been $p_r = \frac{11}{252} = 0.044$.
+  
+  Conversely, if we had hypothesised in advance that we would observe
+  a difference in favour of the \textit{without alcohol} condition, 
+  we could have computed a \emph{left}-sided $p$-value and only have counted
+  the rerandomisations resulting a mean difference at \emph{most} as large
+  as $0.6$.
+  The resulting $p$-value would have been $p_{\ell} = \frac{245}{252} = 0.972$.
+  
+  Since we didn't specify the direction of the expected difference in advance,
+  we need to consider both possibilities simultaneously 
+  and compute a two-sided $p$-value.
+  One way to compute two-sided $p$-values is to count the rerandomisations
+  resulting in a mean difference at least as large in absolute value as 
+  the difference actually observed (in our case: $p = \frac{22}{252}$).
+  Alternatively, a two-sided $p$-value can be computed as
+  \[
+    p = 2\min(p_{\ell}, p_r).
+  \]
+  Both of these valid ways coincide in `nice' cases (e.g., exhaustive 
+  randomisation tests with an equal number of participants in both conditions),
+  but they may yield somewhat different results in other cases.
+\parend
+
+\mypar[Link to the research design]{Remark}
+The hypothesis test we just conducted is a \term{randomisation test}.
+Its use is legitimised by the research design, more specifically by
+the unrestricted randomisation and blinding:
+\begin{itemize}
+\item If it had been the case that we could never
+have assigned Daniel to the `with alcohol' group for medical reasons,
+then there would not have been 252 possible outcomes under the null hypothesis,
+but only 126: all permutations with Daniel in the `with alcohol' group
+would not have been possible. 
+In the analysis, we would then have to take this into account by ignoring those permutations.
+
+\item If it had been the case that Michael and Laura
+had insisted on being tested in the same condition,
+then again there would not have been 252 possible outcomes under the null hypothesis,
+but only 126: all permutations with Michael and Laura in different conditions
+would have been impossible.
+This too would need to be accounted for in the analysis.
+
+\item If, for the purpose of balancing the two groups, we had
+wanted to assign at least one woman and one man to each condition,
+then the two permutations with only men or only women in a condition
+would not have been possible. Such a design may be sensible in some circumstances,
+but this restriction would also need to be taken into account. \parend
+\end{itemize}
+
+\mypar[Random assignment vs random sampling]{Remark}
+This experiment and its analysis illustrate the difference between
+\term{random assignment} and \term{random sampling}:
+we randomly assigned our participants to conditions,
+but we did not randomly select them from some population.
+In many introductions to inferential statistics, 
+$p$-values are instead introduced by imagining drawing two random samples from
+two populations and asking whether the populations have the same mean.
+However, as already discussed in Section \ref{sec:nonrandom}, real-world data
+rarely come from random samples; experiments with random assignment
+are, however, quite common.
+
+Some caution is needed, though.
+Even if we had found more convincing evidence for an effect
+of the experimental manipulation,
+we still could not automatically conclude that the manipulation
+would have an effect in a particular \emph{population}.
+Such a conclusion would be at least more defensible if we had
+both randomly sampled participants from that population
+(\textit{random sampling})
+and then randomly assigned them to conditions
+(\textit{random assignment}). Without random sampling, any
+generalisation to a population relies on a (often implicit)
+logical argument, rather than a statistical fact.
+This does not mean such a conclusion is necessarily wrong.
+But it is important to recognise that this is not a statistical question.
+
+This nuance corresponds to the distinction between
+\term{internal validity} (Is the difference or effect
+observed in this sample attributable to the experimental
+manipulation?) and \term{external validity}
+(Can this finding be generalised beyond the sample?)
+Someone interested in the effectiveness of teaching methods
+would need to consider the external validity of the study.
+But for experimental psychologists, external validity is not
+necessarily so important \citep{Mook1983}: for them it can be more
+important to show that a manipulation can produce an effect at all,
+without having to establish the boundaries of that effect yet.
+\parend
+
+\mypar[Statistical vs scientific hypotheses]{Remark}
+The null and alternative hypotheses formulated for the test
+are statistical hypotheses. These carry surprisingly
+little scientific content: the null hypothesis merely states
+that the observed patterns are purely due to chance;
+the alternative hypothesis states that they are not purely due to chance.
+It does not tell us what else, besides chance, might be causing the pattern.
+In our example, a few possible drivers of any difference between the groups could be:
+\begin{itemize}
+ \item Alcohol lowers inhibitions when speaking, which in turn might
+ increase speaking speed.
+
+ \item People who have consumed a pint of alcoholic
+ beer might rely on simpler structures and set phrases,
+ which they can articulate faster than more complex structures
+ or novel expressions.
+
+ \item Alcohol impairs articulatory motor control.
+
+ \item The raters somehow became aware of the participants’ group
+ assignments, and consciously or unconsciously allowed this knowledge
+ to influence their ratings.
+\end{itemize}
+
+The key point is this: 
+Even if a pattern
+is highly unlikely under the null hypothesis,
+a significance test does not tell you why the pattern
+might have occurred.
+
+It is also worth noting that the alternative hypothesis
+is statistically vague. For example, it does not specify
+how large a possible alcohol-induced change in
+speaking speed might be.
+When a two-sided test is used, it doesn't even 
+say whether this change would be an acceleration or a slowdown.
+\parend
+
+% 
+% \mypar[ein- und zweiseitige Tests]{Bemerkung}\label{bem:einzweiseitig}
+% Im obigen Beispiel wurde ein \term{zweiseitiger Signifikanztest} verwendet ($p_z$ in Lemma \ref{lemma:pvalue}):
+% Es wurde nicht nur berechnet, wie wahrscheinlich es unter Annahme der Nullhypothese
+% wäre, einen Unterschied von mindestens 0.73 Silben pro Sekunde zugunsten der Kontrollgruppe
+% (dem beobachteten Ergebnis) anzutreffen, sondern auch, wie wahrscheinlich es unter
+% Annahme der Nullhypothese wäre, einen Unterschied von mindestens 0.73 Silben pro Sekunde
+% zugunsten der Experimentalgruppe anzutreffen. Der Grund hierfür ist, dass die Alternativhypothese
+% vage war und wir lediglich die Vermutung aufgestellt haben, dass Alkoholkonsum \emph{irgendeine}
+% Änderung der Sprechgeschwindigkeit herbeiführen dürfte.
+% 
+% In der Literatur trifft man ab und zu auch \term{einseitige Tests} an. 
+% Bei solchen Tests schaut man
+% sich nur eine der beiden Wahrscheinlichkeiten (`kleiner' ($p_\ell$, $\ell$ für links) oder `grösser' ($p_r$; $r$ für rechts)) an. 
+% Die $p$-Werte von einseitigen Tests sind kleiner als jene von zweiseitigen Tests. Einseitige Tests
+% können sinnvoll sein, wenn man \emph{im Vorhinein} klar spezifiziert hat, dass nur ein Unterschied
+% in einer bestimmten Richtung mit der wissenschaftlichen Hypothese, die hinter
+% der Arbeit steckt, kompatibel ist. Für eine kurze Übersicht, siehe \href{https://daniellakens.blogspot.com/2016/03/one-sided-tests-efficient-and-underused.html}{\textit{One-sided tests: Efficient and underused}} unter \url{https://daniellakens.blogspot.com}.
+% Man sollte sich aber nicht zuerst die Daten anschauen und erst dann
+% entscheiden, dass man einen einseitigen Test verwenden möchte -- etwa, weil der
+% zweiseitige Test ein nicht-signifikantes Ergebnis produziert.
+% Dies hiesse nämlich, 
+% dass man sich statt eines gültigen $p$-Werts wie $p_z$ oder $p_{\ell}$ aus 
+% Lemma \ref{lemma:pvalue} die Zufallsvariable $\widetilde{p}$, definiert durch
+% \[
+%   \widetilde{p} :=
+%   \begin{cases}
+%     p_z, & \textrm{falls $p_z \leq 0.05$}, \\
+%     p_{\ell}, & \textrm{sonst},
+%   \end{cases}
+% \]
+% ausgedacht hat.
+% Diese stellt im Allgemeinen jedoch keinen gültigen $p$-Wert im Sinne von
+% Definition \ref{def:pvalue} dar.
+% \parend
+
+\section{A template for exact $p$-values}
+With the conceptual foundations out of the way,
+we're ready to treat $p$-values a bit more formally.
+
+\mypar[$p$-value]{Definition}\label{def:pvalue}
+  An exact $p$-value is a random variable $P$
+  with the following property: if the null hypothesis is true, then
+  for all $\alpha \in (0, 1)$ it holds that $\Prob(P \leq \alpha) \leq \alpha$.
+  
+  A random variable $P$ works as an approximate $p$-value
+  if, under the null hypothesis, $\Prob(P \leq \alpha) \approx \alpha$
+  for all $\alpha \in (0,1)$.
+\parend
+
+In principle, then, $p$-values can be used to bound the probability 
+that we claim that something is going on in the data if in fact nothing is going on:
+We pick some value for $\alpha$ (typically $0.05$).
+If the $H_0$ is in fact true, 
+then we'd only observe $p$-values lower than
+$\alpha$ with a probability of at most $\alpha$.
+In practice, however, things aren't so simple, and we'll discuss some complications shortly.
+
+\mypar[Further quality criteria]{Remark}
+  The constant random variable $P \equiv 1$ is, by Definition
+  \ref{def:pvalue}, a valid exact $p$-value, because
+  \[
+    \Prob(P \leq \alpha) = 0 \leq \alpha
+  \]
+  for all $\alpha \in (0,1)$.  
+  However, it is completely useless as a $p$-value, since it always
+  has the same distribution—regardless of whether the null hypothesis
+  is true or not.  
+  Similarly, a random variable $P \sim \textrm{Unif}((0,1))$
+  is also a valid exact $p$-value, because
+  \[
+    \Prob(P \leq \alpha) = \alpha \leq \alpha
+  \]
+  for all $\alpha \in (0,1)$.
+  But this $p$-value, too, always has the same distribution,
+  whether or not the null hypothesis is true.  
+  What we actually want are $p$-values that are only rarely `small'
+  when the null hypothesis holds, but much more often small
+  when it does not.
+\parend
+
+The randomisation test we used in the previous section results in 
+exact $p$-values, as the following lemma shows.
+
+\mypar{Lemma}\label{lemma:boundpval}
+  Under the null hypothesis, exhaustive rerandomisation results in a $p$-value
+  such that $\mathbb{P}(p \leq \alpha) \leq \alpha$ for each $\alpha \in (0, 1)$.
+\parend
+
+\begin{proof}
+  We'll first consider left-sided $p$-values.
+  Assume that there are $M$ possible rerandomisations.
+  Sort these ascendingly by the value of the test statistic
+  they result in (e.g., the mean difference in our example),
+  breaking ties randomly if necessary.
+  Note that, after this sorting,
+  the left-sided $p$-value that the $i$-th rerandomisation would have
+  resulted in (call it $p_i$) is at least
+  $i/M, i = 1, \dots, M$: there are at least $i$ out of $M$
+  rerandomisations with test statistics that are at most as large as
+  as the one in the $i$-th rerandomisation;
+  an even higher value than $i/M$ is possible if several rerandomisations
+  give rise to the same test statistic value.
+
+  Now, for $\alpha \in (0, 1)$, compute $\kappa := \lfloor \alpha M \rfloor$.
+  ($\lfloor \cdot \rfloor$ rounds down the number to the nearest integer.)
+  Under the null hypothesis, we were equally likely to have generated
+  each of the $M$ possible randomisations.
+  Hence, the probability that we generated a randomisation resulting
+  in a $p$-value no larger than $\alpha$ is
+  \begin{align*}
+    \mathbb{P}(p \leq \alpha)
+    &= \frac{\textrm{\# rerandomisations with $p_i \leq \alpha$}}{M}\\
+    &\leq \frac{\textrm{\# rerandomisations with $i/M \leq \alpha$}}{M}\\
+    &= \frac{\textrm{\# rerandomisations with $i \leq \kappa$}}{M} \\
+    &= \frac{\kappa}{M} \\
+    &\leq \alpha.
+  \end{align*}
+
+  For right-sided $p$-values, sort the rerandomisations descendingly by
+  the test statistic value and proceed analogously.
+  For two-sided $p$-values, sort the rerandomisations by the
+  absolute value of the test statistic and again proceed analogously.\footnote{When
+  using the alternative definition of two-sided $p$-values,
+  consider that $\mathbb{P}(p_{\ell} \leq \alpha/2) \leq \alpha/2$
+  and $\mathbb{P}(p_r \leq \alpha/2) \leq \alpha/2$.
+  Hence $\mathbb{P}(\min(p_{\ell}, p_r) \leq \alpha/2) \leq \alpha/2 + \alpha/2 = \alpha$.}
+\end{proof}
+
+Lemma \ref{lemma:boundpval} is a special case of 
+Lemma \ref{lemma:pvalue}, the proof of which can be found in \citet[][p.\ 5]{Duembgen2016}.
+
+\mypar{Lemma}\label{lemma:pvalue}
+  Let $X$ be a random variable with distribution function $F_0$.
+  Then the following inequalities hold:
+  \begin{align*}
+    \Prob(F_0(X) \leq \alpha) &\leq \alpha,                             \tag{$p_{\ell}$}\\
+    \Prob(1 - F_0(X-) \leq \alpha) &\leq \alpha,                        \tag{$p_{r}$}\\
+    \Prob(2 \cdot \min\{F_0(X), 1 - F_0(X-)\} \leq \alpha) &\leq \alpha,\tag{$p$}
+  \end{align*}
+  for all $\alpha \in (0,1)$, 
+  where $F_0(t-) := \Prob(X < t)$ (and so $1 - F_0(t-) = \Prob(X \geq t)$).
+\parend
+
+Lemma \ref{lemma:pvalue} shows that we can use the following template
+when computing $p$-values:
+\begin{itemize}
+\item First, decide which quantity $X$ you are interested in.
+In the example above, we were interested in the difference between
+the sample means, but soon we will consider other quantities as well.
+
+\item Next, determine how this quantity $X$ would be distributed
+if the null hypothesis were true.
+This gives us the distribution function $F_0$ of $X$.
+In the example above, we obtained $F_0$ by going through
+all possible assignments,
+and the value $F_0(r)$ corresponds to the proportion of assignments
+that result in a mean group difference of at most $r$ units
+in favour of the alcohol group.
+
+\item According to the lemma, we can now compute three types of $p$-values:
+a left-sided ($p_{\ell}$),
+a right-sided ($p_r$),
+and a two-sided ($p$); see Remark \ref{remark:onetwosided}.
+\end{itemize}
+
+\mypar{Exercise}
+  Let's say that, in the speech rate example,
+  we hypothesised that drinking a pint of alcoholic beer
+  will result in a faster speech rate in some people but in a slower speech
+  rate in others. It may make more sense to compare the variances of the speech 
+  rates in the two conditions instead of the means.
+  Explain how you could accomplish this using a randomisation test.
+  Would you compute a left-sided, a right-sided or a two-sided $p$-value?
+\parend
+
+\section{On the meaning of $p$-values}
+Thanks to Lemma \ref{lemma:pvalue}, 
+we can obtain a valid $p$-value by computing the probability 
+of observing the pattern we actually saw 
+(in our example: a group difference of 0.6 syllables per second) \emph{or an even more extreme pattern}, 
+\emph{assuming the null hypothesis is true}. 
+In our example, we generated all alternative group differences 
+under the assumption that the observed difference arose purely by chance. 
+Other definitions or interpretations of the $p$-value risk being incorrect. 
+To prevent some common misunderstandings:
+\begin{itemize}
+\item The $p$-value is \emph{not} the probability that the null hypothesis is true. 
+We cannot conclude that there is a 8.7\% probability that $H_0$ holds.
+
+\item The $p$-value is also \emph{not} the complement of the 
+probability that the alternative hypothesis is true. 
+In our example, we \emph{cannot} conclude that $H_A$ is true with 91.3\% probability.
+
+\item The $p$-value is not the complement of the probability that the 
+observed result would replicate in a new study. 
+(I have no idea where this misunderstanding comes from, but I once saw it in a review report.)
+\end{itemize}
+
+These---and other---misunderstandings are surprisingly common, 
+even in introductory statistics courses aimed at psychology or linguistics students. 
+See \citet{Goodman2008} and \citet{Greenland2016} for further discussion of common misinterpretations.
+
+Often, researchers distinguish between `statistically significant' 
+and `statistically non-significant' $p$-values. 
+A $p$-value below a given threshold $\alpha$ is considered statistically significant. 
+For a statistically significant $p$-value, 
+researchers typically conclude that the data are unlikely under the null hypothesis, 
+and therefore reject it in favour of the alternative. 
+The significance threshold, denoted $\alpha$, can in principle be chosen arbitrarily; 
+in the social and human sciences, 
+it is almost universally set at $\alpha = 0.05$---generally for no reason other than that a human hand has five fingers.
+
+\mypar{Tip}
+In statistics, `significance' is a technical term and should not be confused with the everyday sense of practical or theoretical significance or importance. Try to avoid this ambiguity in your own writing.
+\parend
+
+\section{Type I and Type II Errors}
+As much as we might wish otherwise, 
+significance tests do not offer certainty. 
+In traditional null hypothesis significance testing (\textsc{nhst}), 
+we distinguish between two types of potential mistakes.
+
+The first type of mistake is rejecting a null hypothesis that is actually true. 
+If you follow the conventional $\alpha$ threshold of 5\%, 
+you will incorrectly reject a true null hypothesis 
+at most 5\% of the time---assuming the data are analysed correctly. 
+This type of error is called a \term{Type I error} 
+(or a false positive, i.e., finding something that isn't there). 
+Because $\alpha$ is defined by the researcher---or, in practice, 
+de facto set at 0.05---the frequency of Type I errors is, in principle, controlled: 
+at most $100\alpha$\% (i.e., de facto 5\%) 
+of all true null hypotheses would be wrongly rejected 
+if the data are correctly analysed. 
+In practice, however, complications can arise.
+Exercise \ref{ex:multipletesting} deals with one such complication;
+more subtle ones are discussed in Chapter \ref{ch:QRP}.
+
+\mypar[Multiple testing]{Exercise}\label{ex:multipletesting}
+A research team conducts an experiment in 30 school classes simultaneously. 
+In each school class, 
+the children are assigned to the control or experimental group using complete randomisation.
+That is, the researchers are in effect conducting 30 parallel and independent experiments.
+
+Assume that in all of these classes, the null hypothesis is true.
+Further assume that, if the null hypothesis is true, there is
+exactly a 5\% chance of observing a statistically significant difference between
+the control and experimental conditions.
+
+What is the probability of obtaining a statistically significant
+difference in at least one of the 30 experiments?
+\parend
+
+If $H_0$ is false (i.e., the pattern did not arise purely by chance), 
+there is still the possibility of obtaining a $p$-value above the $\alpha$ threshold. 
+In such cases, you would fail to reject the null hypothesis even though you ideally should. 
+This type of mistake is called a \term{Type II error} 
+(or a false negative, i.e., failing to detect something that is actually there). 
+The probability of a Type II error is denoted $\beta$ 
+(not to be confused with the $\beta$s in regression models); 
+its complement, $1-\beta$, is called the statistical \term{power} of a test.
+
+The probability $\beta$ cannot be set arbitrarily because it depends on four factors:
+\begin{enumerate}
+\item The strength of the true effect if the null hypothesis does not hold 
+(e.g., how much moderate alcohol consumption actually affects speech rate): 
+the stronger the effect (i.e., the larger the difference), the higher the power.
+
+\item The magnitude of the error variance 
+(e.g., how much participants differ from each other within each group): 
+the larger the error variance, the lower the power.
+
+\item The sample size: the more data you have, the higher the power.
+
+\item The choice of test and whether its assumptions are approximately met.
+\end{enumerate}
+
+Power calculations (see Chapter \ref{ch:poweranalysis}) allow you to estimate the power of a significance test.
+
+\mypar[Interpreting non-significant $p$-values]{Remark}
+Due to the possibility of a Type II error, 
+a non-significant result does not allow you to conclude 
+that there is a difference nor that there is \emph{no} difference: 
+it is always possible that you simply failed to detect the difference. 
+If you read somewhere that ``A and B did not differ significantly and are therefore the same (or `essentially the same')'', 
+this is usually just convenient rhetoric: absence of evidence is not evidence of absence.
+\citet{Schmidt1996} refers to this fallacy as ``the most devastating of all to the research enterprise'' (p. 126).
+\parend
+
+\mypar{Exercise}\label{exercise:falsediscovery}
+In a research field, a large number of experiments are conducted.
+In 45\% of these, the null hypothesis is true, and in 55\%, the alternative hypothesis is true.
+In 5\% of the experiments in which the null hypothesis is true, this null hypothesis is incorrectly rejected;
+in 60\% of the experiments in which the alternative hypothesis is true, the null hypothesis is correctly rejected.
+
+We randomly select an experiment in which the null hypothesis was rejected.
+What is the probability that, in this experiment, the null hypothesis was rejected correctly?
+\parend
+
+\section{Randomisation tests for group differences}
+Randomisation tests have the advantage of making few assumptions.
+In the calculations above, our only real assumption was that participants were assigned to conditions at random. 
+In practice, however, it is usually too cumbersome to enumerate all possible assignments. 
+Instead, one typically generates only $m$ random assignments. 
+To do this, one can randomly permute the group labels using \texttt{sample()}.
+
+To compute the left-sided $p$-value, count the number
+of assignments $\ell$ in which the observed pattern is at most
+as large as in the actual data.
+Then calculate
+\[
+  p_{\ell} = \frac{\ell + 1}{m + 1}.
+\]
+In other words, we include the actually observed pattern among the randomly generated ones. 
+We do so because it could also have arisen purely by chance. 
+This also ensures that $p_{\ell} \neq 0$.
+
+To compute the right-sided $p$-value,
+count the number of assignments $r$ 
+in which the observed pattern is at least as large as in the actual data. 
+Then calculate
+\[
+  p_{r} = \frac{r + 1}{m + 1}.
+\]
+For the two-sided $p$-value, calculate
+\[
+  p = 2\cdot \min\{p_{\ell}, p_{r}\}.
+\]
+While this procedure produces valid $p$-values, 
+the specific result depends on the random assignments generated: 
+different random draws may give different results. 
+The larger $m$ is, the smaller the randomness.
+
+Below is an example using the data from \citet{Klein2014}, 
+which we already analysed in Chapter \ref{ch:groupdifferences}.\label{page:kleinrandom}
+To illustrate that the procedure isn't limited
+to mean differences, we analyse the difference in the medians.
+<<cache = FALSE, echo = TRUE, message = FALSE>>=
+klein <- read_csv(here("data", "Klein2014_money_abington.csv"))
+median_difference <- tapply(klein$Sysjust, klein$MoneyGroup, median) |> 
+  diff()
+median_difference
+
+m <- 19999
+median_diffs_H0 <- replicate(m, {
+  permuted_group <- sample(klein$MoneyGroup)
+  tapply(klein$Sysjust, permuted_group, median) |> diff()
+})
+l <- sum(median_diffs_H0 <= median_difference)
+r <- sum(median_diffs_H0 >= median_difference)
+(p_l <- (l + 1) / (m + 1))
+(p_r <- (r + 1) / (m + 1))
+(p <- 2 * min(p_l, p_r))
+@
+
+\mypar[Difference between more than two group means]{Exercise}\label{ex:randtest_multiple}
+  In Section \ref{sec:unterschiede_mehrere_gruppen}, 
+  we saw how to model differences between more than two groups.
+  We can now test the null hypothesis that the differences
+  between the three condition means in the study by \citet{Vanhove2018}
+  are purely due to chance. 
+  Read the data in again and calculate the three condition means.  
+  Instead of computing the difference between these means, 
+  this time compute the variance of the three means.
+  (It does not matter whether you calculate the sample variance or the population variance.
+  You could also compute the standard deviation.)
+  Adapt the code section above to test this null hypothesis
+  and calculate an appropriate $p$-value.
+
+  Hint: Use a right-sided $p$-value. (Why?)
+
+  Incidentally, when comparing just two groups, 
+  one could also compute the variance (or standard deviation) of the statistics to be compared
+  rather than their difference.
+  If a two-sided test is used,
+  this will give the same result,
+  because the variance (or standard deviation) is a strictly monotonically increasing
+  function of the absolute difference.
+\parend
+
+\mypar[Experiment with blocking]{Exercise}
+  We conduct a pretest–posttest experiment with random assignment.
+  Instead of allocating the $2n$ participants completely at random to the two groups,
+  we first order them according to their pretest scores and then form pairs as follows:
+  \[
+    (1,2)(3,4)(5,6)(7,8)\dots(2n-1,2n).
+  \]
+  Within each pair, we randomly assign one participant to the control group 
+  and the other to the experimental group.
+  This technique is called \term{blocking}.
+  It can increase the power of an experiment and is underused in our field.
+
+  \begin{enumerate}
+    \item There are $\binom{2n}{n}$ possible ways of dividing $2n$ participants
+          into two equally sized groups.  
+          How many possible allocations are there in an experiment with $2n$ participants
+          if a blocking factor groups the participants into pairs?
+
+    \item Suppose the null hypothesis states that
+          the group means differ only due to chance.
+          Explain in words (but precisely!)
+          how this null hypothesis can be tested 
+          using a randomisation test. \parend
+  \end{enumerate}
+
+\mypar[Experiment with school classes]{Exercise}
+  For an experiment with two conditions,
+  sixteen school classes of twenty pupils each are recruited.
+  Among others, the following methods suggest themselves
+  for assigning pupils to conditions:
+  \begin{enumerate}
+    \item All 320 pupils are allocated to the two conditions by complete randomisation.
+    That is, 160 children are randomly assigned to the control group
+    and 160 to the experimental group.
+    The class they belong to is ignored,
+    so it is possible that in a given class more children end up in the experimental 
+    than in the control condition.
+
+    \item Within each class, complete randomisation is used.
+    In every class there are therefore ten pupils in the control condition and
+    ten in the experimental condition.
+
+    \item The classes themselves are assigned to conditions.
+    That is, all the children from eight classes are placed in the control condition,
+    and all the children from the other eight classes are placed in the experimental condition.
+  \end{enumerate}
+  For each of the three methods, calculate how many possible allocations there are.
+  Also describe, for each method, a suitable randomisation test for comparing the group means.
+\parend
+
+\mypar[Wilcoxon rank-sum test]{Example}\label{remark:wilcoxon}
+  In Exercise \vref{ex:gambler} you examined a dataset on the
+  \textit{gambler's fallacy}. 
+  As you noticed there, the variable \texttt{RollsImagined} is strongly skewed.
+  Instead of comparing means, we could compare medians, 
+  but here I'd like to introduce an alternative.
+  An intuitive way of capturing whether the values in one group
+  tend to be higher than those in the other is 
+  to randomly draw one observation from each group and calculate
+  the probability that the first observation is higher than the second.
+
+  The actual computation of this probability is conceptually straightforward:
+  if there are $n_1$ observations in the first group and $n_2$ in the second,
+  then we carry out all $n_1n_2$ pairwise comparisons.
+  We then calculate the proportion of comparisons 
+  in which the first value is greater than the second;
+  in case of a tie, we count the comparison as half a success.
+  The home-made function \texttt{cles()} performs this calculation;
+  its name refers to the term \term{common-language effect size} \citep{McGraw1992},
+  though this statistic is more commonly known as the \term{probability of superiority}:
+<<message = FALSE, warning = FALSE>>=
+# ufl data only; ignore NAs
+d <- read_csv(here("data", "Klein2014_gambler.csv")) |>
+  filter(Sample == "ufl") |>
+  filter(!is.na(RollsImagined))
+
+# split observations by condition
+x1 <- d$RollsImagined[d$Condition == "three6"]
+x2 <- d$RollsImagined[d$Condition == "two6"]
+
+# load cles() and compute
+source(here("functions", "cles.R"))
+cles(x1, x2)
+@
+If we draw one observation from the \texttt{three6} group
+and one from the \texttt{two6} group,
+then the first has a 66.5\% chance of being larger than the second.
+With a randomisation test we could now test the null hypothesis
+that this figure deviates from 50\% only by chance.
+The practical problem is that the calculation implemented in \texttt{cles()} is fairly slow:
+if we were to run thousands of rerandomisations and apply \texttt{cles()} each time,
+we would be waiting a very long time for the result.
+
+Fortunately, it turns out that there is a less intuitive 
+but computationally more efficient way of performing the calculation, 
+which in the end gives the same result.
+We combine the observations from both groups into a single vector,
+convert them to ranks, and sum the ranks of the first group.
+For our data, this rank sum is $R = 3987.5$:
+<<>>=
+rank_sum <- function(x, y) {
+  ranks <- rank(c(x, y))
+  sum(ranks[1:length(x)])
+}
+rank_sum(x1, x2)
+@
+For fixed group sizes $n_1, n_2$ the \texttt{cles} value
+can be calculated directly from the rank sum.
+This is useful computationally
+as it is faster to compute the rank sum than to carry out
+the necessary $n_1n_2$ comparisons.
+<<>>=
+n1 <- length(x1)
+n2 <- length(x2)
+(rank_sum(x1, x2) - n1*(n1 + 1)/2) / (n1 * n2)
+@
+We now carry out a randomisation test on the rank sum.
+The logic is exactly the same as before.
+<<cache = FALSE>>=
+m <- 19999
+rank_sums_H0 <- replicate(m, {
+  permuted_group <- sample(d$Condition)
+  x_H0 <- d$RollsImagined[permuted_group == "three6"]
+  y_H0 <- d$RollsImagined[permuted_group == "two6"]
+  rank_sum(x_H0, y_H0)
+})
+l <- sum(rank_sums_H0 <= rank_sum(x1, x2))
+r <- sum(rank_sums_H0 >= rank_sum(x1, x2))
+p_l <- (l + 1) / (m + 1)
+p_r <- (r + 1) / (m + 1)
+(p <- 2 * min(p_l, p_r))
+@
+So we obtain $p = 0.003$.
+
+This randomisation test corresponds to the \term{Wilcoxon rank-sum test},
+which is implemented in R as \texttt{wilcox.test()}.
+In practice, however, 
+this test usually relies on an approximation 
+(see \texttt{Details} in \texttt{?wilcox.test}):
+<<>>=
+wilcox.test(x1, x2)
+@
+The output shows a statistic $W$ (for Wilcoxon),
+but this is \emph{not} the rank sum.
+Instead, it is in fact the test statistic of the equivalent \term{Mann--Whitney test},
+usually denoted $U$ in the statistical literature.
+This statistic has a simpler relationship to the \texttt{cles} value:
+<<>>=
+cles(x1, x2) * (n1 * n2) # CLES to U
+wilcox.test(x1, x2)$statistic / (n1 * n2) # U to CLES
+@
+\parend
+
+\mypar[Confidence interval for the probability of superiority]{*Exercise}
+  Use a nonparametric bootstrap to compute a 95\% confidence interval
+  for the probability of superiority computed in Remark \ref{remark:wilcoxon}.
+
+  Hint: Compute the rank sum or the $U$ statistic and convert it to the
+  probability of superiority/\texttt{cles} value.
+  Using \texttt{cles()} would take too much time.
+\parend
+
+\section{Permutation tests for associations}\label{sec:permutationcorr}
+To compute $p$-values for patterns other than group differences,
+we can use procedures very similar to randomisation tests.
+These are called \term{permutation tests};
+because of their similarity, the two terms are often used interchangeably.
+On page \pageref{ex:poarch} you calculated
+the correlation coefficient for the relationship
+between two indicators of cognitive control
+in a sample of 34 participants (data from \citealp{Poarch2018}).
+<<message = FALSE>>=
+poarch <- read_csv(here("data", "poarch2018.csv"))
+cor_poarch <- cor(poarch$Flanker, poarch$Simon)
+cor_poarch
+@
+
+The procedure for calculating $p$-values is always essentially the same,
+and follows the template we can use thanks to Lemma \ref{lemma:pvalue}:
+we choose a test statistic, generate its distribution under the null hypothesis,
+and then compute $p_{\ell}, p_r$, or a two-sided $p$-value.
+When calculating a $p$-value for a correlation coefficient,
+the task is to work out the probability of observing
+the correlation we found in the sample,
+or an even stronger one,
+if in the population there were in fact no relationship at all between the two variables.
+In other words, the null hypothesis tested is that the two variables are independent.
+
+To calculate this probability,
+we first need to generate the distribution of the correlation coefficient
+we would expect in this sample
+if the two variables (\texttt{Flanker} and \texttt{Simon}) were independent ($H_0$).
+To this end, we can permute the observed values of one variable,
+i.e.\ shuffle them randomly,
+without permuting the observed values of the other variable.
+It doesn't matter which variable you permute.
+This breaks the systematic association between the two variables.
+Figure \ref{fig:permutationenkorrelation} shows the observed association
+alongside two possible associations that could arise
+if we randomly shuffle the Simon variable.
+The R code below shows how you can produce this figure yourself.
+
+<<warning = FALSE, cache = FALSE, out.width = "\\textwidth", fig.width = 10, fig.height = 2.8, fig.cap = "Left: The observed association between Flanker and Simon in the study by Poarch et al. (2018). Centre and right: By permuting one variable (here: Simon) independently of the other, the systematic association between them is broken. This corresponds to the null hypothesis. To see how the correlation coefficients are distributed under the null hypothesis, one can repeat this permutation a few thousand times and recalculate the correlation each time.\\label{fig:permutationenkorrelation}">>=
+p1 <- ggplot(poarch,
+             aes(x = Flanker,
+                 y = Simon)) +
+  geom_point(shape = 1) +
+  ggtitle("Observed data")
+
+# If no further parameters are set in sample(),
+# the input is permuted at random.
+p2 <- ggplot(poarch,
+             aes(x = Flanker,
+                 y = sample(Simon))) +
+  geom_point(shape = 1) +
+  ggtitle("One possible permutation")
+
+p3 <- ggplot(poarch,
+             aes(x = Flanker,
+                 y = sample(Simon))) +
+  geom_point(shape = 1) +
+  ggtitle("Another possible permutation")
+
+library(patchwork) # arrange plots side by side
+p1 + p2 + p3
+@
+
+With 34 observations there are almost 300 sextillion
+(a 3 followed by 38 zeros) possible permutations
+of the Simon variable:
+\[
+ 34! = 34 \cdot 33 \cdot 32 \cdot \dots \cdot 3 \cdot 2 \cdot 1 \approx 2.95 \cdot 10^{38}.
+\]
+It is impossible to compute the correlation coefficient for all of these.
+So instead we settle for 19,999 permutations:
+
+<<cache = FALSE>>=
+m <- 19999
+cor_H0 <- replicate(m, {
+  cor(poarch$Flanker, sample(poarch$Simon))
+})
+@
+
+The distribution of correlation coefficients under the null hypothesis
+can be shown in a histogram;
+Figure \ref{fig:distributionkorrelationpermutation} shows a slightly more elaborate version.
+Strictly speaking, the actually observed correlation coefficient
+must also be included in this distribution,
+since it too could have arisen under the null.
+In total, then, the distribution contains 20,000 correlation coefficients.
+
+<<fig.width = 5.5, fig.height = 2.5, echo = TRUE, fig.cap = "The distribution of the correlation coefficient for this sample with 34 obsevations when permuting one of the variables randomly.\\label{fig:distributionkorrelationpermutation}">>=
+df_cor_H0 <- tibble(cor_H0) |>
+  add_row(cor_H0 = cor_poarch)
+ggplot(df_cor_H0,
+       aes(cor_H0)) +
+  geom_histogram(fill = "grey", colour = "black",
+                 breaks = seq(-1, 1, 0.05)) +
+  geom_vline(xintercept = cor_poarch, linetype = 2) +
+  ggtitle("Distribution of correlation coefficient under H0",
+          subtitle = "(permutation-based)") +
+  xlab("r (under H0)") +
+  ylab("Number") +
+  annotate("text", x = 0.75, y = 1200, label = "r >= 0.46")
+@
+
+From this distribution we can read off how unusual
+correlation coefficients of $r \geq 0.46$ would be
+if there were no systematic association between the two variables.
+For the one-sided test ($H_A$: the correlation is positive),
+we look at the proportion of correlation coefficients
+generated under $H_0$ that are equal to $0.46$ or larger:
+
+<<>>=
+r <- sum(df_cor_H0$cor_H0 >= cor_poarch)
+(p_r <- (r + 1) / (m + 1))
+@
+
+That is, 0.26\% ($p = 0.0026$). If you run these calculations
+yourself, you will find a slightly different result.
+This is because your 19,999 random permutations
+won't be the same as mine.
+
+For the two-sided test ($H_A$: the correlation is not equal to
+0, but could be either positive or negative),
+we also need to look at how many of the correlation coefficients
+generated under $H_0$ are equal to $0.46$ or smaller.
+
+<<>>=
+l <- sum(df_cor_H0$cor_H0 <= cor_poarch)
+p_l <- (l + 1) / (m + 1)
+(p <- 2 * min(p_l, p_r))
+@
+So 0.5\% ($p = 0.005$). The probability of observing
+a correlation this strong, or stronger, if the null hypothesis
+were in fact true, is therefore rather small.
+(Of course, we could have skipped the calculation of \texttt{p\_l},
+since this value is clearly larger than \texttt{p\_r}.)
+
+\mypar{Exercise}
+  Compute Kendall's $\tau$ for the association between the Flanker and Simon data.
+  Test the null hypothesis that it differs from $0$ only by chance
+  using a self-written permutation test.
+\parend
+
+\section{The binomial test}
+In the final two sections of this chapter, we take a closer look at
+two more applications of the $p$-value template:
+the binomial test and Fisher's exact test.
+
+\mypar[ABX tests]{Example}
+  We want to find out whether a learner of English can tell the difference
+  between the phonemes /\textipa{E}/ (as in \textit{bet})
+  and /\textipa{\ae}/ (as in \textit{bat}).
+  To this end, we set up an ABX test: 
+  we compile a list of 30 minimal pairs 
+  whose components differ only in these phonemes
+  (\textit{bed}–\textit{bad}, \textit{fed}–\textit{fad}, \textit{peck}–\textit{pack}, and so on).
+  In total, 60 words are recorded twice each by a native speaker.
+  For each minimal pair, the learner hears one recording of the /\textipa{E}/-word
+  and one of the /\textipa{\ae}/-word, in random order.
+  Afterwards, the learner hears a second recording of one of the two words.
+  Their task is to decide whether the final recording (`X') belongs to
+  the same category as the first (`A') or the second (`B') recording.
+  The learner classifies 21 out of 30 recordings correctly ($X = 21$).
+  This could suggest that they are, in some sense, able to distinguish
+  /\textipa{E}/ from /\textipa{\ae}/.
+  But we should also consider the possibility
+  that they were just guessing.
+
+  If the learner were simply guessing, then for each minimal pair there would be
+  a probability of $p_0 = 0.5$ of being correct---whether by randomly picking
+  `A' or `B', or by using a simple strategy such as alternating between the two.
+  In this case, the correctness of one answer would tell us nothing about the next,
+  i.e., the answers would be independent.
+  So the null hypothesis can be stated as:
+  \[
+    H_0 : X \sim \textrm{Binomial}(30, 0.5).
+  \]
+  The usual alternative hypothesis would simply be
+  that the success probability is not equal to $p_0 = 0.5$.
+  Here, however, we are only interested in the alternative that
+  the success probability is \emph{greater} than $p_0 = 0.5$.
+
+  We can test this null hypothesis with a \term{binomial test}.
+  Figure \ref{fig:binomialtest} shows the $\textrm{Binomial}(30, 0.5)$ distribution.
+  We can now read off, or easily calculate, how probable it would be
+  to observe at least $X = 21$:
+  \[
+    \Prob(X \geq 21) = 1 - \Prob(X \leq 20),
+  \]
+  which we can compute with \texttt{pbinom()}:
+<<>>=
+1 - pbinom(20, 30, 0.5)
+@
+  A one-sided binomial test therefore gives a right-tailed $p$-value of about $0.02$.
+
+<<echo = FALSE, fig.cap = "Left: Probability of $k$ successes under the Binomial($30$, $0.5$) distribution. Right: Cumulative distribution function of the same distribution.\\label{fig:binomialtest}", fig.width = 7, fig.height = 3.3, out.width=".8\\textwidth">>=
+k <- 0:30
+p0 <- 0.5
+X <- 21
+par(mfrow = c(1, 2))
+plot(k, dbinom(k, max(k), p0), pch = 16,
+     xlab = "k", ylab = "Prob(X = k)")
+abline(v = X, lty = "dashed")
+plot(k, pbinom(k, max(k), p0), pch = 16, ylim = c(0, 1),
+     xlab = "k", ylab = "Prob(X ≤ k)")
+segments(k, pbinom(k, max(k), p0), k + 1)
+segments(-1, pbinom(X-1, max(k), p0), X, lty = "dashed")
+segments(X, -1, y1 = pbinom(X-1, max(k), p0), lty = "dashed")
+par(op)
+@
+
+With \texttt{binom.test()} we get the same result:
+<<>>=
+binom.test(21, 30, 0.5, alternative = "greater")
+@
+If we use a significance threshold of $\alpha = 0.05$, we would conclude
+that the learner was not just lucky and is, to some extent,
+able to perceive the difference between the two phonemes.
+\parend
+
+The binomial test from the example above is an exact test
+for comparing a binomial parameter with a hypothetical reference value
+(in this case $p_0 = 0.5$).
+`Exact' here means that the requirement in Definition \ref{def:pvalue} is met.
+In the example, a right-tailed test was used,
+since we were only interested in the alternative
+that the success probability is greater than $p_0$.
+If we were only interested in the alternative that the success probability
+is less than $p_0$, then a left-tailed test would be appropriate.
+For this, we would calculate $\Prob(X \leq x)$,
+where $x$ is the observed number of successes.
+
+For a two-sided test, we can use Lemma \ref{lemma:pvalue}
+to calculate a valid $p$-value as
+\[
+  2 \cdot \min\{\Prob(X \leq x), \Prob(X \geq x)\}.
+\]
+It is, however, possible
+to derive a different valid $p$-value for the two-sided test
+that gives the test more power.
+Let $X$ be the random variable representing the number of successes in $n$ trials,
+and let $p_0$ be the probability of success under $H_0$.
+Now define the random variable
+\[
+  \widetilde{X} := \Prob(Y = X),
+\]
+where $Y \sim \textrm{Binomial}(n, p_0)$, with $X, Y$ independent.
+For the observed number of successes $x$, we accordingly calculate
+the value $\widetilde{x} := \Prob(Y = x)$.
+With Lemma \ref{lemma:pvalue} we obtain a valid $p$-value
+by calculating $F_0(\widetilde{x})$.
+Here, $F_0$ is the distribution of the random variable $\widetilde{X}$ under
+the null hypothesis.
+
+\mypar[Two-sided binomial test]{Example}
+  Suppose the null hypothesis is
+  \[
+    X \sim \textrm{Binomial}(17, 1/3)
+  \]
+  and we observe three successes.
+  We can now calculate a first valid two-sided $p$-value as follows:
+<<>>=
+p_l <- pbinom(3, 17, 1/3)
+p_r <- 1 - pbinom(2, 17, 1/3)
+(2 * min(p_l, p_r))
+@
+  However, this test has less statistical power than the slightly
+  more complicated alternative.
+  For this, we first calculate $\Prob(Y = k)$ for each $k = 0, \dots, 17$:
+<<>>=
+prob_k <- dbinom(0:17, 17, 1/3)
+@
+  The distribution function $F_0$ of the random variable $\widetilde{X}$
+  at a value $r$ corresponds to the sum of probabilities
+  $\Prob(Y = k)$ with $\Prob(Y = k) \leq r$; see Figure \ref{fig:binomialtest2}.
+  We are interested in $F_0(\Prob(Y = 3))$ and thus obtain
+<<>>=
+sum(prob_k[prob_k <= prob_k[4]])
+@
+  An easier way is to use \texttt{binom.test()}:
+<<>>=
+binom.test(3, 17, 1/3)$p.value
+@
+\parend
+
+<<echo = FALSE, fig.cap = "We define $\\widetilde X := \\Prob(Y = X)$, where $X, Y$ are i.i.d.\\ Binomial(17, 1/3) distributed. The left panel shows the probabilities $\\Prob(\\widetilde X = \\widetilde x)$; the right panel the distribution function of $\\widetilde X$.\\label{fig:binomialtest2}", fig.width = 7, fig.height = 3.3, out.width=".8\\textwidth">>=
+op <- par(no.readonly = TRUE)
+par(mar = c(3,3.9,2,1))
+k <- 0:17
+p0 <- 1/3
+X <- 3
+Xtilde <- dbinom(X, 17, p0)
+prob_k <- dbinom(0:17, 17, p0)
+prob_k <- sort(prob_k)
+densities <- tapply(prob_k, prob_k, sum)
+cumulative <- cumsum(densities)
+prob_k <- unique(round(prob_k, 7))
+par(mfrow = c(1, 2))
+plot(prob_k, densities, pch = 16,
+     xlab = expression(tilde(x)),
+     ylab = expression(paste("Prob(", tilde(X), " = ", tilde(x), ")")))
+abline(v = Xtilde, lty = "dashed")
+plot(prob_k, cumulative, pch = 16,
+     xlab = expression(tilde(x)),
+     ylab = expression(paste("Prob(", tilde(X), " ≤ ", tilde(x), ")")))
+segments(-1, sum(densities[prob_k <= Xtilde]), Xtilde, lty = "dashed")
+segments(Xtilde, -1, y1 = sum(densities[prob_k <= Xtilde]), lty = "dashed")
+par(op)
+@
+
+Binomial tests admittedly do not occur all that often.
+However, they nicely illustrate how significance tests can be carried out
+when the distribution of the outcome of a trial or an experiment
+under the null hypothesis is known: 
+You simply calculate how unusual the observed result, 
+or even more extreme results, would be under this distribution.
+In the preceding sections we estimated the distributions under the null hypothesis
+through brute-force computation; 
+here, by contrast, we could use 
+one of the classic probability distributions.
+
+\section{Fisher's exact test}
+To conclude this chapter, we take a closer look at the logic of
+Fisher's exact test.
+
+\mypar[Hypergeometric distribution]{Definition}
+  Consider an urn that contains 
+  $m$ white balls
+  and $n$ black balls.
+  We randomly draw $k \leq m + n$ balls from this urn
+  without replacement.
+  Then the number of white balls drawn ($w$)
+  follows a \term{hypergeometric distribution}
+  with parameters $m, n, k$.\footnote{Depending on the reference work,
+  this distribution is parameterised differently. Here I use the parameterisation
+  used in R.}
+  We write $w \sim \textrm{Hypergeometric}(m, n, k)$.
+\parend
+
+\mypar[Classification task]{Example}
+  Once again, we want to investigate whether a learner of English perceives the difference
+  between the phonemes /\textipa{E}/ (as in \textit{bet})
+  and /\textipa{\ae}/ (as in \textit{bat}).
+  This time we set up a different experiment.
+  We provide the learner with a total of 30 audio files.
+  Twenty of these files are recordings of the word \textit{bet},
+  the remaining ten are recordings of the word \textit{bat}.
+  The learner's task is to select those twenty audio files
+  that are recordings of \textit{bet}.
+  The learner \emph{must} select exactly twenty files.
+  The results are summarised in a contingency table:
+
+\begin{center}
+\begin{tabular}{lccr}
+\toprule
+                  & Classified as \textit{bet}  & Classified as \textit{bat}   & Row total\\
+\midrule
+Is \textit{bet} & $n_{11} = 15$                 & $n_{12} = 5$                 & $n_{1+} = 20$ \\
+Is \textit{bat} & $n_{21} = 5$                  & $n_{22} = 5$                 & $n_{2+} = 10$ \\
+\midrule
+Column total    & $n_{+1} = 20$                 & $n_{+2} = 10$                & $n_{++} = 30$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+  An important feature of this experiment is that the row and column totals
+  were fixed in advance:
+  Exactly $n_{1+} = 20$ of the 30 files are recordings of \textit{bet},
+  and exactly $n_{+1} = 20$ of the files had to be classified as \textit{bet}.
+  Once one of the entries $n_{11}, n_{12}, n_{21}, n_{22}$ is known,
+  the other three are determined.
+  The random variable $X$ that we consider is the $n_{11}$ entry.
+  Under the null hypothesis, namely that the learner merely selected
+  20 files at random from the 30,
+  this random variable is hypergeometrically distributed with parameters
+  $n_{1+}, n_{2+}$ and $n_{+1}$:
+\[
+  H_0 : X \sim \textrm{Hypergeometric}(n_{1+}, n_{2+}, n_{+1}).
+\]
+  If the learner really is able to distinguish \textit{bet} from \textit{bat},
+  we would expect $n_{11}$ to be larger rather than smaller.
+  Accordingly, we calculate a right-sided $p$-value here,
+  exactly as with the binomial test.
+
+<<echo = FALSE, fig.cap = "Left: Probability of $n_{11} = k$ for $n_{11} \\sim \\textrm{Hypergeometric}(20, 10, 20)$. Right: The corresponding distribution function.\\label{fig:fishertest}", fig.width = 7, fig.height = 3.3, out.width=".8\\textwidth">>=
+k <- 0:20
+X <- 15
+n1plus <- 20
+n2plus <- 10
+nplus1 <- 20
+par(mfrow = c(1, 2))
+plot(k, dhyper(k, n1plus, n2plus, nplus1), pch = 16,
+     xlab = "k", ylab = "Prob(X = k)")
+abline(v = X, lty = "dashed")
+plot(k, phyper(k, n1plus, n2plus, nplus1), pch = 16, ylim = c(0, 1),
+     xlab = "k", ylab = "Prob(X ≤ k)")
+segments(k, phyper(k, n1plus, n2plus, nplus1), k + 1)
+segments(-1, phyper(X - 1, n1plus, n2plus, nplus1), X, lty = "dashed")
+segments(X, -1, y1 = phyper(X - 1, n1plus, n2plus, nplus1), lty = "dashed")
+par(op)
+@
+
+Figure \ref{fig:fishertest} shows the Hypergeometric($20$, $10$, $20$) distribution.
+  We can now read off, or simply calculate, how likely
+  an $n_{11}$ entry of at least 15 would be under this distribution:
+<<>>=
+1 - phyper(15 - 1, 20, 10, 20)
+@
+
+We obtain the same result by passing the observed table to the
+\texttt{fisher.test()} function:
+<<>>=
+fisher.test(
+  rbind(c(15, 5),
+        c(5, 5)),
+  alternative = "greater"
+)$p.value
+@
+
+Incidentally, the same result is obtained if we focus on the
+categorisation of the \textit{bat} recordings
+and adjust the parameters of the hypergeometric distribution accordingly,
+since it also holds that
+\[
+  H_0 : n_{22} \sim \textrm{Hypergeometric}(n_{2+}, n_{1+}, n_{+2}):
+\]
+
+<<>>=
+1 - phyper(5 - 1, 10, 20, 10)
+fisher.test(
+  rbind(c(5, 5),
+        c(5, 15)),
+  alternative = "greater"
+)$p.value
+@
+\parend
+
+For the two-sided test we can proceed in much the same way as with the binomial test:
+We define the random variable
+\[
+  \widetilde{X} := \Prob(Y = X),
+\]
+where $Y \sim \textrm{Hypergeometric}(n_{1+}, n_{2+}, n_{+1})$ with $X, Y$ independent,
+and calculate $\widetilde{x} := \Prob(Y = n_{11})$.
+The $p$-value is then given by $F_0(\widetilde{x})$,
+where $F_0$ denotes the distribution function of the random variable $\widetilde{X}$
+under the null hypothesis.
+If the \texttt{alternative} parameter of the \texttt{fisher.test()} function
+is left unspecified, this value is computed.
+
+Fisher's exact test is called `exact' because the $p$-values it produces
+satisfy the condition in Definition \ref{def:pvalue} precisely.
+Its actual scope of application is rather limited,
+since it is extremely rare for both the row and column totals
+of the contingency table to have been fixed in advance of data collection.
+Nevertheless, this test is often used to evaluate contingency tables
+for which only (for example) the row totals were fixed beforehand,
+or for which neither the row nor the column totals were predetermined.
+In such cases the test is still exact (in the sense of the definition),
+but it can be rather \term{conservative}:
+other tests (e.g., \term{Boschloo's test}) are also exact depending on the research design,
+but have greater power.
+The literature on the analysis of seemingly simple $2 \times 2$ contingency tables
+is surprisingly extensive; for an overview, see \citet{Fagerland2017}.
+In the blog post \href{https://janhove.github.io/posts/2024-09-10-contingency-p-value/}{\textit{Exact significance tests for $2 \times 2$ tables}} (10 September 2024),
+I present Boschloo's test.

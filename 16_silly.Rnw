@@ -1,0 +1,188 @@
+\chapter{*Silly tests}\label{ch:sinnlos}
+When and whether significance tests are meaningful
+is a matter of debate. 
+Less disputed, however, is that significance tests 
+are often used in contexts where they are redundant.
+\citet{Abelson1995} called these silly tests. 
+Superfluous tests make research reports less accessible,
+since readers have to expend extra effort to separate
+the relevant information from the irrelevant.  
+The following sections therefore discuss five types of
+superfluous significance tests, with the aim of helping you
+avoid them in your own work. See also \citet{Vanhove2020b}.
+
+\section{RM-ANOVA for pretest/posttest designs}
+A useful research design is the pretest--posttest design
+with both a control group and an experimental group.
+All participants first complete a task (pretest), are then
+randomly assigned to the experimental or control group,
+and after the intervention complete the same or a similar
+task again (posttest). Such data are often analysed using
+a repeated-measures analysis of variance (\textsc{rm-anova}).
+The results might then be reported as follows:
+\begin{quote}
+``A repeated-measures \textsc{anova} yielded a non-significant
+main effect of Condition ($F(1, 48) < 1$) but a significant
+main effect of Time ($F(1, 48) = 154.6$, $p < 0.001$). In
+addition, the Condition $\times$ Time interaction was significant
+($F(1, 48) = 6.2$, $p = 0.016$).'' [Based on a fictional example
+from \citealp{Vanhove2015}.]
+\end{quote}
+
+The problem with this analysis is that three tests are reported
+(`main effect of Condition', `main effect of Time', and
+`Condition $\times$ Time interaction'), but only the interaction
+is of real interest: what matters is whether the experimental
+group improved more than the control group:
+\begin{itemize}
+ \item That posttest performance across both groups is better
+ than pretest performance (`main effect of Time') is uninformative:
+ perhaps this reflects a practice effect, perhaps the posttest
+ was easier than the pretest, or perhaps both groups learnt
+ something simply from taking part in the experiment.
+ 
+ \item That overall performance differs (or not) between the two
+ groups across both measurement points (`main effect of Condition')
+ is also irrelevant: the average difference may be negligible,
+ yet participants in the experimental group may still have learnt
+ more (for instance, if their pretest scores were lower than the
+ control group's but their posttest scores higher).
+ 
+ \item Only the interaction effect is informative here:
+ is the effect of `Time' different in size depending on `Condition'?
+\end{itemize}
+
+This analysis can be simplified by analysing the \emph{differences}
+between posttest and pretest performance for each participant
+using a $t$-test. The result would be unchanged, but the analysis
+is easier to follow and only a single (relevant) test is reported.
+Instead of a $t$-test, one could of course also use a Wilcoxon
+test or a randomisation test.
+
+An even better alternative is to construct a linear model in which
+the posttest results are treated as the outcome, with both group
+membership and pretest performance included as predictors
+(= \textsc{ancova}). This yields greater power and precision,
+and has the added advantage that pretest and posttest scores
+do not even need to be expressed on the same scale.
+See \citet{Vanhove2015} for further details.
+
+\section{Balance tests}
+Even when participants have been randomly assigned to different groups,
+researchers often describe how these constructed groups differ
+with respect to variables such as age, language proficiency, or IQ.
+Significance tests are often used for this purpose.
+In \citet{Vanhove2015}, I discuss three reasons
+why such significance tests are superfluous; the two most important are these.
+\begin{itemize}
+ \item These significance tests examine the null hypothesis
+ that (for example) the mean age differs between the groups
+ purely due to chance. But since participants were randomly assigned,
+ we \emph{know} that this null hypothesis is actually true.
+ The test either tells us that the group difference is due to chance---something 
+ we already knew---or it claims there is a systematic difference,
+ which would be incorrect (Type I error). The test therefore
+ cannot provide any information that we do not already know and that
+ is simultaneously true.
+ 
+ \item Using such balance tests implies that researchers
+ may think the goal of randomisation is to produce perfectly balanced
+ groups. As we have already seen in Chapter \ref{ch:logic},
+ this is not the goal. The goal of randomisation is to prevent
+ \emph{systematic} bias. Random chance differences between groups
+ are already accounted for in $p$-values and confidence intervals,
+ so it is unnecessary for the groups to be perfectly balanced
+ on background variables.
+\end{itemize}
+
+Important background variables can, of course, be incorporated in the analysis,
+but this is better achieved by including them as predictors in the model.
+If necessary, randomisation can also be restricted to make groups more
+comparable with respect to such variables (see \citealp{Imai2008}, \citealp{Vanhove2015}, 
+and the \texttt{walkthrough\_blocking()} function in the \texttt{cannonball} package).
+
+
+\section{Tautological tests}
+\begin{quote}
+``The 70 participants were divided into three proficiency groups 
+according to their performance on a 20-point French-language test. 
+The high-proficiency group consisted of participants with a score of 
+16 or higher ($n = 20$); 
+the mid-proficiency group of participants with
+a score between 10 and 15 ($n = 37$); 
+and the low-proficiency group of 
+participants with a score of 9 or lower ($n = 13$). 
+An ANOVA showed 
+significant differences in the test scores between the high-, mid- 
+and low-proficiency groups ($F(2, 67) = 133.5$, $p < 0.001$).''
+[Fictional example from the blog post \href{https://janhove.github.io/posts/2014-10-15-tautological-tests/}{\textit{Silly significance tests: Tautological tests}} (15 October 2014)]
+\end{quote}
+
+The problem with this significance test is that it is entirely tautological. 
+Similar to balance tests, such tautological tests cannot tell us anything 
+that we did not already know and that is simultaneously true: 
+we deliberately constructed the groups so that they do not overlap on a particular variable. 
+It is therefore unsurprising that the null hypothesis 
+(`any difference is due purely to chance') is not true here.
+
+Tautological tests are symptomatic of a broader problem: the belief 
+that predictors must always be categorical or that one should 
+always create groups. By splitting continuous data into categories, 
+information is lost, and with it statistical precision. 
+See also \href{https://janhove.github.io/posts/2015-10-16-nonlinear-relationships/}{\textit{The problem with cutting up continuous variables and what to do when things aren't linear}} (16 October 2015).
+
+\section{Tests unrelated to the research question}
+Quite frequently, significance tests are conducted that have 
+little or nothing to do with the actual research question. 
+A fictional example of this is when an intervention study is carried out 
+and one compares not only the performance of the control and intervention groups, 
+but also the performance of boys versus girls, or of participants from different 
+socioeconomic backgrounds, and so on. 
+Factors such as gender and social class 
+may indeed influence performance, but this does not justify performing separate 
+significance tests on them. 
+If you believe that such factors are important, 
+it is generally more sensible to include them directly in the model rather than 
+running separate analyses for each.
+
+For further guidance, see the blog post 
+\href{https://janhove.github.io/posts/2015-06-08-unrelated-tests/}{\textit{Silly significance tests: Tests unrelated to the genuine research questions}} (8 June 2015).
+
+\section{Tests for uninteresting main effects}
+Often, researchers are primarily interested in the interaction between 
+two or more predictors. When testing this interaction in an analysis of 
+variance, however, significance tests for the main effects are also reported. 
+These main-effect tests are usually not of substantive interest. 
+In my view, they may in fact make research reports harder to digest. 
+If, for some reason, it is absolutely necessary to report significance 
+tests for uninteresting main effects, they should, in my opinion, 
+be placed in a table whose caption clearly indicates that only the 
+interaction is the effect of genuine interest.
+
+\section{Conclusion}
+Just because you could perform a significance test, or because the software 
+outputs one, does not mean you should report it. Always ask yourself 
+how relevant each significance test would be for the questions you aim to answer. 
+Ideally, in my view, there should be at most one significance test per research question. 
+More generally, I believe that one should not report analyses whose relevance 
+is not clear to oneself—even if there is a concern that reviewers might 
+otherwise complain. See 
+\href{https://janhove.github.io/posts/2022-02-18-dont-do-things-you-dont-see-the-point-of/}{\textit{In research, don't do things you don’t see the point of}} (18 February 2022).
+
+Please do not misunderstand the previous paragraph: 
+I am \emph{not} suggesting that only significance tests yielding 
+a significant $p$-value should be reported. 
+And nor do I think that every analysis should be accompanied by a $p$-value.
+
+\mypar{Exercise}
+  Read the introduction of a quantitative research article that is relevant 
+  to your current research project or one that you have studied in a seminar. 
+  Write down the research question(s) you consider most important in terms 
+  of what the study aims to answer. 
+  Then, count how many significance tests are reported or mentioned in the results section. 
+  (Sometimes it is only mentioned that a significance test was performed, 
+  without detailed reporting.) 
+  How many of these are directly relevant to answering the key research question(s) you identified?
+
+  Note: See Figure 4 in \citet{Vanhove2020b}!
+\parend

@@ -1,0 +1,616 @@
+<<echo = FALSE>>=
+set.seed(2025-09-12)
+@
+
+\chapter{*Within-subjects experiments}\label{ch:withinsubjects}
+In the experiments we have considered so far, 
+participants were randomly assigned to the experimental conditions. 
+In such cases, the value of the variable \textit{Condition} 
+varies \emph{between} participants but remains constant 
+within each participant. 
+These are therefore called \term{between-subjects} experiments.  
+
+It is sometimes possible, however, to design an experiment in which 
+all participants take part in multiple conditions. 
+In this case, the variable \textit{Condition} 
+also varies \emph{within} participants, 
+since each participant contributes data points from several (often all) conditions. 
+Such studies are called \term{within-subjects} experiments.  
+
+Compared with between-subjects experiments, 
+within-subjects experiments have the advantage 
+that an important source of error variance is completely controlled for---namely, 
+the pre-existing differences between participants. 
+As a result, within-subjects designs usually yield more precise estimates and 
+greater statistical power than between-subjects designs 
+with the same number of participants.  
+
+A potential drawback, however, is that the order in which participants 
+experience the conditions may affect their performance. 
+To prevent such order effects from biasing the comparison of conditions, 
+researchers typically vary the order of conditions across participants---for example, 
+through complete counterbalancing or by using Latin squares. 
+For further details, see the lecture notes 
+\href{https://janhove.github.io/resources.html}{\textit{Quantitative methodology: An introduction}},
+Chapter 7.  
+
+In applied linguistics and psycholinguistics, 
+experiments are often set up in a more complex way than 
+simply including a single between- or within-subjects factor. 
+Participants frequently respond to stimuli, 
+and conditions may vary either within stimuli or between stimuli. 
+Nowadays, data from such more complex designs are usually analysed with 
+so-called mixed-effects models. 
+Nevertheless, it is often possible to restructure datasets 
+from these studies so that they can be analysed with simpler methods. 
+This chapter shows how.
+
+\section{Within-subjects experiments without order effects}
+\citet{VanDenBroek2018} investigated whether foreign-language vocabulary is 
+learnt more effectively when learners practise words with context-rich 
+or with context-poor tasks. 
+Their first experiment involved 45 participants, who were asked to learn 
+104 words in an unfamiliar language (Swahili). 
+During practice, learners had to translate the target words from Swahili into Dutch. 
+For each participant, half of the words were presented with semantically informative contexts 
+(e.g., \textit{I'm going to the bakery. We've run out of \emph{mkate}}, where \emph{mkate} means `bread') 
+and half without such context (e.g., \textit{We've run out of \emph{mkate}.}). 
+Moreover, each word was practised with a rich context by some participants
+and with a poor context by others.
+Thus, the factor \textit{Context} varied both within participants and within words. 
+The order of the practice items was randomised for each participant. 
+A first post-test, covering 50 words (25 per condition), was administered immediately. 
+A week later, a second post-test was given with the remaining 54 words (27 per condition). 
+For each participant, a given word was tested either immediately or after a delay.
+
+In what follows, we will examine the effect of learning condition 
+on the accuracy of translations from Swahili into Dutch. 
+The dataset is available as supplementary material for \citet{VanDenBroek2018} at \url{https://osf.io/eujyn/}, 
+but I have also saved it locally as \texttt{VanDenBroek2018\_Exp1.csv}. 
+We load the file, keeping only the columns we actually need:
+  
+<<message = FALSE, warning = FALSE>>=
+d <- read_csv(here("data", "VanDenBroek2018_Exp1.csv")) |>
+  select(PP, Word, Translation, Condition, RepeatedTest, Test2Swa2NlLenient)
+@
+  
+The column \texttt{PP} contains the participants' identification numbers. 
+The columns \texttt{Word} and \texttt{Translation} contain the Swahili word 
+and its correct Dutch translation. 
+The column \texttt{Condition} indicates 
+in which condition the participant practised the word: 
+with context (\texttt{context}) or without context (\texttt{retrieval}). 
+The column \texttt{RepeatedTest} shows whether the word already appeared 
+in the immediate post-test; 
+here we are only interested in the rows where the value is \texttt{FALSE}. 
+The column \texttt{Test2Swa2NlLenient} indicates whether the word was 
+translated correctly (\texttt{TRUE}) or not (\texttt{FALSE}).
+
+<<echo = FALSE>>=
+d_perPart <- d |>
+  filter(!RepeatedTest) |>
+  group_by(PP, Condition) |>
+  summarise(prop_correct = mean(Test2Swa2NlLenient),
+            .groups = "drop") |>
+  pivot_wider(names_from = "Condition", values_from = "prop_correct")
+@
+
+We cannot simply analyse the data in their current form using a general linear model: 
+because we have multiple observations per participant 
+as well as multiple observations per vocabulary item, 
+the crucial independence assumption would be violated. 
+One way around this problem is to aggregate the data in a suitable way.
+
+\mypar[Participant-level summary]{Exercise}
+Create a tibble \texttt{d\_perPart} that contains, for each participant, 
+the proportion of correctly translated words practised in the \texttt{retrieval} condition 
+and the proportion of correctly translated words practised in the \texttt{context} condition. 
+Only rows with \texttt{RepeatedTest == FALSE} should be included. 
+The tibble should have three columns: \texttt{PP}, \texttt{retrieval}, and \texttt{context}.
+
+For self-checking: for participant 42, you should obtain the following values:
+
+<<>>=
+d_perPart |> filter(PP == 42)
+@
+\parend
+
+The question is to what extent the scores in the \texttt{retrieval} condition 
+differ from those in the \texttt{context} condition. 
+We add two new columns to \texttt{d\_perPart}: 
+one for the difference between the two conditions and one for their average:
+
+<<>>=
+d_perPart <- d_perPart |>
+  mutate(difference = retrieval - context,
+         average = (retrieval + context) / 2)
+@
+
+We can now draw a \term{Tukey mean--difference plot} 
+(also known as a \term{Bland--Altman plot} in medical circles). 
+This shows, for each participant, the difference between the two conditions 
+in relation to their average performance across conditions. 
+In Figure \ref{fig:tukey_md}, 
+a trend line has also been added to highlight this relationship. 
+On average, participants seem to perform slightly better 
+in the \texttt{retrieval} condition than in the \texttt{context} condition, 
+but quite a few participants actually perform better in the \texttt{context} 
+than in the \texttt{retrieval} condition.
+There doesn't seem to be a systematic relationship between the participants'
+average performance and the difference between their performance in the two
+conditions; this would have shown up as a sloping trend line.
+
+<<echo = FALSE, out.width=".6\\textwidth", cache = TRUE, fig.width = 5, fig.height = 3.5, fig.cap= "Tukey mean--difference plot.\\label{fig:tukey_md}">>=
+ggplot(d_perPart,
+       aes(x = average,
+           y = difference)) +
+  geom_point(shape = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  xlab("(retrieval + context) / 2") +
+  ylab("retrieval - context") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE)
+@
+
+We denote by $X_i$ the result of the $i$-th participant in the \texttt{retrieval} condition,
+by $Y_i$ their result in the \texttt{context} condition,
+and by $D_i := X_i - Y_i$ the difference between the two.
+The null hypothesis states 
+that any observed difference between the \texttt{retrieval} 
+and \texttt{context} conditions is due to chance.
+In the study by \citet{VanDenBroek2018}, 
+the words to be learned were randomly assigned to conditions for each participant.
+Order effects were also neutralised by randomising the sequence of words for each participant.
+Under these circumstances, 
+the null hypothesis implies that for a given participant $i$, 
+observing $D_i$ is just as likely as observing $-D_i$.
+In other words, 
+the vector of differences $\bm D = (D_1, \dots, D_n)$ is \term{sign-symmetric}.
+
+The first test we'll discuss leverages this sign-symmetry: 
+under the null hypothesis of sign-symmetry, 
+positive and negative differences should be equally likely.
+Let $n_+$ be the number of participants 
+who perform better in the \texttt{retrieval} condition 
+than in the \texttt{context} condition, 
+and $n_-$ the number who perform worse.
+Cases where the difference is exactly zero are ignored.
+To avoid floating-point issues, we round the differences first.
+
+<<>>=
+d_perPart$difference <- round(d_perPart$difference, 7)
+n_plus  <- sum(d_perPart$difference > 0)
+n_minus <- sum(d_perPart$difference < 0)
+@
+
+The null hypothesis implies that
+\[
+  n_+ \sim \textrm{Binomial}(n_+ + n_-, 0.5).
+\]
+
+With \texttt{binom.test()}, we can carry out the so-called \term{sign test}.
+In this case, the result ($p = 1$) is trivial because $n_+ = n_-$:
+<<>>=
+binom.test(n_plus, n_plus + n_minus, p = 0.5)
+@
+
+The sign test is a valid test of the null hypothesis, 
+but it ignores the magnitude of the differences.
+It could be the case, for example, 
+that the numbers of positive and negative differences are roughly equal, yet the positive ones tend to be larger.
+A second way of testing the null hypothesis of sign symmetry is 
+therefore to compute the mean (or the sum) of the observed differences (about 1.5 percentage points in this case)
+and then ask how often such a mean (or sum) would arise 
+if the signs of the differences were randomly flipped.
+
+We can approximate the distribution of the mean of the differences 
+under the null hypothesis of sign symmetry by simulation.
+In the code below, \texttt{b} is a random sign vector, i.e., a vector of $n$ independent entries drawn from ${-1, 1}$, with each value equally likely:
+
+<<>>=
+mean_diffs_H0 <- function(d, m) {
+  n <- length(d)
+  distr <- replicate(m, {
+    b <- sample(c(-1, 1), n, replace = TRUE)
+    mean(b * d)
+  })
+  distr
+}
+
+m <- 19999
+mean_diffs_H0_distr <- mean_diffs_H0(d_perPart$difference, m)
+@
+
+As usual, we can then compute the one-sided and two-sided $p$-values:
+<<>>=
+l <- sum(mean_diffs_H0_distr <= mean(d_perPart$difference))
+r <- sum(mean_diffs_H0_distr >= mean(d_perPart$difference))
+p_l <- (l + 1) / (m + 1)
+p_r <- (r + 1) / (m + 1)
+(p <- 2 * min(p_l, p_r))
+@
+That is, the observed mean difference of 1.5 percentage points
+isn't significant ($p = 0.36$).
+
+\citet{Duembgen2016} refers to this procedure as the \term{sign-$t$ test}.
+Like randomisation and permutation tests, 
+it was historically too computationally intensive to be practical.
+A widely used approximation is the \term{paired-samples $t$-test}.
+Here we compute
+\[
+  T = \frac{\overline{D}}{s(\bm D) / \sqrt{n}},
+\]
+where $\overline{D}$ is the mean of the differences, 
+$s(\bm D)$ their standard deviation, 
+and $n$ the number of differences.
+If we assume not only sign symmetry 
+but also that the differences are normally distributed, then
+\[
+  T \sim t_{n-1}.
+\]
+From this $t$-distribution we can calculate a $p$-value.
+If the differences are not normally distributed, 
+the test can still be used as an approximation:
+<<>>=
+n <- length(d_perPart$difference)
+mean_diff <- mean(d_perPart$difference)
+sd_diff <- sd(d_perPart$difference)
+(t_stat <- mean_diff / (sd_diff / sqrt(length(d_perPart$difference))))
+p_l <- pt(t_stat, df = n - 1)
+p_r <- 1 - pt(t_stat, df = n - 1)
+2 * min(p_l, p_r)
+@
+That is, $p = 0.36$.
+
+Of course, this is more conveniently done with the \texttt{t.test()} function:
+<<>>=
+t.test(d_perPart$difference)
+# alternatively
+# t.test(d_perPart$retrieval, d_perPart$context, paired = TRUE)
+@
+
+The \texttt{t.test()} function also outputs a confidence interval for
+the difference between the conditions.
+This confidence interval can be double-checked by bootstrapping the 
+difference scores.
+
+Both the sign-$t$ test and the paired-samples $t$-test 
+share a potential weakness: 
+outliers can exert disproportionate influence on the result.
+One way to reduce this sensitivity is to work 
+with the ranks of the differences rather than their raw values.
+The procedure is as follows:
+\begin{enumerate}
+  \item Remove any differences where $D_i = 0$.
+  \item For the remaining differences, 
+  compute the ranks of their absolute values. 
+  Denote these ranks by $\widetilde{R}_i$.
+  \item Assign the sign of each difference to its rank:
+  \[
+    R_i :=
+    \begin{cases}
+      \widetilde{R}_i,  & \textrm{if $D_i > 0$,} \\
+      -\widetilde{R}_i, & \textrm{if $D_i < 0$}.
+    \end{cases}
+  \]
+  \item Compute the sum of the signed ranks $R_i$.
+\end{enumerate}
+
+In R:
+
+<<>>=
+signed_rank_sum <- function(d) {
+  d <- d[d != 0]
+  signed_ranks <- sign(d) * rank(abs(d))
+  sum(signed_ranks)
+}
+signed_rank_sum(d_perPart$difference)
+@
+
+We then compare this statistic with the distribution 
+it would have under the null hypothesis of sign symmetry.
+The logic and procedure are the same as for the sign-$t$ test, 
+except that we now work with the sum of signed ranks:
+
+<<>>=
+sum_signed_ranks_H0 <- function(d, m) {
+  n <- length(d)
+  distr <- replicate(m, {
+    b <- sample(c(-1, 1), n, replace = TRUE)
+    signed_rank_sum(b * d)
+  })
+  distr
+}
+
+m <- 19999
+sum_signed_ranks_H0_distr <- sum_signed_ranks_H0(d_perPart$difference, m)
+
+l <- sum(sum_signed_ranks_H0_distr <= signed_rank_sum(d_perPart$difference))
+r <- sum(sum_signed_ranks_H0_distr >= signed_rank_sum(d_perPart$difference))
+p_l <- (l + 1) / (m + 1)
+p_r <- (r + 1) / (m + 1)
+(p <- 2 * min(p_l, p_r))
+@
+
+That is, $p = 0.58$. 
+
+This procedure corresponds to the \term{Wilcoxon signed-rank test}, 
+which is implemented in R as \texttt{wilcox.test()}.
+This function often relies on an approximation, though---for example, 
+when sample sizes are large, when some differences equal zero, 
+or when several of the absolute ranks $\widetilde{R}_i$ are tied:
+<<>>=
+wilcox.test(d_perPart$difference)
+# or (with a slightly different result due rounding): 
+# wilcox.test(d_perPart$retrieval, d_perPart$context, paired = TRUE)
+@
+
+In the output, 
+the test statistic \texttt{V} does not represent the sum of all $R_i$, 
+but rather the larger of the sum of the positive $R_i$ or the sum of the negative $R_i$.
+However, this statistic is directly related to the overall sum of all signed ranks:
+<<>>=
+n_not0 <- length(d_perPart$difference[d_perPart$difference != 0])
+2 * 410 - n_not0 * (n_not0 + 1) / 2
+@
+
+\mypar{Exercise}
+The file \texttt{correspondencerules.csv} 
+contains data from the study by \citet{Vanhove2016}. 
+Eighty native German speakers read Dutch words that had German cognates. 
+Participants were randomly assigned to one of two learning conditions: 
+about half received some Dutch words containing the digraph \textit{oe}, 
+which corresponds to the German \textit{u} 
+(e.g., \textit{proesten}--\textit{prusten} `to snort'), 
+while the other half received some Dutch words containing the digraph \textit{ij}, 
+corresponding to the German \textit{ei} (e.g., \textit{twijfel}--\textit{Zweifel} `doubt'). 
+These learning conditions are recorded 
+in the dataset under the column \texttt{LearningCondition} as \texttt{oe-u} or \texttt{ij-ei}.
+
+Afterwards, all participants were tested on new Dutch words, 
+including items with \textit{oe} and items with \textit{ij}. 
+The research question was whether prior experience with a digraph 
+(either \textit{oe} or \textit{ij}) helps participants decode new words 
+containing that digraph. 
+Thus, although participants were only assigned to one learning condition, 
+they were tested in both conditions. 
+This makes it a within-subjects experiment.
+
+\begin{enumerate}
+\item Read the dataset into R.
+
+\item Keep only the rows where \texttt{Category} 
+is either \texttt{oe cognate} or \texttt{ij cognate} 
+and \texttt{Block != "Training"}. 
+You should end up with 3360 rows. 
+Name the resulting dataset \texttt{correspondences}.
+
+\item For each participant (\texttt{Subject}), 
+calculate the proportion of trials in which they correctly decoded the digraph 
+(\texttt{CorrectVowel == "yes"}), 
+separately for the two relevant word categories (\texttt{Category}).
+
+\item Compute, for each participant, 
+the difference between the proportion of correct decodings for 
+the learned digraph and the proportion for the new digraph. 
+A positive difference indicates that participants performed better on the already-learned digraph.
+
+Hint: Use \texttt{LearningCondition} as a grouping factor in the previous step.
+Then convert the resulting summary to a wide format and calculate differences using \texttt{ifelse()}.
+
+\item Create and interpret a Tukey mean--difference plot.
+
+\item Perform an appropriate significance test and draw a brief conclusion (1--3 sentences).
+\end{enumerate}
+
+
+<<eval = TRUE, message = FALSE, warning = FALSE, echo = FALSE>>=
+correspondences <- read_csv(here("data", "correspondencerules.csv")) |> 
+  filter(Block != "Training") |> 
+  filter(Category %in% c("oe cognate", "ij cognate"))
+@
+
+\mypar[Same data, different perspective]{Remark}
+We have so far looked at the data from \citet{VanDenBroek2018} and 
+\citet{Vanhove2016} from the perspective of the participants.
+However, in both studies it is also possible to view the data 
+from the perspective of the \emph{stimuli}.
+In the study by \citet{VanDenBroek2018}, 
+all words were learnt in both the \texttt{retrieval} 
+and \texttt{context} conditions, 
+so we can also summarise and visualise the data as shown 
+in Figure \ref{fig:vdbroek_items}. 
+Rather than subjecting the participant-level differences between conditions to a significance test, 
+we could instead analyse the differences between conditions at the level of the words.
+
+<<fig.width = 5, fig.height = 4, fig.cap = "Another Tukey mean--difference plot of the \\citet{VanDenBroek2018} data. This time, the data were aggregated by vocabulary item rather than by participant.\\label{fig:vdbroek_items}">>=
+d_items <- d |>
+  filter(!RepeatedTest) |>
+  group_by(Word, Translation, Condition) |>
+  summarise(prop_correct = mean(Test2Swa2NlLenient),
+            .groups = "drop") |> 
+  mutate(Item = paste0(Word, " (", Translation, ")")) |> 
+  pivot_wider(names_from = "Condition", values_from = "prop_correct") |> 
+  mutate(Difference = retrieval - context)
+
+ggplot(d_items,
+       aes(x = (context + retrieval) / 2,
+           y = Difference)) +
+  geom_point(shape = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, formula = y ~ x) +
+  xlab("(context + retrieval) / 2") +
+  ylab("retrieval - context")
+@
+
+One potential advantage of a stimulus-level analysis is 
+that the labels of the stimuli often convey more information 
+than the typically anonymised participant IDs. 
+Especially when the number of stimuli is still manageable, 
+graphical representations like Figure \ref{fig:vanhove2016_items} are useful. 
+This figure shows, on the one hand, that there is a fairly consistent difference 
+between conditions within each category, and on the other hand, 
+that some words were easy for everyone (\textit{schrijven} `to write'), 
+while others were difficult for all participants (\textit{schijf} `slice',
+\textit{schoen} `shoe').
+
+
+<<fig.width = 4, fig.height = 6, fig.cap = "Proportion of correctly decodings per word in \\citet{Vanhove2016}. The words are ordered by category and, within their category, by the average proportion of successful decodings.\\label{fig:vanhove2016_items}">>=
+# correspondences is the dataset containg the Vanhove (2016) data
+correspondences_items <- correspondences |> 
+  group_by(Item, Category, LearningCondition) |> 
+  summarise(prop_correct = mean(CorrectVowel == "yes"),
+            .groups = "drop")
+ 
+ggplot(correspondences_items,
+       aes(x = prop_correct,
+           y = reorder(Item, prop_correct),
+           shape = LearningCondition)) +
+  geom_point() +
+  scale_shape_manual(values = c(1, 3),
+                     name = "Learning condition") +
+  facet_grid(rows = vars(Category),
+             scales = "free_y") +
+  xlab("Proportion of successful decodings") +
+  ylab(element_blank()) +
+  theme(legend.position = "bottom")
+@
+
+Which perspective is most informative will likely depend on the specific study. 
+There is certainly no objection to displaying the data graphically from both perspectives.
+What you should \emph{not} do, however, is run multiple significance tests 
+on the same data and then report only the one yielding the lowest $p$-value.
+\parend
+
+\mypar{Exercise}
+  Consider a pedagogical experiment along the following lines.
+  We want to investigate the interplay between two factors $A$ and $B$
+  on pupils' performance.
+  To that end, we recruit twelve classes with an average of twenty pupils per class.
+  Factor $A$ can only be manipulated practically between classes, not within
+  classes. (Factor $A$ may, for instance, be related to something the teachers do.)
+  Hence, six classes are randomly assigned in their entirety to condition $A_1$, 
+  and the remaining six classes are assigned in their entirety to condition $A_2$.
+  Factor $B$, by contrast, is easily manipulated within classes.
+  Hence, within each class, we randomly assign half of the pupils to
+  condition $B_1$ and half to condition $B_2$---that is, the assignment of
+  factor $B$ is blocked on class.
+  Each pupils, then, is assigned to one $A$ condition and one $B$ condition.
+  
+  The resulting dataset contains 360 entries---one for each pupil in the study.
+  The research questions are as follows:
+  \begin{enumerate}
+    \item Averaged over the two levels of factor $A$,
+          do pupils assigned to condition $B_1$ perform better than those
+          assigned to condition $B_2$?
+    \item Does the difference in performance between conditions $B_1$ 
+          and $B_2$ depend on whether the pupils were assigned to 
+          condition $A_1$ or $A_2$?
+  \end{enumerate}
+  
+  \begin{enumerate}
+    \item Sketch a plot that would allow you to compare the pupils' performance
+          according to the conditions they were assigned to.
+          Explain how you could glean the answers to the two research questions
+          from the plot.
+          
+    \item You shouldn't analyse these data directly in a general linear model.
+          Explain why.
+          
+    \item Suggest a work-around that would allow you to use a general linear model
+          to analyse these data.
+          Explain how you can glean the answers to the two research questions
+          from the model output.
+          
+    \item How could you analyse if, averaged over the two levels of factor $B$,
+          there's a difference in performance between condition $A_1$ and 
+          condition $A_2$?\parend
+  \end{enumerate}
+
+\mypar[\textsc{rm-anova} and mixed models]{Remark}
+In the two examples in this chapter, only two conditions are compared. 
+For within-subjects studies with more than two conditions, 
+the standard approach in the past was usually a 
+repeated-measures \textsc{anova}.
+Today, studies with multiple observations per participant or per stimulus 
+are often analysed using so-called mixed-effects models. 
+In fact, both \citet{VanDenBroek2018} and \citet{Vanhove2016} analysed their 
+data with mixed-effects logistic models. 
+However, the technical requirements for such models are considerable; 
+the simpler alternatives discussed in this chapter are likely more accessible.
+
+Regardless of which analysis method you choose, 
+it is worth investing time and thought into graphical displays
+so that readers who are not familiar with your analysis approach 
+can still understand your research report.
+\parend
+
+\section{AB/BA cross-over experiments}
+  Consider a within-subjects experiment with two conditions, creatively labelled $A$ and $B$, 
+  in which participants are randomly assigned to the two possible orders $AB$ and $BA$.\footnote{This section is adapted from \href{https://janhove.github.io/resources.html}{\textit{Quantitative methodology: An introduction}},
+Chapter 7.}
+  This design is called a \term{AB/BA cross-over design}.
+  We will consider condition $A$ to be the intervention (or treatment) condition
+  and $B$ the control condition, but nothing hinges on these labels.
+  Let's break down the systematic factors that contribute 
+  to the first and second measurements in both orders, 
+  see Table \ref{tab:analysiswithin}.
+  \begin{itemize}
+  \item We assume that there is some baseline $\beta$ common to all measurements.
+        This common baseline is of no further interest.
+  
+  \item There may be treatment effect $\tau$ that contributes to the measurements
+        in condition $A$ (i.e., the first measurement for order $AB$ and the second
+        for order $BA$), but not to those in condition $B$.\footnote{If there is a treatment effect $\tau'$
+        that contributes to the measurements in condition $B$, this is equivalent to there being
+        a treatment effect $\tau = -\tau'$ that contributes to the measurements in condition $A$.}
+        
+  \item There may be an order effect $\omega$ that contributes to the second
+        measurements but not to the first measurements.\footnote{Similarly, if an order effect $\omega'$
+        contributes to the first measurements instead, write $\omega = -\omega'$.}
+        
+  \item There may be a carryover effect $\kappa$ that affects the measurements
+        in condition $B$ but only if $B$ follows $A$.\footnote{Similarly, if a carryover $\kappa'$ affects
+        $A$ when following $B$, write $\kappa = -\kappa'$.}
+\end{itemize}
+
+\begin{table}
+  \centering
+  \caption{Systematic factors contributing to the measurements in a within-subjects experiment with two conditions. 
+  The meaning of the Greek symbols is explained in the running text.}
+  \label{tab:analysiswithin}
+  \begin{tabular}{ccc}
+    \toprule 
+    Order & First measurement & Second measurement \\
+    \midrule
+    AB    & $\beta + \tau$    & $\beta + \omega + \kappa$ \\
+    BA    & $\beta$           & $\beta + \tau + \omega$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+In any analysis of these data, 
+we need to assume that there are no carryover effects, that is, $\kappa = 0$.
+If $\kappa \neq 0$, a within-subjects design was the wrong choice.
+Under the assumption that $\kappa = 0$, we may estimate the value of $\tau$ by first computing,
+for each participant, the period difference, that is, 
+the difference between their first and their second measurement.
+For the participants in the $AB$ order, and ignoring any non-systematic effects, we obtain
+\[
+  d_{AB} = (\beta + \tau) - (\beta + \omega + \kappa) = \tau - \omega - \kappa = \tau - \omega,
+\]
+since $\kappa = 0$ by assumption.
+For the participants in the $BA$ order, we similarly obtain
+\[
+  d_{BA} = \beta - (\beta + \tau + \omega) = - \tau - \omega.
+\]
+Observe that
+\[
+  \frac{d_{AB} - d_{BA}}{2} = \frac{(\tau - \omega) - (- \tau - \omega)}{2} = \tau.
+\]
+The consequence of this is that, under the assumption of no carryover effects,
+the treatment effect $\tau$ can be estimated as half the mean difference in the period
+differences between the two orders.
+A randomisation test or some analytical approximation thereof can be used 
+to obtain a $p$-value for the null hypothesis that $\tau = 0$,
+and the usual techniques (general linear model, bootstrapping) can be used
+to construct a confidence interval for $\tau$.

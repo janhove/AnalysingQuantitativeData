@@ -1,0 +1,755 @@
+<<echo = FALSE>>=
+set.seed(1234)
+@
+
+\chapter{Analysis of variance}\label{ch:anova}
+With a two-sample $t$-test we can compare two groups.  
+If instead we want use significance tests 
+to compare more than two groups with respect to an outcome,
+it might seem natural to run multiple $t$-tests 
+(or an alternative such as randomisation tests).
+For instance, if we wanted to compare three groups, 
+we could first test groups A and B,
+then A and C, and finally B and C.  
+The problem with this approach is that the probability of finding at least one
+significant difference when the null hypothesis is in fact true 
+is greater than $\alpha$.
+The simulations below demonstrate this problem, 
+followed by some possible solutions.
+
+We begin by generating data for which we know the null hypothesis literally holds.
+Here we assume random sampling, but even if we assumed random assignment instead,
+the problem and the solution would remain unchanged.  
+The following command creates a dataset (a tibble) named \texttt{d}.
+It contains 60 observations of two variables: \texttt{group}
+(three levels with 20 observations each) and \texttt{score}.  
+The latter variable was generated from a normal distribution 
+whose properties do not depend on \texttt{group}.  
+The null hypothesis therefore holds in these simulated data.
+Figure \ref{fig:anova_zufallsdaten} displays the data.
+
+<<>>=
+d <- tibble(
+  group = rep(c("A", "B", "C"), times = 20),
+  score = rnorm(n = 3*20, mean = 10, sd = 3)
+)
+@
+
+<<echo = FALSE, out.width=".6\\textwidth", cache = TRUE, fig.width = .8*6, fig.height = .8*2, fig.cap= "Three random samples with 20 observations each are drawn from the same normal distribution. Your graph will look a bit different to this one.\\label{fig:anova_zufallsdaten}">>=
+ggplot(d,
+       aes(x = group,
+           y = score)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(shape = 1,
+             position = position_jitter(width = 0.2, height = 0)) +
+  xlab("Group") +
+  ylab("Score")
+@
+
+We could now split this dataset three times:  
+Once keeping only the data from groups A and B, 
+once keeping only groups A and C, 
+and once keeping only groups B and C.  
+Each time, we would then perform a Student's $t$-test.  
+
+Your output will look different, of course, 
+since the data were generated randomly.  
+As for the R code, note the use of \texttt{\%in\%} 
+and the placeholder \texttt{\_}.  
+The latter passes the tibble created 
+before the preceding \texttt{|>} to a specific parameter 
+in the next function 
+(here the \texttt{data} parameter of \texttt{t.test()}).
+
+<<>>=
+# A vs. B
+d |>
+  filter(group %in% c("A", "B")) |>
+  t.test(score ~ group, data = _, var.equal = TRUE)
+
+# A vs. C
+d |>
+  filter(group %in% c("A", "C")) |>
+  t.test(score ~ group, data = _, var.equal = TRUE)
+
+# B vs. C
+d |>
+  filter(group %in% c("B", "C")) |>
+  t.test(score ~ group, data = _, var.equal = TRUE)
+@
+Even though the null hypothesis literally holds true in this simulation,
+we would reject it if we follow the logic of significance testing:
+for the comparison between groups A and B,
+we observe a $p$-value smaller than $\alpha = 0.05$ ($p = 0.045$). 
+
+It is, of course, expected that we sometimes reject null hypotheses 
+that are actually true---this is not the problem here. 
+The real issue is that this type I error rate, 
+which is supposed to be at most $\alpha = 0.05$, 
+is actually substantially higher.
+
+We can illustrate this with a simulation. 
+The following commands run the same scenario as above---three groups 
+with 20 observations each from the same normal distribution, 
+and three $t$-tests---20,000 times. 
+Each time, the $p$-values of the individual $t$-tests are stored. 
+At the end, the smallest of the three $p$-values is calculated.
+<<>>=
+n_runs <- 20000
+pval_ab <- vector(length = n_runs)
+pval_ac <- vector(length = n_runs)
+pval_bc <- vector(length = n_runs)
+
+for (i in 1:n_runs) {
+  sim_df <- tibble(
+    group = rep(c("A", "B", "C"), times = 20),
+    score = rnorm(n = 3*20, mean = 10, sd = 3)
+  )
+
+  pval_ab[i] <- t.test(score ~ group, data = sim_df |> 
+                         subset(group %in% c("A", "B")))$p.value
+
+  pval_ac[i] <- t.test(score ~ group, data = sim_df |> 
+                         subset(group %in% c("A", "C")))$p.value
+  
+  pval_bc[i] <- t.test(score ~ group, data = sim_df |> 
+                         subset(group %in% c("B", "C")))$p.value
+}
+
+# smallest of these 3 p values
+min_pval <- pmin(pval_ab, pval_ac, pval_bc)
+@
+
+If the null hypothesis holds, 
+then for any $\alpha \in (0,1)$ at most $100\alpha$\% of $p$-values 
+should fall below $\alpha$ (Definition \ref{def:pvalue}). 
+If we plot histograms of the $p$-values from the individual $t$-tests, 
+we see that this is indeed the case: 
+the $p$-values are---for this type of data and this test---uniformly distributed on $(0,1)$. 
+Any deviations from perfect uniformity that we observe are due to randomness; 
+increasing the number of simulations will reduce these deviations.
+
+However, if we plot the distribution of the smallest of the three $p$-values 
+(\texttt{min\_pval}), 
+we notice that these are \emph{not} uniformly distributed; 
+see Figure \vref{fig:anova_pvalues}.
+If we were to base our inferences about 
+whether the three groups differ on the smallest of the three $p$-values, 
+we would reject the null hypothesis not in at most $\alpha = 5\%$ of cases, 
+but in about 12\% of cases when comparing three groups:
+<<>>=
+mean(min_pval <= 0.05)
+@
+
+This finding is true in general. 
+When multiple significance tests are used to examine a single null hypothesis, 
+the probability that at least one of them 
+produces a significant $p$-value increases---even if 
+the null hypothesis is true and each test is correctly performed;
+we've already seen this in Exercise \vref{ex:multipletesting}.
+The probability of observing at least one significant $p$-value 
+under the null hypothesis is called the \term{familywise Type-I error rate}; 
+see Figure \vref{fig:familywise}.
+
+In situations like the example above, 
+it is clear that a null hypothesis has been tested multiple times. 
+Moreover, in such cases the problem can usually be addressed relatively easily. 
+In other situations, such \term{multiple comparisons} are less obvious or 
+harder to account for when interpreting results---for instance, 
+if only a selection of the conducted significance tests 
+is reported in a research paper. 
+See Chapter \ref{ch:QRP} for further discussion.
+
+<<echo = FALSE, warning = FALSE, message = FALSE, out.width="\\textwidth", fig.width = 6*1.4, fig.height = 1.5*1.4, fig.pos = "tp", fig.cap = "If the null hypothesis is true, we should observe $p \\leq \\alpha$ with probability at most $\\alpha$ for all $\\alpha \\in (0,1)$. For the $p$-values for the individual $t$-tests, this is the case (blue histograms): the $p$-values follow a uniform distribution on $(0,1)$. But the distribution of the smallest of the three $p$-values is right-skewed (red histogram): the probability that at least one of the three $p$-values is no larger than $\\alpha$ can be considerably larger than $\\alpha$.\\label{fig:anova_pvalues}">>=
+cols <- RColorBrewer::brewer.pal(3, "Set1")
+par(mfrow = c(1, 4), las = 2, mar = c(4, 4, 3, 1) + 0.1)
+hist(pval_ab, main = "Comparison AB", xlab = "p",
+     col = cols[2], freq = TRUE, ylab = "Number",
+     breaks = seq(0, 1, 0.05))
+hist(pval_ac, main = "Comparison AC", xlab = "p",
+     col = cols[2], freq = TRUE, ylab = "Number",
+     breaks = seq(0, 1, 0.05))
+hist(pval_bc, main = "Comparison BC", xlab = "p",
+     col = cols[2], freq = TRUE, ylab = "Number",
+     breaks = seq(0, 1, 0.05))
+hist(min_pval, main = "Smallest of\n3 comparisons", xlab = "min p",
+     col = cols[1], freq = TRUE, ylab = "Anzahl",
+     breaks = seq(0, 1, 0.05))
+par(op)
+@
+
+<<echo = FALSE, out.width = ".7\\textwidth", fig.width = 6, fig.height = 3, fig.pos = "tp", fig.cap = "If all null hypotheses are true and several independent significance tests are carried out, the probability of finding at least one significant result increases. This probability is the familywise Type-I error rate. Two tests are independent if the outcome of one test doesn't give you any information as to the outcome of the other.\\label{fig:familywise}">>=
+n_tests <- seq(1, 30, by = 1)
+error_rate <- 1 - 0.95^n_tests
+df_error_rate <- tibble(n_tests, error_rate)
+ggplot(df_error_rate,
+       aes(x = n_tests,
+           y = error_rate)) +
+  geom_point() +
+  geom_line() +
+  xlab("Number of independent tests") +
+  ylim(0, 1) +
+  ylab("Type I error rate") +
+  geom_hline(yintercept = 0.05, linetype = 2) +
+  annotate(geom = "text",
+           x = 15, y = 0.10,
+           label = "Nominal bound on Type I error (α = 0.05)") +
+  annotate(geom = "text",
+           x = 15, y = 0.60, angle = 18,
+           label = "Actual bound on Type I error")
+@
+
+\mypar{Exercise}
+ Let $P_1, P_2, P_3$ be independent random variables, 
+ each uniformly distributed on $(0,1)$. 
+  \begin{enumerate}
+    \item Calculate the probability that at least one of 
+    these random variables takes a value of at most $0.05$.
+    
+    Hint: You've already done the hard part in Exercise \ref{ex:multipletesting}.
+    
+    \item The value you've calculated is greater than the 12\% we obtained above. 
+    This is not because we estimated the latter number using a simulation. 
+    Why, then, do these numbers differ? \parend
+  \end{enumerate}
+
+\section{First solution: Randomisation tests}
+The simplest way to address the multiple comparisons problem is 
+to test the null hypothesis with a single (`omnibus') test rather 
+than multiple separate tests. 
+Most commonly, this is done using analysis of variance (\textsc{anova}) 
+and the $F$-test (see the next section). 
+However, the same goal can also be achieved with a randomisation test, 
+which in my opinion is easier to follow. 
+If you have worked through Exercise \ref{ex:randtest_multiple}, 
+you have already implemented this test. 
+For clarity, we will discuss this approach again here.
+
+The randomisation test assumes the same null hypothesis as in Chapter \ref{ch:logic}: 
+the participants (or whatever was observed) were assigned to the groups at random, 
+and the differences between the group means that we are calculating here 
+are simply the result of this random assignment.
+<<>>=
+d |>
+  group_by(group) |>
+  summarise(group_mean = mean(score))
+@
+
+The crucial question now is: 
+how likely would it be to observe group means that differ this much---or 
+even more---if the null hypothesis were actually true? 
+To answer this question, we first need a single number 
+that summarises how strongly these three means differ. 
+The variance of the group means is a natural choice for this purpose.
+<<>>=
+d |>
+  group_by(group) |>
+  summarise(group_mean = mean(score)) |>
+  select(group_mean) |>
+  var()
+@
+
+The variance of the sample means is therefore 0.797. 
+Your result will differ slightly because the data were generated randomly.
+To generate the distribution of the variances of the sample means under the null hypothesis, 
+we can randomly reassign the observations to the group labels a few thousand times 
+and calculate the variance of the sample means for each permuted dataset. 
+The logic is identical to the permutation tests from the previous chapter; 
+the only difference is that here 
+we consider the variance of the group means rather 
+than the difference between two group means.
+
+<<>>=
+m <- 19999
+var_means_H0 <- replicate(m, {
+  tapply(d$score, sample(d$group), mean) |> var()
+})
+@
+
+<<fig.width = 1.2*3, fig.height = 1.2*2, echo = FALSE, fig.cap = "The distribution of the variances of the group means under rerandomisation.\\label{fig:distributionvaranova}">>=
+df_var_H0 <- tibble(var_means_H0) |> 
+  add_row(var_means_H0 = 0.7974136)
+ggplot(df_var_H0,
+       aes(x = var_means_H0)) +
+  geom_histogram(fill = "grey", col = "black",
+                 binwidth = 0.10) +
+  xlab("Variance of the group means under H0") +
+  ylab("Number") +
+  geom_vline(xintercept = 0.7974136, linetype = 2) +
+  annotate("text", x = 2, y = 1050, 
+           label = "s² ≥ 0.797", angle = 0)
+@
+
+The distribution of these variances (\texttt{var\_means\_H0}) is shown in 
+Figure \ref{fig:distributionvaranova}. 
+We calculate the corresponding $p_r$-value, that is, a right-tailed $p$-value,
+as follows:\footnote{A left-tailed $p$-value is rarely computed in this context, 
+since it corresponds to the alternative hypothesis 
+that the group means differ \emph{less} than expected under the null. 
+One application of such a left-tailed $p$-value is to detect data fabrication \citep{Simonsohn2013}.}
+
+<<>>=
+(sum(var_means_H0 >= 0.7974136) + 1) / (m + 1)
+@
+
+In this case, the $p$-value is therefore $0.131$. 
+This value will vary slightly from one run to another
+since it is based on `only' 20,000 of the nearly 578 quadrillion possible permutations. 
+However, these differences should be minimal.
+
+\section{Second solution: Analysis of variance and $F$-tests}
+Randomisation tests were historically too cumbersome to perform. 
+As in the previous chapter, there are mathematical tricks 
+that allow us to obtain an approximation with much less brute-force computation. 
+These techniques are called \term{analysis of variance} (\textsc{anova}) 
+and the \term{$F$-test}. 
+Since research articles are often full of \textsc{anova}s and $F$-tests, 
+we'll take a closer look at these techniques here.
+
+\subsection{Partitioning the variance}
+The first step in an \textsc{anova} is to partition the variance in the outcome 
+into two parts: variance \emph{between} groups and variance \emph{within} groups.
+To do this, we first calculate the \term{total sum of squares}, that is,
+the sum of the squared differences between the observations and their overall mean.
+Your numbers will differ, of course, because the data were randomly generated.
+<<>>=
+(sq.total <- sum((d$score - mean(d$score))^2))
+@
+
+To calculate the variance within the groups, 
+known as the \term{residual sum of squares}, 
+we can subtract each observation's group mean. 
+Alternatively, we can model the data using a general linear model 
+and compute the sum of squares of the residuals:
+<<>>=
+d.lm <- lm(score ~ group, data = d)
+(sq.rest <- sum((resid(d.lm))^2))
+@
+
+The sum of squares explained by the model is then:
+<<>>=
+(sq.group <- sq.total - sq.rest)
+@
+
+In addition to the intercept, 
+two parameters were needed to model the effect of the group factor. 
+You can check this by inspecting the model \texttt{d.lm}. 
+On average, each additional parameter accounts for a sum of squares of 15.9:
+<<>>=
+(meanSq.group <- sq.group / 2)
+@
+
+There are 60 independent data points, 
+and the model already estimates three parameters 
+(intercept + 2 group parameters). 
+In principle, we could still estimate 57 more parameters. 
+This wouldn't make sense in practice, but it would be possible. 
+We cannot estimate more parameters than there are observations: 
+in a general linear model, 
+the number of estimable parameters is limited by the number of data points. 
+On average, these 57 parameters would account for a sum of squares of 7.54:
+<<>>=
+(meanSq.rest <- sq.rest / (60 - 2 - 1))
+@
+
+The key insight is that, if the null hypothesis holds, 
+the two group parameters should, on average, 
+explain no more variance than the remaining 57 unmodelled parameters. 
+In other words: 
+if $H_0$ is true, \texttt{meanSq.group} and \texttt{meanSq.rest} 
+should be roughly equal. 
+Another way to express this is 
+that the ratio of \texttt{meanSq.group} to \texttt{meanSq.rest} 
+should be 1 under the null hypothesis. 
+This ratio is called $F$. 
+In our case, $F$ equals 2.12:
+<<>>=
+(f.value <- meanSq.group / meanSq.rest)
+@
+
+\subsection{The $F$-test}
+Because of sampling error, 
+$F$ will never be exactly 1. 
+The next question, therefore, is: 
+how unusual would an $F$ value of 2.12 or larger be if the null hypothesis were true?
+
+If the errors are i.i.d.\ normally distributed, 
+then this $F$ value follows a specific distribution, 
+namely an \term{$F$ distribution}.
+
+\mypar[$F$ distribution]{Definition}
+Let $X_1, \dots, X_k, X_{k+1}, \dots, X_{k+\ell} \sim \mathcal{N}(0,1)$ be independent random variables. Then the distribution of
+  \[
+    \frac{\frac{1}{k}\sum_{i=1}^{k} X_i^2}{\frac{1}{\ell}\sum_{i = k+1}^{k + \ell}X_i^2}
+  \]
+  is called the $F$ distribution with $k$ and $\ell$ degrees of freedom; 
+  it is denoted $F_{k,\ell}$ or $F(k,\ell)$.
+\parend
+
+$F$ distributions have two parameters 
+(`degrees of freedom'): 
+the number of parameters used to model the effect (here: 2), 
+and the number of observations not yet used up (here: 57). 
+Figure \ref{fig:distf} shows an $F(2, 57)$ distribution.
+<<echo = FALSE, fig.width = 1.4*3, fig.height = 1.4*2, fig.cap = "The $F$ distribution with 2 and 57 degrees of freedom. The dashed line shows the $F$ value we obtained. The $p$ value corresponding to this $F$ value is the aread of the patch that is coloured in.\\label{fig:distf}">>=
+ggplot(data.frame(x = c(0, 5)),
+       aes(x)) +
+  stat_function(fun = function(x) df(x, 2, 57)) +
+  xlab("F value") +
+  ylab("Density") +
+  ggtitle("F(2, 57) distribution") +
+  geom_vline(xintercept = f.value, linetype = 2) +
+  stat_function(fun = function(x) df(x, 2, 57),
+                xlim = c(f.value, 5), geom = "area",
+                fill = "steelblue")
+@
+
+The area under the curve to the right of the dashed line represents the probability of observing an $F$ value of 2.12 or higher if the null hypothesis is true---assuming the errors are normally distributed. It can be calculated as follows:
+
+<<>>=
+pf(f.value, df = 2, df2 = 60 - 2 - 1, lower.tail = FALSE)
+@
+
+This is almost the same result as obtained from the randomisation test.
+
+\subsection{Analysis of variance in R}
+Fortunately, you don't need to carry out all these steps by hand. 
+You can just model the data in a general linear model (as we did above) 
+and then apply the \texttt{anova()} function to the model:
+<<>>=
+anova(d.lm)
+@
+
+You would report this result as follows: $F(2, 57) = 2.12$, $p = 0.13$.
+
+\mypar[$t$- vs $F$-test]{Exercise}
+  Revisit the money priming data analysed in Chapter \ref{ch:groupdifferences}.
+  Test the group difference using a standard two-sample $t$-test 
+  and also using an \textsc{anova}.
+  Square the $t$ value and compare it to the $F$ value.
+\parend
+
+\section{Analysis of variance with multiple predictors}
+Analysis of variance can also be applied 
+when there are multiple predictors in a model.
+The data from the Dragan/Luca study by \citet{Berthele2011b} 
+(see Chapter \ref{ch:interactions}) 
+can be analysed in an \textsc{anova} as follows:
+
+<<message = FALSE>>=
+berthele <- read_csv(here("data", "berthele2012.csv"))
+berthele.lm1 <- lm(Potential ~ CS * Name, data = berthele)
+anova(berthele.lm1)
+@
+
+Each row in the table shows how many parameters 
+were needed to model a particular predictor (\texttt{Df}) 
+and the associated sum of squares, as well as its $F$- and $p$-values.
+However, be careful: 
+if we change the order of the predictors, a few numbers will change:
+
+<<>>=
+berthele.lm2 <- lm(Potential ~ Name * CS, data = berthele)
+anova(berthele.lm2)
+@
+
+This happens because \texttt{Sum Sq} is calculated sequentially. 
+If we were to perform the \textsc{anova} manually, we would:
+\begin{enumerate}
+\item calculate the total sum of squares;
+<<>>=
+(ss.total <- sum((berthele$Potential - mean(berthele$Potential))^2))
+@
+\item remove the effect of the first variable 
+and calculate the sum of squares it accounts for;
+<<>>=
+cs.lm <- lm(Potential ~ CS, data = berthele)
+(ss.cs <- ss.total - sum(resid(cs.lm)^2))
+@
+\item remove the effect of the second variable 
+and calculate the sum of squares it accounts for;
+<<>>=
+name.lm <- lm(Potential ~ CS + Name, data = berthele)
+(ss.name <- ss.total - ss.cs - sum(resid(name.lm)^2))
+@
+\item remove the interaction effect 
+and calculate its sum of squares;
+<<>>=
+interaction.lm <- lm(Potential ~ CS + Name + CS:Name, data = berthele)
+(ss.interaction <- ss.total - ss.cs - ss.name -
+sum(resid(interaction.lm)^2))
+@
+\item calculate the remaining sum of squares;
+<<>>=
+(ss.rest <- ss.total - ss.cs - ss.name - ss.interaction)
+@
+\item compute the $F$-values for all effects.
+<<>>=
+ss.cs / (ss.rest/151)
+ss.name / (ss.rest/151)
+ss.interaction / (ss.rest/151)
+@
+\end{enumerate}
+
+Depending on whether we enter \texttt{CS} or \texttt{Name} 
+as the first variable in the model, 
+the sum of squares attributed to this variable changes. 
+This is because \texttt{CS} and \texttt{Name} 
+are somewhat correlated in this dataset: 
+there are more data points for Dragan without code-switches than with, 
+and more data points for Luca with code-switches than without:
+
+<<>>=
+xtabs(~ CS + Name, data = berthele)
+@
+
+Part of the variation in the \texttt{Potential} values therefore cannot 
+be unambiguously assigned to one predictor or the other. 
+If \texttt{CS} is added first to the model, 
+all of this ambiguous variation is attributed to \texttt{CS}; 
+if \texttt{Name} is added first, it is attributed to \texttt{Name}. 
+As a result, the sums of squares for these variables change depending 
+on which variable is entered first. 
+However, the result for the last effect (the interaction) remains unchanged.
+
+\mypar[Type-I, Type-II, Type-III sum of squares]{Remark}
+When the sums of squares and the corresponding $F$- and $p$-values 
+are computed sequentially (as above), 
+this is called the \term{Type-I sum of squares}. 
+This method is particularly useful if you are interested in the effect 
+that is entered last in the model but want to account for other variables first.
+
+An alternative approach is somewhat creatively 
+called \term{Type-II sum of squares}. 
+Here, effects are entered into the model in all possible orders 
+(with interactions always added after main effects), 
+and the $F$- or $p$-value for an effect is taken as the value obtained 
+when the effect is entered last. 
+In our example, the results would look as follows:
+\begin{itemize}
+\item \texttt{CS}: We take the values for \texttt{CS} from the 
+\textsc{anova} table of model \texttt{berthele.lm2}, 
+because here \texttt{CS} is entered as the last main effect: $F(1, 151) = 1.9$, $p = 0.17$.
+
+\item \texttt{Name}: We take the values for \texttt{Name} from the 
+\textsc{anova} table of model \texttt{berthele.lm1}, 
+because here \texttt{Name} is entered as the last main effect: 
+$F(1, 151) = 0.52$, $p = 0.47$.
+
+\item The interaction is always entered after the main effects, 
+so its result is identical in both models: $F(1, 151) = 11.4$, $p < 0.001$.
+\end{itemize}
+
+These results can be calculated automatically using the \texttt{Anova()} function (with a capital A) from the \texttt{car} package:
+<<>>=
+car::Anova(berthele.lm1)
+@
+
+There is also a \term{Type-III sum of squares} calculation, 
+but this is generally discouraged. 
+Both Type-I and Type-II sums of squares can be useful depending on the situation, 
+and if you are only interested in the interaction, 
+or if each `cell' has the same number of observations, the choice doesn’t matter. 
+However, please do not discard data just to achieve equal cell sizes in order to avoid choosing between these methods!
+\parend
+
+\mypar[Randomisation test]{Exercise}
+Write your own randomisation test and test the null hypothesis 
+that the factors \texttt{CS} and \texttt{Name} 
+only appear to interact due to random assignment.
+\parend
+
+\mypar[Terminology]{Remark} In the research literature, several abbreviations have become standard to distinguish between different types of analysis of variance.
+
+\begin{itemize}
+\item One-way \textsc{anova} is \textsc{anova} with a single predictor. 
+Most often, this is a grouping variable with two or more levels.
+
+\item Two-way \textsc{anova} is \textsc{anova} with two predictors. 
+Frequently, the interaction between the predictors is of interest. 
+If one variable has two levels and the other four, this is often called a 
+\textit{$2 \times 4$ two-way \textsc{anova}}. \textit{Three-way}, \textit{four-way}, etc., \textsc{ANOVA} also exist: you simply add more predictors to the model.
+
+\item \textsc{ancova} stands for \term{analysis of covariance}.
+This is simply an \textsc{anova} in which at least one continuous control variable is included.
+
+\item \textsc{rm-anova} stands for \term{repeated-measures analysis of variance}.
+This approach can be used when, for example, multiple measurements 
+of the same variable are collected per participant. 
+\textsc{rm-anova} is not discussed here, as more flexible tools now exist for handling dependency structures in the data (mixed models).
+
+\item \textsc{manova} stands for \term{multivariate analysis of variance}.
+It is an extension of ANOVA to multiple outcome variables. 
+\citet{Everitt2011} write the following about \textsc{manova} 
+in the preface to their book 
+\textit{An introduction to applied multivariate analysis with R}:
+\begin{quote}
+``But there is an area of multivariate statistics that we have omitted
+from this book, and that is multivariate analysis of variance (\textsc{manova})
+and related techniques (\dots). There are a variety of reasons for this omission. First,
+we are not convinced that \textsc{manova} is now of much more than historical
+interest; researchers may occasionally pay lip service to using
+the technique, but in most cases it really is no more than this.
+They quickly move on to looking at the results for individual variables.
+And \textsc{manova} for repeated measures has been largely superseded by the
+models that we shall describe [in their book].'' (p.~vii-viii) \parend
+\end{quote}
+\end{itemize}
+
+Remark \ref{remark:ttestapprox} also applies to $F$-tests and analysis of variance.
+
+\section{Planned comparisons and post-hoc tests}
+With a one-way analysis of variance, 
+the aim is to answer the question of whether the group means 
+(\emph{any} of the group means) in the population differ from one another, 
+or whether any observed differences are merely due to random assignment. 
+If a small $p$-value is found, one tends to conclude 
+that some of the group means do indeed differ. 
+However, \textsc{anova} itself does not answer the natural follow-up question: 
+which groups actually differ from each other? 
+Is it groups A and B, or rather groups A and C, or B and C?
+
+To answer such questions, researchers 
+often perform significance tests following \textsc{anova}. 
+If these questions arise \emph{after} the data have been collected and 
+were not derived from theory beforehand (exploratory analysis), 
+they are referred to as \term{post-hoc tests}. 
+If the questions existed \emph{prior} to the study (confirmatory analysis), 
+they are called \term{planned comparisons}.
+
+Common procedures for these follow-up tests bear names such as
+`$t$-tests with Bonferroni correction', 
+`$t$-tests with Holm–Bonferroni correction', 
+`Fisher's least significant difference test', 
+`Scheffé test', and so on. 
+The idea behind all of them is to control the increased global risk
+of committing a Type I error due to multiple testing.
+
+However, additional tests are not always necessary or desirable. 
+In my view, you need to consider the theory and hypotheses that underpin the study, 
+and which data patterns would count as evidence for these:
+\begin{itemize}
+\item If the theory predicts that there will be \emph{some} group differences 
+(any differences at all), then a single \textsc{anova} is sufficient. 
+Any interesting differences can be reported descriptively---for example, 
+by graphically illustrating the linear model used for the \textsc{anova}. 
+Such potential differences can then be tested in a new confirmatory study 
+(see \citealp{Bender2001}, p.\ 344). 
+If the \textsc{anova} is not significant, 
+one should refrain from additional tests so as not to inflate the 
+familywise Type I error rate.
+
+\item If the theory predicts a \emph{specific} group difference, 
+or multiple separate theories are being tested 
+that refer to different group means (e.g., A vs B, and C vs D), 
+then \textsc{anova} is not strictly necessary; 
+pairwise comparisons suffice. 
+Any interesting but unpredicted differences should be reported 
+descriptively and left to a new confirmatory study.
+
+\item If the theory predicts that a particular difference \emph{or} 
+another difference will occur, one should consult the methods mentioned above. 
+The \textsc{anova} itself can be skipped, 
+and one can directly run the relevant tests with an appropriate correction.
+
+\item If the theory predicts more complex group differences, for example, 
+`The combined mean of groups A and B is lower than the combined mean of groups B, C, and D', 
+one should read up on methods designed to test such questions. 
+See \citet{Schad2020} for guidance.
+
+\item If the theory predicts that a particular difference 
+\emph{and} another difference will occur, 
+then in my view two pairwise comparisons suffice.
+\end{itemize}
+
+A brief introduction with many references is \citet{Bender2001}. 
+Practical advice can be found in \citet{Ruxton2008}, 
+although it may be difficult to follow without prior experience with such analyses. 
+A relevant blog post on the topic is \href{https://janhove.github.io/posts/2016-04-01-multiple-comparisons-scenarios/}{\textit{On correcting for multiple comparisons: Five scenarios}} (1 April 2016).
+
+\mypar[Be cautious with post-hoc explanations]{Tip}
+
+It is often tempting, after the fact, to interpret certain patterns in the data theoretically. These patterns may, however, be entirely due to chance and may not replicate in a new study.
+
+It is surprisingly easy to convince oneself, \emph{after the fact}, that one had \emph{predicted} a particular pattern. A major reason is that scientific theories and hypotheses are often vague and can correspond to multiple statistical hypotheses. To avoid deceiving oneself---and later the readers---into thinking that one predicted the patterns exactly as they occurred, one can preregister scientific and statistical hypotheses: specifying in advance the expected patterns and how the data will be analysed. For more information on preregistration, see \url{http://datacolada.org/64}
+, \citet{Wagenmakers2012b}, and \citet{Chambers2017}.
+\parend
+
+\section{*$F$-test in the \texttt{summary()} output}\label{sec:ftestsummary}
+We can now finally decipher the last line
+in the \texttt{summary()} output of an \texttt{lm()} model.
+Let us revisit the model \texttt{berthele.lm1}:
+<<>>=
+summary(berthele.lm1)
+@
+
+The $F$-test ($F(3, 151) = 4.8$, $p = 0.003$)
+tests the null hypothesis that all predictors together
+actually explain no variance in the outcome at all.
+We can reconstruct the numbers using the \texttt{anova()} output:
+<<>>=
+anova(berthele.lm1)
+meanSq.total <- (1.755 + 0.364 + 7.965) / 3
+meanSq.rest <- 105.786 / 151
+(f.value <- meanSq.total / meanSq.rest)
+@
+
+The $p$-value can then be calculated using the $F(3, 151)$ distribution:
+<<>>=
+pf(f.value, 3, 151, lower.tail = FALSE)
+@
+
+I've never encountered any situation in which this $F$-test is useful.
+
+\section{Interim summary}
+\begin{itemize}
+ \item The purpose of significance tests is to control the probability
+ that we conclude the null hypothesis is false when in fact it is true.
+
+ \item The null hypothesis is almost invariably that the observed pattern
+ arose purely by chance, either due to random assignment in an experiment
+ or because of random sampling from a population. 
+ When one is interested in group differences, 
+ this usually corresponds to the assumption that no such differences actually exist.
+
+ \item $p$-values typically estimate the probability of observing the
+ given pattern (e.g., a group difference or another parameter estimate)
+ or even more extreme patterns if the null hypothesis were actually true.
+ If this probability is low, 
+ i.e., below a pre-specified $\alpha$ threshold (commonly $\alpha = 0.05$),
+ the observed pattern is considered incompatible with the null hypothesis, 
+ which is then rejected.
+
+ \item Significance tests do not assess whether a difference or parameter is large;
+ they merely test the null hypothesis that the parameter has a specific value (usually 0).
+ Consequently, significance tests cannot be used to determine whether an observed
+ difference should be regarded as large or small.
+
+ \item $p > 0.05$ does \emph{not} imply that the null hypothesis is true;
+       $p \leq 0.05$ does \emph{not} imply that it is false.
+
+ \item Even if the null hypothesis is false, 
+ this does not necessarily mean that your scientific hypothesis is correct:
+ there may be alternative theoretical explanations compatible with the data,
+ or your data collection may be biased in some way.
+
+ \item Randomisation and permutation tests, $t$-tests, and $F$-tests 
+ all serve the same purpose. 
+ $t$-tests are used to test the null hypothesis for parameter estimates
+ (e.g., group differences or regression coefficients);
+ $F$-tests test whether a predictor (often with more than two levels)
+ explains more variation in the data than would be expected by chance.
+
+ \item $t$- and $F$-tests can be derived from the general linear model, 
+ assuming i.i.d.\ normal errors. 
+ They often serve as approximations to randomisation or permutation tests.
+
+ \item There is not always a single `correct' significance test for a given situation.
+ When multiple reasonable tests exist, their results do not necessarily have to agree.
+
+ \item There are significance tests we have not yet encountered.
+ They differ in their computation from $t$- and $F$-tests, 
+ but their goal remains the same:
+ to calculate the probability of observing the actual or an even more 
+ extreme pattern if it were due solely to chance.
+\end{itemize}

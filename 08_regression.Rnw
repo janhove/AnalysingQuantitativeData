@@ -1,0 +1,1706 @@
+\chapter{Adding a predictor}\label{ch:regression}
+Having gained some understanding of how parameters and the uncertainty
+about those parameters can be estimated in the general linear model,
+we are now ready to consider a more interesting flavour of this model.
+What \citet{DeKeyser2010} wanted to find out wasn't so much the mean
+\textsc{gjt} value as the relationship between \textsc{aoa} and \textsc{gjt}.
+In this chapter, we'll discuss two approaches to characterise this relationship.
+
+It's always a good idea to draw a graph first.
+When you're interested in the relationship between two fairly fine-grained
+numeric variables, a \term{scatterplot} is a reasonable choice.
+Since it's impossible for \textsc{gjt} to influence \textsc{aoa}
+but quite likely that \textsc{aoa} influences \textsc{gjt},
+we put the \textsc{aoa} values along the $x$ axis and
+the \textsc{gjt} values along the $y$ axis (Figure \ref{fig:scatterplot}).
+
+<<out.width = "0.6\\textwidth", fig.width = 5, fig.height = 3, fig.cap = "Scatterplot of the \\textsc{aoa}-\\textsc{gjt} relationship.\\label{fig:scatterplot}">>=
+ggplot(data = d,
+       aes(x = AOA,
+           y = GJT)) +
+  geom_point(shape = 1) + # shape = 1 draws empty circles
+  xlab("Age of acquisition (years)") +
+  ylab("Grammaticality judgement score")
+@
+
+The scatterplot reveals a general tendency for the \textsc{gjt} to be lower
+for ever higher \textsc{aoa} values. 
+Moreover, it seems as though this decrease is roughly linear. 
+By way of comparison, Figure \ref{fig:nichtlinear}
+shows four examples of nonlinear relationships. Moreover, the scatterplot
+doesn't reveal any implausible data points that could be due to errors during
+data entry and the like: There are no 207-year-olds or \textsc{gjt} scores
+beyond the permissible range of $[0, 204]$.
+
+<<fig.width = 6, fig.height = 1.4, echo = FALSE, fig.cap = "Examples of nonlinear relationships.\\label{fig:nichtlinear}", out.width="\\textwidth">>=
+par(mar = c(3, 4, 2, 1), mgp=c(2,.7,0), tck = -0.01, las = 1, cex = 0.65, cex.main = 1.1)
+par(mfrow = c(1, 4), cex.main = 0.8)
+par(cex = 0.65)
+x <- seq(from = 0.01, to = 10, length.out = 50)
+y1 <- sin(x) + rnorm(50, sd = 0.4) + 5
+plot(x, y1, axes = FALSE, main = "sinusoid", xlab = "", ylab = "")
+curve(sin(x)+5, add = TRUE)
+
+x2 <- seq(from = 1, to = 100, length.out = 50)
+y2 <- log2(x2) + rnorm(50, sd = 0.5)
+plot(x2, y2, axes = FALSE, main = "logarithmic increase", xlab = "", ylab = "")
+curve(log2(x), add = TRUE)
+
+y3 <- x - ((x-6)*50)^2 + rnorm(50, sd = 14000)
+plot(x, y3, axes = FALSE, main = "parabola", xlab = "", ylab = "")
+curve(x - ((x-6)*50)^2, add = TRUE)
+
+y4 <- pmin(x - rnorm(50, sd = 1.5), 5.5)
+plot(x, y4, axes = FALSE, main = "ceiling effect", xlab = "", ylab = "")
+lines(seq(0, 10, 0.01), pmin(seq(0, 10, 0.01), 5.5))
+@
+
+\mypar[Plot, plot, plot!]{Tip}
+Take out time to learn to draw plots,
+both to learn more about your data and to communicate your findings
+in talks and papers.
+These lecture notes feature some basic examples, 
+but for a better introduction,
+I recommend Kieran Healy's 
+{\it Data visualization: A practical introduction}, 
+which is available for free at \url{https://socviz.co/} \citep{Healy2019}.
+You may also find my twin tutorials 
+\textit{Working with datasets and visualising data in R} useful 
+(\url{https://github.com/janhove/DatasetsAndGraphs}).
+\parend
+
+In what follows, we will address two related questions:
+\begin{enumerate}
+  \item \emph{What} is the relationship between the two variables?
+ In other words, if we know the value of one variable,
+ \emph{how} can we estimate the value of the other?
+ To answer this question, \term{regression analysis} is commonly used.
+
+ \item \emph{How perfect} is the relationship between the \textsc{gjt} and 
+ \textsc{aoa} variables?
+ What exactly `perfect' means in this context will become clear later.
+ To answer this question, \term{correlation analysis} is often used.
+\end{enumerate}
+
+These two questions are often confused with one another, which can lead to
+misunderstandings \citep[see][]{Vanhove2013}. Two examples should make the
+distinction clear.
+
+\mypar[Temperature]{Example}
+ If we know the temperature in degrees Celsius, we can `perfectly' estimate
+ the temperature in degrees Fahrenheit. The correlation is therefore extremely
+ strong (second question).
+ However, this alone does not tell us how to calculate the temperature in
+ degrees Fahrenheit from the temperature in degrees Celsius.
+ A regression analysis would reveal that the following formula is required:
+\begin{equation}\label{eq:fahrenheit}
+ \textrm{degrees Fahrenheit} = 32 + \frac{9}{5} \cdot \textrm{degrees Celsius}.
+\end{equation}
+\parend
+
+\mypar[Height and weight]{Example}
+If we know a person's height, we can estimate their weight much better than if
+we did not know their height. The estimate, however, is not perfect, since
+people of the same height differ in weight.
+The correlation is therefore positive but not as high as in the previous
+example. 
+To know how best to estimate weight on the basis of
+height 
+(e.g.\ $\textrm{weight in kg} = 0.6\textrm{~kg/cm} \cdot \textrm{height in cm} - 35 \textrm{~kg}$
+for women between 145 and 185 cm), we need regression analysis.
+\parend
+
+In my view, the first question is usually (though not always) the more
+informative one. In our case, the aim would be to find an equation like
+Equation \ref{eq:fahrenheit} that links differences in \textsc{gjt} scores to
+differences in \textsc{aoa}.
+Nevertheless, since correlation analyses abound in the research literature,
+the second part of this chapter will be devoted to the second question.
+
+\mypar[Nonlinear relationships]{Remark}
+Correlation and regression analysis can be useful for investigating 
+linear relationships.
+If the relationship between the variables is not \emph{approximately} straight, 
+then the calculation can still be carried out.
+However, while the results may be correct mathematically,
+they risk being irrelevant substantively.
+When working with quantitative research data,
+the issue of relevance should be uppermost in your mind.
+
+Sometimes,
+data can be transformed in a meaningful way so that the relationship becomes linear
+(for examples, see \citealp{Baayen2008} and \citealp{Gelman2007}).
+If this is not possible and a graphical representation is insufficient,
+then more complex methods, such as the generalised additive model, may be appropriate.
+For accessible introductions, see
+\url{https://m-clark.github.io/generalized-additive-models/},
+\citet{Wieling2018}, and \citet{Baayen2020}.
+\parend
+
+\mypar[Questions and tools]{Tip}
+Correlation analysis, regression analysis, 
+and other analyses, models, and tests are merely tools.
+Depending on the research question, these tools may be useful or useless.
+Rather than deciding in advance to run a correlation analysis
+or a $t$-test 
+(perhaps because this is common practice in a particular research field),
+or what-have-you,
+it is better to formulate the question without distracting
+technical jargon---such as 
+\textit{correlation}, \textit{significant}, \textit{interaction}---and 
+then think about which tool will be most useful in answering it.
+The aim of data collection and analysis is to answer a question---not 
+to use some fancy tool.
+\parend
+
+\section{Simple linear regression}
+We will apply the techniques learnt in the previous chapter
+in order to tackle the first question:
+How does the \textsc{gjt} variable relate to the \textsc{aoa} variable?
+That is, once we know the value of someone's \textsc{aoa},
+what should be our best guess for that person's \textsc{gjt} score?
+
+We proceed as in Chapter \ref{ch:linmod}: we partition the outcome values
+into a part common to all outcome values and some discrepancy from the 
+general trend. This time, however, we include some information about
+the link between \textsc{aoa} and \textsc{gjt} in the systematic term:
+\[
+  \textrm{observed value} = \textrm{systematic component (incl.\ link with \textsc{aoa})} + \textrm{discrepancy}.
+\]
+
+Specifically, we will model this systematic part in terms of a straight line that is
+a function of \textsc{aoa}. Straight lines are parametrised by
+an intercept (we'll write $\beta_0$) and a slope ($\beta_1$):
+\[
+  f(x) = \beta_0 + \beta_1x.
+\]
+The intercept tells us the $f(x)$ value for $x = 0$;
+the slope tells us by how much $f(x)$ changes when $x$ is increased by one unit;
+see Figure \ref{fig:straightline}. From this we obtain the following 
+{\bf simple linear regression} equation:
+\begin{equation}
+  y_i = \beta_0 + \beta_1x_i + \varepsilon_i,\label{eq:simpleregression}
+\end{equation}
+for $i = 1, \dots, n$.
+In our running example, $y_i$ still refers to the $i$-th outcome, i.e., the $i$-th 
+\textsc{gjt} score, and $\varepsilon_i$ still refers to the $i$-th error.
+What's new is the predictor, $x$ (with values $x_1, x_2, \dots, x_n$); in our example,
+these are the \textsc{aoa} values. The parameters $\beta_0$ and $\beta_1$
+represent the intercept and the slope of the straight line that models the relationship
+between \textsc{aoa} and \textsc{gjt}.
+
+<<echo = FALSE, fig.cap = "Intercept ($\\beta_0$) and slope ($\\beta_1$) of a straight line.\\label{fig:straightline}", fig.width = 4, fig.height = 2.5, out.width = ".6\\textwidth", warning = FALSE>>=
+par(op)
+par(las = 1, bty = "n", mar = rep(0, 4), tck = -0.01, cex = 0.6)
+plot(function(x) -3.2 + 0.7*x, xlab="", ylab="", xaxt = "n", yaxt = "n",
+     xlim = c(-2, 5), ylim = c(-5, 2))
+axis(1, pos=0)
+axis(2, pos=0)
+plotrix::draw.circle(0,-3.2,0.05,nv=100,border="black",col=NA,lty=1,density=NULL,
+  angle=45,lwd=1)
+arrows(x0 = 0.8, x1 = 0.1, y0 = -3.2, length = .12, angle = 20)
+text(x = 1, y = -3.2, expression(beta[0]), cex = 2)
+segments(x0 = 1, x1 = 2, y0 = -3.2+0.7*1, lty = 3)
+segments(x0 = 2, y0 = -3.2+0.7*1, y1 = -3.2+0.7*2, lty = 3)
+text(x = 2.15, y = -3.2+0.7*1.5, '}', cex = 2.5)
+text(x = 2.5, y = -3.2+0.7*1.5, expression(beta[1]), cex = 2)
+@
+
+\mypar[The Greek letter fallacy]{Remark}\label{remark:greekletter}
+Both the model in Equation \vref{eq:beta0} and the one in Equation
+\ref{eq:simpleregression} contain the term $\beta_0$. But these two
+$\beta_0$s refer to different things (mean vs intercept). The meaning
+of a model parameter hinges crucially on the other parameters as well
+as the variables included in the model,
+so don't equate parameters in different models just because they have
+the same name.
+The next chapters in particular will drive this point home.
+The same goes, incidentally, for the $\varepsilon_i$ term.
+\parend
+
+Incidentally, it's called `simple linear regression'
+because we're modelling the outcome in terms of a single
+predictor (hence simple, as opposed to multiple),
+and the outcome is modelled as a weighted sum of the predictor values
+(i.e., as a `linear combination').
+The `regression' bit stems from its origins in studying the phenomenon
+of `regression to the mean'; 
+see \citet{Senn2011} for a readable and short explanation.
+
+\subsection{Estimating the parameters}
+If we just pick our estimates for the $\beta_0, \beta_1$ parameters
+by hand, we could come up with any number of estimates that work sort of okay,
+just like in Chapter \ref{ch:linmod}.
+We need a more principled approach.
+
+The estimation approaches we discussed in Chapter \ref{ch:linmod} still work.
+We will content ourselves with the least squares method as this is the one
+you'll encounter in practice: we choose $\widehat{\beta}_0, \widehat{\beta}_1$
+so as to minimise the sum of the residuals.
+(Equivalently, we could choose them so as to maximise
+the likelihood of the data assuming normally distributed
+errors.)
+In principle, we could work through a number of suggestions for 
+$\widehat{\beta}_0$ and $\widehat{\beta}_1$ and then choose
+the pair of estimates that minimises $\sum_{i = 1}^n \widehat{\varepsilon}_i^2$.
+Figure \ref{fig:ols} shows that estimates of $\widehat{\beta}_0 \approx 190$
+and $\widehat{\beta}_1 \approx -1.2$ are optimal in this sense.
+
+<<cache = TRUE, echo = FALSE, fig.cap = "The sum of the squared residuals (divided by 10,000) of the GJT data for different combinations of parameter estimates. You can read this plot like a topographic map: the lines are contour lines. The sum is minimised for an intercept estimate near 190 and a slope estimate near $-1.2$.\\label{fig:ols}", fig.height = 3.8, fig.width = 3.8, fig.pos="t", out.width = ".7\\textwidth">>=
+parameter_grid <- expand.grid(beta0 = seq(185, 195, 0.2),
+                              beta1 = seq(-2, -0.5, 0.1))
+parameter_grid$SS <- NA
+
+for (i in 1:nrow(parameter_grid)) {
+  predicted <- parameter_grid$beta0[i] + parameter_grid$beta1[i] * d$AOA
+  parameter_grid$SS[i] <- sum((predicted - d$GJT)^2)
+}
+
+SS <- matrix(parameter_grid$SS,
+       nrow = length(unique(parameter_grid$beta0)),
+       ncol = length(unique(parameter_grid$beta1)),
+       byrow = FALSE)
+
+par(las = 1, col = "black", oma = c(0, 0, 0, 0), mar = c(5, 5, 1, 1),
+    tck = -0.005, cex = 0.6)
+contour(x = unique(parameter_grid$beta0),
+        y = unique(parameter_grid$beta1),
+        z = SS/10000,
+        levels = c(2, 2.05, 2.1, seq(2.2, 2.8, 0.4), seq(3, 10, 1)),
+        xlab = expression(widehat(beta)[0]),
+        ylab = expression(widehat(beta)[1]))
+# par(op)
+@
+
+We could also derive these estimates mathematically. Conceptually,
+the maths are fairly easy: we want to solve the same problem as in the previous
+lecture, but for two parameter estimates simultaneously rather than for just one.
+But to spell this out precisely, we would need to introduce some matrix algebra.
+Let's instead skip straight to computing the \textsc{ols} estimates in R:
+<<>>=
+aoa.lm <- lm(GJT ~ AOA, data = d)
+coef(aoa.lm)
+@
+
+Having estimated these parameters, we can add the estimated regression line
+to the scatterplot (Figure \ref{fig:simpleregression}).
+<<out.width = "0.6\\textwidth", fig.width = 5, fig.height = 3, fig.cap = "Scatterplot with the estimated regression line.\\label{fig:simpleregression}">>=
+ggplot(data = d,
+       aes(x = AOA,
+           y = GJT)) +
+  geom_point(shape = 1) +
+  geom_abline(intercept = coef(aoa.lm)[1],
+              slope = coef(aoa.lm)[2])
+@
+
+We could also directly use the \texttt{geom\_smooth()} function:
+<<eval = FALSE>>=
+# not shown
+ggplot(data = d,
+       aes(x = AOA,
+           y = GJT)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", se = FALSE)
+@
+I set the \texttt{se} parameter in the \texttt{geom\_smooth()} layer to
+\texttt{FALSE}. Setting it to \texttt{TRUE} would plot a pointwise 95\% confidence band---which is a concept we haven't yet discussed.
+
+\mypar[Other optimisation criteria]{*Remark}
+  Apart from the least squares method, other methods exist for estimating
+  the parameters in the general linear model. 
+  In Chapter \ref{ch:linmod}, the method
+  of least absolute deviations was already mentioned, which leads to
+  {\bf median regression} (a form of \term{quantile regression}).
+  Some methods seek to minimise some combination of the sum of the squared
+  deviations and the size of the $\beta$ estimates. Depending on the precise
+  criterion, these techniques are known as \term{lasso regularisation},
+  {\bf ridge regularisation} or the \term{elastic net}.
+  The basic idea behind these techniques is to deliberately introduce some
+  bias in the estimation of the $\beta$ parameters but by doing so
+  reduce the variability of the estimates across samples.
+\parend
+
+\subsection{Quantifying uncertainty}
+Our estimates for $\beta_0, \beta_1$ are based on a sample and are hence
+inherently uncertain.
+We can estimate the degree of this uncertainty
+if we are willing to make some assumptions about the errors. 
+As in Chapter \ref{ch:linmod}, 
+we assume that the errors are independently and identically distributed (i.i.d.).
+We already covered the `independence' part of this assumption in Chapter \ref{ch:linmod}.
+The `identical' bit can be illustrated
+by taking a look at what some crass violations of it look like:
+Figure \ref{fig:heteroskedasticity} shows three examples where the
+distribution of the errors, more specifically the variance of this distribution, changes with $x$. 
+If we're willing to make the i.i.d.\ assumption, we can again
+obtain uncertainty measures by means of bootstrapping or by assuming normality.
+
+<<fig.width = 6, fig.height = 1.4, echo = FALSE, fig.cap = "In all scatterplots, the spread of the data varies considerably with the $x$ values.\\label{fig:heteroskedasticity}", message = FALSE, out.width = ".9\\textwidth">>=
+x <- runif(100, 0, 100)
+y_hat <- 0.3*x
+error1 <- rnorm(n = 100, sd = 0.2 * x)
+error2 <- rnorm(n = 100, sd = 0.2 * (100-x))
+error3 <- rnorm(n = 100, sd = 0.1 * x * (100-x))
+df <- data.frame(x,
+                 y1 = y_hat + error1,
+                 y2 = y_hat + error2,
+                 y3 = y_hat + error3)
+
+p1 <- ggplot(data = df,
+             aes(x = x, y = y1)) +
+  geom_point(shape = 1) +
+  # geom_smooth(method = "lm", se = FALSE) +
+  xlab("x") + ylab("y")
+p2 <- ggplot(data = df,
+             aes(x = x, y = y2)) +
+  geom_point(shape = 1) +
+  # geom_smooth(method = "lm", se = FALSE) +
+  xlab("x") + ylab("y")
+p3 <- ggplot(data = df,
+             aes(x = x, y = y3)) +
+  geom_point(shape = 1) +
+  # geom_smooth(method = "lm", se = FALSE) +
+  xlab("x") + ylab("y")
+
+gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+@
+
+\subsubsection{The semiparametric bootstrap}
+The logic is identical to that in Section \ref{sec:semiparametric}
+The only difference is that we now estimate two parameters.
+Instead of generating a vector with bootstrapped estimates,
+we need to write pairs of estimates in the rows of a two-column matrix.
+
+<<cache = TRUE>>=
+# Step 1
+d$Prediction <- predict(aoa.lm)
+d$Residual <- resid(aoa.lm)
+
+n_bootstrap <- 20000
+# preallocate 20000-by-2 matrix
+bs_b <- matrix(nrow = n_bootstrap, ncol = 2)
+
+for (i in 1:n_bootstrap) {
+  # Step 2
+  bs_resid <- sample(d$Residual, replace = TRUE)
+  # Step 3
+  d$bs_outcome <- d$Prediction + bs_resid
+  # Step 4
+  bs_mod <- lm(bs_outcome ~ AOA, data = d)
+  # store both estimates in i-th row
+  bs_b[i, ] <- coef(bs_mod)
+}
+@
+
+Let's inspect the first couple of rows of this matrix;
+if you run this code yourself, you'll obtain different results
+due to the randomness in step 2:
+<<>>=
+head(bs_b)
+@
+The first column contains the bootstrapped $\widehat{\beta}_0^*$ values;
+the second column the bootstrapped $\widehat{\beta}_1^*$ values.
+If you draw a histogram of these bootstrap estimates, you'll notice that both 
+distributions look pretty normal.
+This is a generalisation of the central limit theorem at play.
+<<eval = FALSE>>=
+# not shown
+hist(bs_b[, 1])
+hist(bs_b[, 2])
+@
+
+The standard deviations of these distributions serve as
+standard errors for $\widehat{\beta}_0, \widehat{\beta}_1$:
+<<>>=
+# apply(x, 2, function) applies function to x by columns
+apply(bs_b, 2, sd)
+@
+
+<<eval = FALSE>>=
+# alternatively:
+sd(bs_b[, 1])
+sd(bs_b[, 2])
+@
+
+That is, we estimate $\beta_0$ to be $190.4 \pm 3.8$ and 
+$\beta_1$ to be $-1.2 \pm 0.1$.
+
+Confidence intervals can be obtained like before using the percentile
+method or by referring to a normal distribution. So for 95\% confidence
+intervals:
+<<>>=
+# percentile method
+apply(bs_b, 2, quantile, probs = c(0.025, 0.975))
+
+# normal approximation
+mean(bs_b[, 1]) + qnorm(c(0.025, 0.975), sd = sd(bs_b[, 1]))
+mean(bs_b[, 2]) + qnorm(c(0.025, 0.975), sd = sd(bs_b[, 2]))
+@
+
+Because the distributions of the bootstrapped estimates are both pretty much
+normal, both methods yield essentially the same results.
+
+Note, incidentally, how we made use of the i.i.d.\ assumption in this bootstrap.
+In step 2, we resampled the residuals with replacement, but without
+any further constraints. That is, all draws were independent
+and all were sampled with from the same distribution,
+namely the empirical distribution of the residuals.
+
+Alternatives that do not assume equality of error distributions
+are easy to imagine. We could, for instance, have specified that we only resample
+the residuals for participants with \textsc{aoa} values over 40 from
+participants with \textsc{aoa} values over 40, and similarly for participants
+with lower \textsc{aoa} values. This would correspond to the assumption
+that the errors for participants with high vs low \textsc{aoa} values
+could have been sampled from separate distributions. 
+The code to run this bootstrap variation would only be slightly more complicated.
+
+\subsubsection{The parametric bootstrap}
+Alternatively, we could assume that the errors are drawn from a
+normal distribution, i.e.,
+\begin{align}
+  y_i &= \beta_0 + \beta_1x_i + \varepsilon_i, \label{eq:simple_regression_normal}\\
+  \varepsilon_i &\stackrel{\textrm{i.i.d.}}{\sim} \textrm{Normal}(0, \sigma_{\varepsilon}^2),\nonumber
+\end{align}
+for $i = 1, 2, \dots, n$. 
+This notation encapsulates 
+the equality of error distributions assumption: the normal distribution has the
+same parameters for all $i = 1, 2, \dots, n$.
+
+The R code to run the bootstrap doesn't contain anything new:
+<<cache = TRUE>>=
+# Step 1: Predictions already added to data frame
+sigma_aoa.lm <- sigma(aoa.lm)
+
+n_bootstrap <- 20000
+bs_b <- matrix(nrow = n_bootstrap, ncol = 2)
+
+for (i in 1:n_bootstrap) {
+  # Step 2
+  bs_resid <- rnorm(n = nrow(d), sd = sigma_aoa.lm)
+  # Step 3
+  d$bs_outcome <- d$Prediction + bs_resid
+  # Step 4
+  bs_mod <- lm(bs_outcome ~ AOA, data = d)
+  bs_b[i, ] <- coef(bs_mod)
+}
+@
+
+Histograms show that the bootstrapped $\beta$ estimates are normally distributed:
+<<eval = FALSE>>=
+# not shown
+hist(bs_b[, 1])
+hist(bs_b[, 2])
+@
+
+The confidence intervals and estimated standard errors we obtain are essentially
+the same as before.
+<<>>=
+apply(bs_b, 2, quantile, probs = c(0.025, 0.975))
+apply(bs_b, 2, sd)
+@
+
+Now's a good time to visualise the uncertainty about the location of the
+regression line. We have 20,000 pairs of bootstrapped estimates of $\beta_0, \beta_1$.
+To gauge the uncertainty about the location of the regression line,
+we can draw a handful of the straight lines implied by these estimates.
+In the code below, the first 100 pairs of estimates are used;
+Figure \ref{fig:bs_regression} shows the result.
+<<out.width = "0.6\\textwidth", fig.width = 5, fig.height = 3, fig.cap = "Scatterplot with 100 bootstrapped regression lines.\\label{fig:bs_regression}">>=
+plot_bs <- ggplot(data = d,
+                  aes(x = AOA,
+                      y = GJT)) +
+  geom_point(shape = 1)
+
+for (i in 1:100) {
+  plot_bs <- plot_bs +
+    geom_abline(intercept = bs_b[i, 1],
+                slope = bs_b[i, 2],
+                # use alpha to make the lines a bit transparent
+                alpha = 1/10)
+}
+
+plot_bs
+@
+
+In practice, people don't draw these bootstrapped regression lines.
+Instead, they colour in the region in which most of these lines
+fall. This region is known as a (pointwise) \term{confidence band}.
+(`Pointwise' as opposed to `simultaneous', see Remark \vref{remark:simultaneous}.)
+We won't cover simultaneous confidence bands in these lectures.)
+Let's see how we can draw such confidence bands ourselves
+as this'll give us some further insights into the general linear model.
+First, we generate a sequence of predictor values for which we want
+to plot the confidence band. Here, we just take all integers between
+the minimum and maximum \textsc{aoa} values in our sample:
+<<>>=
+# Step 1
+new_aoa <- seq(from = min(d$AOA), to = max(d$AOA), by = 1)
+# that is, 5, 6, 7, ..., 69, 70, 71
+@
+There are 67 values in \texttt{new\_aoa}.
+We have already generated 20,000 pairs of bootstrapped parameter estimates.
+For each of these pairs, we can compute the location of the bootstrapped
+regression line at each of the newly created predictor values.
+For instance, we can evaluate the regression line for the 37th bootstrap run
+like so:
+<<>>=
+bs_b[37, 1] + bs_b[37, 2] * new_aoa
+@
+This yields 67 values---one for each \texttt{new\_aoa} value.
+We now carry out this computation not only for the 37th bootstrap run
+but for all 20,000 runs. We store the results into a 20,000-by-67 matrix:
+<<cache = TRUE>>=
+# Step 2
+bs_y_hat <- matrix(nrow = n_bootstrap,
+                   ncol = length(new_aoa))
+for (i in 1:n_bootstrap) {
+  bs_y_hat[i, ] <- bs_b[i, 1] + bs_b[i, 2]*new_aoa
+}
+@
+Each row of this matrix contains the location of a different bootstrapped
+regression line corresponding to all 67 different values of \texttt{new\_aoa}.
+We look up the 2.5th and 97.5th percentile of the generated values
+at each \texttt{new\_aoa} value; at each point, 95\% of the bootstrapped regression
+lines lie between these percentiles:
+<<>>=
+# Step 3
+lo_95 <- apply(bs_y_hat, 2, quantile, probs = 0.025)
+hi_95 <- apply(bs_y_hat, 2, quantile, probs = 0.975)
+@
+Finally, we combine the predictor values and these percentile values into a tibble and plot them.\footnote{Tibbles are the counterpart of standard data frames when using the tidyverse package. But you can use \texttt{data.frame()} instead of \texttt{tibble()} if you prefer.}
+See Figure \ref{fig:bs_confidenceband}.
+<<out.width = "0.6\\textwidth", fig.width = 5, fig.height = 3, fig.cap = "Scatterplot with a parametric bootstrap-based 95\\% confidence band for the regression line.\\label{fig:bs_confidenceband}">>=
+# Step 4
+confidence_band_tbl <- tibble(new_aoa, lo_95, hi_95)
+
+ggplot(data = confidence_band_tbl,
+       aes(x = new_aoa)) +
+  geom_ribbon(aes(ymin = lo_95,
+                  ymax = hi_95),
+              fill = "lightgrey") +
+  geom_point(data = d,
+             aes(x = AOA, y = GJT),
+             shape = 1) +
+  geom_abline(intercept = coef(aoa.lm)[[1]],
+              slope = coef(aoa.lm)[[2]]) +
+  xlab("AOA") +
+  ylab("GJT")
+@
+
+\mypar[Pointwise vs simultaneous confidence bands]{*Remark}\label{remark:simultaneous}
+The confidence bands discussed here are so-called \term{pointwise confidence bands}.
+A well-calibrated pointwise $100(1-\alpha)$\% confidence band provides, for each 
+$x$ value, a $100(1-\alpha)$\% confidence interval for the corresponding value 
+$\beta_0 + \beta_1x$.
+
+Occasionally, one also encounters \term{simultaneous confidence bands}.
+A simultaneous $100(1-\alpha)$\% confidence band should, for a set of $x$ values 
+$x_1, x_2, \dots, x_n$, guarantee that with probability at least $1-\alpha$, 
+the band covers \emph{all} of the corresponding 
+$\beta_0 + \beta_1x_i, \, i = 1, \dots, n.$
+This is a much stricter condition than for pointwise confidence bands!
+Accordingly, simultaneous confidence bands are wider than pointwise ones.
+
+In these lecture notes, we only consider pointwise confidence bands.
+When confidence bands are reported in the literature without further specification,
+you can safely assume that they are pointwise ones.
+\parend
+
+
+\subsubsection{$t$ distributions}\label{sec:aoa}
+As long as we're assuming that the errors are i.i.d.\ draws from
+a normal distribution, we might as well estimate the standard errors
+and compute the confidence intervals for the parameter estimates directly using
+$t$ distributions.
+<<>>=
+summary(aoa.lm)
+confint(aoa.lm)
+@
+
+We can also directly obtain a confidence interval for the location
+of the regression line at some prespecified predictor values using
+the \texttt{predict()} function. The following command generates
+a 95\% confidence interval for the location of the regression line
+at each of the 67 values in \texttt{new\_aoa}.
+<<>>=
+conf_band_t <- predict(aoa.lm, newdata = tibble(AOA = new_aoa),
+                       interval = "confidence")
+head(conf_band_t) # 1st row: AOA = 5, 2nd: AOA = 6, etc.
+@
+
+We can plot the result of these computations, the result of which is hardly
+discernible from the one obtained previously:
+<<eval = FALSE>>=
+# not shown
+conf_band_t <- as.tibble(conf_band_t)
+conf_band_t$AOA <- new_aoa
+ggplot(data = conf_band_t,
+       aes(x = AOA)) +
+  geom_ribbon(aes(ymin = lwr,
+                  ymax = upr),
+              fill = "lightgrey") +
+  geom_point(data = d,
+             aes(x = AOA, y = GJT),
+             shape = 1) +
+  geom_line(aes(y = fit)) +
+  xlab("AOA") +
+  ylab("GJT")
+@
+
+Once we've understood what we're really doing when drawing a confidence band,
+we can do so without all the rigmarole: 
+<<eval = FALSE>>=
+# not shown
+ggplot(data = d,
+       aes(x = AOA, y = GJT)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm")
+@
+
+\mypar{*Exercise}
+Use the semiparametric bootstrap to draw a 95\% confidence
+band for the \textsc{aoa}--\textsc{gjt} regression model.
+\parend
+
+\subsection{Interpreting regression lines}
+Equation \vref{eq:simple_regression_normal} is useful for getting a conceptual
+grasp on the regression line. 
+According to this equation, 
+we assume that the errors are drawn i.i.d.\ from a normal distribution with mean 0
+and variance $\sigma_{\varepsilon}^2$.
+For a fixed $x$ value, the expected distribution of the $y$ values, then,
+is a normal distribution centred on $\beta_0 + \beta_1x$ and with variance
+$\sigma_{\varepsilon}^2$
+Plugging in our estimates for 
+$\beta_0, \beta_1, \sigma_{\varepsilon}^2$, we obtain the estimated expected
+distribution of $y$ for a given $x$ value. 
+The estimated regression line, then,
+shows the estimated \term{conditional means} of $y$ for the different values of $x$.
+Figure \ref{fig:conditionalmean} illustrates this concept graphically.
+The cross-section of the 95\% confidence band at a given $x$ value
+is the 95\% confidence interval of the corresponding conditional mean.
+
+<<fig.width = 4, fig.height = 3, echo = FALSE, fig.cap = "If we assume that the errors are i.i.d., then the regression line connects the estimated conditional means for the distribution of $y$ at different $x$ values. In this illustration, the errors are all assumed to be normally distributed, but this is not a necessary assumption for making sense of the regression line. If the errors aren't normally distributed, however, it's possible that the conditional means don't capture what's interesting about how $x$ and $y$ relate to each other.\\label{fig:conditionalmean}", out.width = ".7\\textwidth">>=
+set.seed(1)
+n <- 200
+x <- runif(n)
+dat <- data.frame(x = x,
+                  y = 0.4 + 4*x + rnorm(n, sd = 0.5))
+
+
+df1 <- data.frame(yval = seq(-0.3, 2.7, 0.1),
+                  xval = dnorm(seq(-0.3, 2.7, 0.1),
+                               0.4+4*0.2,
+                               0.5)/8+0.2)
+
+df2 <- data.frame(yval = seq(0.9, 3.9, 0.1),
+                  xval = dnorm(seq(0.9, 3.9, 0.1),
+                               2.4,
+                               0.5)/8+0.5)
+
+df3 <- data.frame(yval = seq(2.1, 5.1, 0.1),
+                  xval = dnorm(seq(2.1, 5.1, 0.1),
+                               3.6,
+                               0.5)/8+0.8)
+par(cex = 0.75, mar = c(4, 4, 2, 2), las = 1)
+plot(dat, col = "grey")
+with(df1,lines(xval,yval, col = "red"))
+with(df2,lines(xval,yval, col = "red"))
+with(df3,lines(xval,yval, col = "red"))
+segments(x0 = 0.2, x1 = 0.2+0.09973557,
+         y0 = 0.4+4*0.2, col = "red")
+segments(x0 = 0.5, x1 = 0.5+0.09973557,
+         y0 = 0.4+4*0.5, col = "red")
+segments(x0 = 0.8, x1 = 0.8+0.09973557,
+         y0 = 0.4+4*0.8, col = "red")
+abline(v = 0.2, lty = 2)
+abline(v = 0.5, lty = 2)
+abline(v = 0.8, lty = 2)
+abline(0.4, 4, col = "blue")
+par(cex = 1)
+@
+
+Let's look at a couple of examples of how we can interpret our model.
+\begin{itemize}
+
+  \item According to the \texttt{aoa.lm} model,
+  the estimated $\beta$ parameters are 190.4 and $-1.22$.
+  So according to this model, if we were to sample lots of
+  participants with an \textsc{aoa} of 15,
+  the best guess for their mean \textsc{gjt} score would be
+  $190.4 - 1.22\cdot 15 = 172.1$. The same answer can be 
+  obtained using \texttt{predict()}:
+<<>>=
+predict(aoa.lm, newdata = tibble(AOA = 15))
+@
+
+  Note, however, that there are two participants in the data set
+  with an \textsc{aoa} of 15, and their mean \textsc{gjt} score isn't
+  172.1:
+<<>>=
+d |> filter(AOA == 15)
+@
+
+  The extent to which our model-based estimate of the conditional
+  \textsc{gjt} mean for an \textsc{aoa} value of 15 is more accurate
+  than the mean of these two observations depends on the accuracy
+  of our modelling assumptions---especially the assumption that
+  the \textsc{aoa}--\textsc{gjt} relationship is roughly linear.
+  This doesn't seem too much of a stretch, and, conceptually, this
+  assumption allows us to estimate the conditional mean for a given \textsc{aoa} value 
+  more accurately by leveraging the information about the relationship
+  between \textsc{aoa} and \textsc{gjt} that we can extract from the other
+  data points.
+
+\item There are no participants with an \textsc{aoa} of 21 in our sample.
+But according to our model, if we were to sample lots of participants
+with this \textsc{aoa}, their mean \textsc{gjt} would be about 165:
+<<>>=
+predict(aoa.lm, newdata = tibble(AOA = 21))
+@
+This is an example of \term{interpolation}, as we have both participants
+with lower and with higher \textsc{aoa} values.
+
+\item There are no participants with an \textsc{aoa} of 82 in our sample.
+But according to our model, if we were to sample lots of participants
+with this \textsc{aoa}, their mean \textsc{gjt} would be about 91:
+<<>>=
+predict(aoa.lm, newdata = tibble(AOA = 82))
+@
+This is an example of \term{extrapolation}, since the maximum \textsc{aoa}
+in our sample is 71.
+
+\item The mean \textsc{aoa} in our sample is about 32.5. The estimated
+\textsc{gjt} mean for this \textsc{aoa} corresponds exactly to the 
+\textsc{gjt} mean for the entire sample:
+<<>>=
+mean(d$GJT)
+predict(aoa.lm, newdata = tibble(AOA = mean(d$AOA)))
+@
+This is not a coincidence but a general phenomenon.
+\end{itemize}
+
+\mypar{Proposition}\label{lemma:intercept}
+  In a simple linear model, the estimated conditional mean
+  for the mean predictor value equals the sample mean of the outcome.
+\parend
+
+\begin{proof}
+According to the regression model, $y_i = \widehat{\beta}_0 + \widehat{\beta}_1x_i + \widehat{\varepsilon}_i$ for $i = 1, 2, \dots, n$. Hence we have
+\[
+  \frac{1}{n}\sum_{i = 1}^n y_i
+  = \frac{1}{n}\sum_{i = 1}^n(\widehat{\beta}_0 + \widehat{\beta}_1x_i + \widehat{\varepsilon}_i)
+  = \frac{1}{n}n\widehat{\beta}_0 + \frac{1}{n}\widehat{\beta}_1\sum_{i=1}^n x_i + \frac{1}{n}\sum_{i=1}^n \widehat{\varepsilon}_i.
+\]
+It can be shown that the mean of the residuals is always zero when using \textsc{ols}.
+So this simplifies to
+\[
+    \frac{1}{n}\sum_{i = 1}^n y_i = \widehat{\beta}_0 + \widehat{\beta}_1\left(\frac{1}{n}\sum_{i=1}^n x_i\right). \qedhere
+\]
+\end{proof}
+
+Use your common sense when inter- and extrapolating.
+If we have a sample of participants aged 8--26, 
+we'd be on thin ice extrapolating to participants aged 5 or 45;
+see Figure \ref{fig:extrapolation}, left.
+The plot on the right illustrates the dangers with interpolation.
+That said, even with densely sampled data it is still \emph{possible}
+that a seemingly linear relationship is strongly nonlinear;
+see Figure \ref{fig:sinusoid}.
+At the end of the day, statistical inference is about combining data
+with assumptions.
+
+<<echo = FALSE, fig.width = 6, fig.height = 2.5, out.width = ".9\\textwidth", warning = FALSE, fig.cap="Dangers when extra- or interpolating.\\label{fig:extrapolation}">>=
+par(mfrow = c(1, 2), cex = 0.65, cex.main = 1,
+    mar = c(4, 4, 2, 2), bg = "white")
+set.seed(123456)
+alter1 <- round(runif(40, 10, 35))
+sample1 <- (alter1-20) - 0.01 * (alter1-1)^2 + 20 + rnorm(length(alter1), sd = 2)
+plot(alter1, sample1,
+     xlim = c(10, 80), xlab = "Age (years)", yaxt = "n",
+     ylim = c(0, 50), ylab = "Skills",
+     main = "Danger when extrapolating")
+abline(lm(sample1 ~ alter1))
+text(x = 55, y = 45, "extrapolated estimate\nfor skill")
+curve(20 + (x-20) - 0.01*(x-1)^2, from = 10, to = 80,
+      xlab = "Age (years)",
+      ylab = "Skills", add = TRUE, col = "#377EB8")
+text(x = 55, y = 15, "actual development\nof skill", col = "#377EB8")
+
+alter2 <- round(c(runif(20, 10, 12),
+                  runif(20, 75, 77)))
+sample2 <- 20 + (alter2-40)^2 + rnorm(length(alter2), sd = 200)
+plot(alter2, sample2,
+     xlim = c(10, 80), xlab = "Age (years)",
+     ylim = c(0, 2000), ylab = "Response latency", yaxt = "n",
+     main = "Danger when interpolating")
+abline(lm(sample2 ~ alter2))
+text(x = 45, y = 1350, "interpolated estimate\nfor response latency")
+curve(20 + ((x-40)^2), from = 10, to = 80,
+      xlab = "Age (years)",
+      ylab = "Response latency", add = TRUE, col = "#377EB8")
+text(x = 45, y = 300, "actual development\nof response latency", col = "#377EB8")
+par(op)
+@
+
+<<echo = FALSE, fig.width = 6, fig.height = 2.5, out.width = ".5\\textwidth", warning = FALSE, fig.cap="If we only observed the black dots, we'd probably think the relationship was linear. How much we'd be wrong when interpolating between the measuring points depends on the amplitude of the wave.\\label{fig:sinusoid}">>=
+curve(x + 10*sin(4*x), from = -2*pi, to = 2*pi,
+      col = "#377EB8", xlab = "x", ylab = "y")
+x <- seq(from = -2*pi, to = 2*pi, by = pi/4)
+y <- x + 10*sin(4*x)
+points(x, y, pch = 16)
+@
+
+\mypar[Confidence intervals around conditional means]{*Remark}
+Confidence intervals around conditional means can be calculated 
+using the bootstrap methods described above by constructing the confidence 
+band for a single value of $x$.
+Alternatively, one can use \texttt{predict()}, 
+in which case the confidence interval is constructed on the basis of the appropriate $t$ distribution:
+<<>>=
+predict(aoa.lm, newdata = tibble(AOA = 35),
+        interval = "confidence", level = 0.80)
+@
+\parend
+
+\mypar[Making the intercept more interpretable]{Remark}
+The intercept $\widehat{\beta_0}$ represents the estimated conditional mean
+for participants with a predictor value of 0. However, zero
+lies outside the range of \textsc{aoa} values in our sample.
+A common trick to render the estimated intercept more informative about the data
+is to \term{centre} the predictor at some sensible value, usually the mean
+or the median. Centring just means subtracting this sensible value
+from all the predictor values before fitting the model:
+<<>>=
+# centre AOA
+d$c.AOA <- d$AOA - mean(d$AOA)
+
+# fit model again
+aoa.lm <- lm(GJT ~ c.AOA, data = d)
+
+# model coefficients
+summary(aoa.lm)$coefficients
+@
+
+The advantage of centring is that the estimated intercept now
+represents the conditional mean of the outcome for the predictor
+value around which was centred (including the estimated standard error
+for this mean). If we centre around the mean predictor value,
+then we've already seen that this yields the sample mean, see Proposition \ref{lemma:intercept}.
+
+Note that in order to compute the conditional mean for an \textsc{aoa} 
+value of 35, we have to subtract the \textsc{aoa} mean from this predictor
+value, too, when we centred the predictor for our model:
+<<>>=
+predict(aoa.lm, newdata = tibble(c.AOA = 35 - mean(d$AOA)))
+@
+So not (!):
+<<>>=
+predict(aoa.lm, newdata = tibble(c.AOA = 35))
+@
+\parend
+
+\subsection{Assumptions and relevance}
+Three of the assumptions we've made throughout this section---linear relationship, 
+equality of error distributions, and normality of errors--- almost never hold literally. 
+Instead of worrying whether these assumptions literally hold (they don't), 
+ask yourself whether your model is relevant to the questions you want to answer.
+We have already discussed this for the normality assumption in Section \ref{sec:linmodassumptions},
+so let's go over the linearity and equality of error distributions assumptions.
+
+The simple linear model seeks to characterise the linear relationship between the predictor
+and the outcome. 
+If the relationship between predictor and outcome isn't approximately linear, 
+the model's output will still be literally correct in many situations---but 
+it may not help you find out what you want to know.
+In such cases, purely graphical data analyses, data transformations 
+or models capable of capturing nonlinearities (e.g., generalised additive models) 
+may be of interest.
+
+As for the assumption that the errors all have the same distribution,
+recall the Gauss--Markov theorem (Theorem \vref{th:gauss}),
+which guarantees that the mean of a simple random sample 
+has the lowest variance among all unbiased estimators of a distribution's expected value.
+The version of the theorem presented on page \pageref{th:gauss} is a special case
+of the original theorem, which states that \textsc{ols} estimation
+has the lowest variance among all unbiased estimation methods, provided
+that the errors are i.i.d.
+If the errors don't all have the same distribution, then \textsc{ols} estimation
+is still unbiased. But there may be other unbiased estimation methods
+that have lower variance.
+Further, since the general linear model assumes that all errors stem from
+the same distribution, it won't be able to pick up on non-identical error
+structures.
+If you think such differences are relevant to your research project, 
+you may want to resort to models that not only capture conditional means 
+but changes in the error distribution as well (e.g., generalised least-squares models).
+
+As always, plotting the data prevents you and your readership from flying blind.
+If, on the other hand, you fear that you get too paranoid about assumptions
+everytime you plot your data, you may want to take a look at the methods
+discussed in \citet{Vanhove2018b}.
+
+The fourth assumption---independence of errors---is, however, absolutely vital
+for correct inference, as stressed in Section \ref{sec:linmodassumptions}.
+
+\mypar{Exercise}
+Let's fit another model to DeKeyser et al.'s data:
+<<>>=
+gjt.lm <- lm(AOA ~ GJT, data = d)
+summary(gjt.lm)$coefficients
+@
+\begin{enumerate}
+\item What do the parameter estimates for \texttt{(Intercept)} and \texttt{GJT} mean---literally?
+
+\item Which of the two models (\texttt{aoa.lm} or \texttt{gjt.lm}) 
+is the most relevant in the context of DeKeyser et al.'s study? Why? \parend
+\end{enumerate}
+
+\mypar{Exercise}
+The dataset \texttt{vanhove2014\_cognates.csv} contains a summary of some data 
+I collected for my PhD thesis \citep{Vanhove2014}. 
+163 speakers of German were asked to translate 45 written 
+and 45 spoken Swedish words into German.
+The columns \texttt{CorrectSpoken} and \texttt{CorrectWritten} 
+contain the number of correct translations per participants in both modalities. 
+The dataset \texttt{vanhove2014\_background.csv} contains 
+some background information about the participants, 
+including their performance on a handful cognitive tests.
+
+Let's first combine these datasets.
+<<>>=
+cognates <- read_csv(here("data", "vanhove2014_cognates.csv"))
+background <- read_csv(here("data", "vanhove2014_background.csv"))
+all_data <- cognates |> 
+  left_join(background, by = "Subject")
+@
+Now try to answer the following questions.
+\begin{enumerate}
+  \item The column \texttt{DS.Span} contains the participants' score on a working
+  memory task. How is their performance on this task associated with \texttt{CorrectSpoken}?
+  
+  \item How is their performance on an English proficiency test (\texttt{English.Overall})
+  associated with \texttt{CorrectWritten}?
+  
+  \item How does their performance on the Swedish translation tasks vary with \texttt{Age}
+  in both modalities? \parend
+\end{enumerate}
+
+\subsection{Summary}
+\begin{itemize}
+  \item The procedures introduced in Chapter \ref{ch:linmod} can be extended quite easily
+  in order to model the relationship between two numeric variables.
+  In the next chapters, we'll broaden the scope even more.
+  
+  \item The intercept represents the estimated outcome value when the
+  predictor variable is fixed at 0. 
+  Depending on your data and research question, this may not be relevant information.
+  But you can translate your predictor data to make the intercept more meaningful.
+  
+  \item The slope is the estimated difference between the outcome distributions
+  of observations that differ by one unit in the predictor variable.
+\end{itemize}
+
+\section{Correlation analysis}
+Let us now turn to the problem of quantifying how `perfect' the relation
+between two numeric variables is.
+To describe numerically how strongly two random variables $X, Y$ are related, 
+we need a measure whose absolute value is large when small differences in $X$ 
+correspond to small differences in $Y$ 
+and large differences in $X$ correspond to large differences in $Y$, 
+and whose absolute value is small when large differences in one variable 
+correspond to only small differences in the other. 
+Such a measure is the \term{covariance}.
+
+\mypar[Population covariance]{Definition}\label{def:covar}
+Let $X$ and $Y$ be two random variables 
+with finite variance on a probability space $\Omega$. 
+Then the covariance of $X$ and $Y$ is defined as
+\begin{align*}
+\textrm{Cov}(X, Y)
+&:= \E\left(\left(X - \E(X)\right)\left(Y - \E(Y)\right)\right) \\
+&= \E\left(XY - X\E(Y) - \E(X)Y + \E(X)\E(Y)\right) \\
+&= \E(XY) - \E(X)\E(Y) - \E(X)\E(Y) + \E(X)\E(Y) \\
+&= \E(XY) - \E(X)\E(Y). \parendeq
+\end{align*}
+
+\mypar{Example}
+We revisit the Jass example from Chapter \ref{ch:probability}.
+In Example \ref{example:obenabe},
+the variable $X$ was defined by the point value of the cards in the \textit{Obenabe} game:
+\begin{align*}
+X(\omega) :=
+\begin{cases}
+11, & \text{if $\omega$ is an Ace,} \\
+4, & \text{if $\omega$ is a King,} \\
+3, & \text{if $\omega$ is a Queen,} \\
+2, & \text{if $\omega$ is a Jack,} \\
+10, & \text{if $\omega$ is a 10,} \\
+8, & \text{if $\omega$ is an 8,} \\
+0, & \text{otherwise.}
+\end{cases}
+\end{align*}
+
+We now define an additional variable $Y$ by the points of the cards in the \textit{Undenufe} game:
+\begin{align*}
+Y(\omega) :=
+\begin{cases}
+11, & \text{if $\omega$ is a 6,} \\
+4, & \text{if $\omega$ is a King,} \\
+3, & \text{if $\omega$ is a Queen,} \\
+2, & \text{if $\omega$ is a Jack,} \\
+10, & \text{if $\omega$ is a 10,} \\
+8, & \text{if $\omega$ is an 8,} \\
+0, & \text{otherwise.}
+\end{cases}
+\end{align*}
+
+As you can verify, $\E(Y) = \E(X) = 4.22$.
+To calculate the covariance, we take a deep breath:
+\begin{align*}
+\textrm{Cov}(X, Y)
+&= \E\left(\left(X - \E(X)\right)\left(Y - \E(Y)\right)\right) \\
+&= \frac{1}{36}(X(6\clubsuit) - \E(X))(Y(6\clubsuit) - \E(Y)) + \\
+&~~~~~ \frac{1}{36}(X(6\diamondsuit) - \E(X))(Y(6\diamondsuit) - \E(Y)) + \\
+&~~~~~ \dots + \\
+&~~~~~ \frac{1}{36}(X(A\spadesuit) - \E(X))(Y(A\spadesuit)-\E(Y)) \\
+&= \frac{1}{9}(0-4.22)(11-4.22) + \frac{2}{9}(0-4.22)(0-4.22) + \\
+&~~~~~ \frac{1}{9}(8-4.22)(8-4.22) + \frac{1}{9}(10-4.22)(10-4.22) + \\
+&~~~~~ \frac{1}{9}(2-4.22)(2-4.22) + \frac{1}{9}(3-4.22)(3-4.22) + \\
+&~~~~~ \frac{1}{9}(4-4.22)(4-4.22) + \frac{1}{9}(11-4.22)(0-4.22) \\
+&\approx 0.55. \parendeq
+\end{align*}
+
+\mypar[Properties of covariance]{Lemma}
+Let $X, Y, Z$ be three random variables with finite variance
+on a common probability space, and let $a, b$ be constants. Then:
+\begin{enumerate}
+\item $\textrm{Cov}(X, X) = \textrm{Var}(X)$.
+\item $\textrm{Cov}(X, Y) = \textrm{Cov}(Y, X)$.
+\item $\textrm{Cov}(X + Y, Z) = \textrm{Cov}(X, Z) + \textrm{Cov}(Y, Z)$.
+\item $\textrm{Cov}(aX, bY) = ab\textrm{Cov}(X, Y)$.
+\item If $X$ and $Y$ are independent, then $\textrm{Cov}(X,Y) = 0$.
+\end{enumerate}
+The first four of these properties may be verified using Definition \ref{def:covar};
+the last follows from the fact that $\E(XY) = \E(X)\E(Y)$ if $X,Y$ are independent.
+
+Using these properties, we can derive a general formula for the variance of the sum of two random variables:
+\begin{align*}
+\textrm{Var}(X + Y)
+&= \textrm{Cov}(X + Y, X + Y) & [(1)] \\
+&= \textrm{Cov}(X, X+Y) + \textrm{Cov}(Y, X+Y) & [(3)] \\
+&= \textrm{Cov}(X+Y, X) + \textrm{Cov}(X+Y, Y) & [(2)] \\
+&= \textrm{Cov}(X, X) + \textrm{Cov}(Y, X) + \textrm{Cov}(X, Y) + \textrm{Cov}(Y, Y) & [(3)]\\
+&= \textrm{Var}(X) + 2\textrm{Cov}(X, Y) + \textrm{Var}(Y). & [(1,2)]
+\end{align*}
+
+In particular, if $\textrm{Cov}(X, Y) = 0$, 
+then $\textrm{Var}(X + Y) = \Var(X) + \Var(Y)$. 
+This proves Lemma \vref{properties_variance}.
+\parend
+
+\mypar[Zero covariance, but dependent]{Example}
+If two random variables are independent, then $\textrm{Cov}(X, Y) = 0$.
+The converse, however, is not true. To see this, consider the sample space
+\[
+  \Omega := \{(0, 0), (1, -1), (1, 1)\}
+\]
+with a uniform probability distribution.
+Let the random variable $X$ map $(\omega_1, \omega_2)$ to $\omega_1$,
+and let $Y$ map $(\omega_1, \omega_2)$ to $\omega_2$.
+Then $\E(X) = 2/3$ and $\E(Y) = 0$. Therefore,
+\[
+\textrm{Cov}(X, Y)
+= \frac{1}{3}(0-2/3)(0-0) + \frac{1}{3}(1-2/3)(-1 - 0) + \frac{1}{3}(1-2/3)(1 - 0)
+= 0.
+\]
+
+However,
+\[
+\Prob(X = 1, Y = 1) = \frac{1}{3} \neq \frac{2}{3} \cdot \frac{1}{3} = \Prob(X=1)\Prob(Y=1),
+\]
+so $X$ and $Y$ are dependent.
+\parend
+
+The covariance between two random variables is usually estimated using the \term{sample covariance}.
+
+\mypar[Sample covariance]{Definition}
+Let $(X_1, Y_1), \dots, (X_n, Y_n)$ be
+independent and identically distributed pairs of observations.
+Then the sample covariance is defined as
+\begin{equation}\label{eq:covariance}
+\widehat{\textrm{Cov}}_{XY} := \frac{1}{n-1} \sum_{i = 1}^{n} (X_i - \overline{X})(Y_i - \overline{Y}),
+\end{equation}
+where $\overline{X}$ and $\overline{Y}$ are the sample means of $\bm X$ and $\bm Y$.
+\parend
+
+The sum of the products, $\sum_{i=1}^n (X_i - \overline{X})(Y_i - \overline{Y})$,
+is divided by $n-1$ rather than $n$ for the same reason as in the calculation of 
+the sample variance.
+A more intuitive explanation is that you cannot really speak about
+the relationship between two variables if you only have one observation
+per variable.
+A scatterplot would then consist of a single point.
+When $n = 1$, $n-1 = 0$, and the formula yields no answer
+because division by zero is undefined.
+
+In R:
+<<>>=
+# more complicated:
+sum((d$AOA - mean(d$AOA)) * (d$GJT - mean(d$GJT))) / (nrow(d) - 1)
+
+# simpler:
+cov(d$AOA, d$GJT)
+@
+
+If the covariance is positive, there is a positive linear relationship
+between the two variables (larger $x$ tends to correspond to larger $y$);
+if the covariance is negative, there is a negative linear relationship
+(larger $x$ tends to correspond to smaller $y$).
+Aside from these two rules of thumb,
+the covariance measure is difficult to interpret,
+which is why you rarely encounter it in the research literature.
+Nonetheless, covariance is an important concept in the mathematics
+behind more complex procedures, so it is worth at least being aware of it.
+
+Because covariance is not particularly easy to interpret,
+Pearson's \term{product-moment correlation coefficient}
+(or simply Pearson's correlation) is usually preferred.
+This number indicates how well the relationship can be described
+by a straight line.
+It is calculated similarly to the covariance,
+but the variables are expressed in standard deviations from their sample means,
+producing a value between $-1$ and $1$:
+\[
+  \rho_{XY} := \frac{\textrm{Cov}(X, Y)}{\sigma_X \sigma_Y}.
+\]
+When estimating the correlation from a sample $(\bm X, \bm Y)$,
+the formula is adapted accordingly:
+\[
+  r(\bm X, \bm Y) := \widehat{\rho}_{\bm X \bm Y} := \frac{\widehat{\textrm{Cov}}(\bm X, \bm Y)}{s(\bm X) s(\bm Y)} = \frac{1}{n-1} \sum_{i=1}^{n} \frac{X_i - \overline{X}}{s(\bm X)} \frac{Y_i - \overline{Y}}{s(\bm Y)}.
+\]
+<<>>=
+# more complicated:
+cov(d$AOA, d$GJT) / (sd(d$AOA) * sd(d$GJT))
+
+# simpler:
+cor(d$AOA, d$GJT)
+@
+
+As soon as any value is missing, the \texttt{cor()} function returns `NA` (not available).
+One way to handle this is to ignore observations with one or two missing values:
+<<>>=
+cor(d$AOA, d$GJT, use = "pairwise.complete.obs")
+@
+
+If $r = 1$, all data points lie perfectly on a straight, ascending line.
+This almost always signals a tautology.
+For instance, heights measured in centimetres and in inches are perfectly correlated,
+but this relationship is not impressive---just extremely mundane.
+If $r = -1$, all data points lie on a straight, descending line,
+which typically indicates that the two variables are perfectly complementary.
+For example, the number of correct responses in a test often correlates at
+$r=-1$ with the number of incorrect responses---again, not particularly remarkable.
+If $r = 0$, the line is perfectly vertical, i.e.,
+there is no linear relationship between the two variables at all.
+
+The larger the absolute value of $r$, the closer the data points lie to the straight line.
+In other words, the larger the absolute value of $r$,
+the more precisely one can predict $y$ from $x$ using a linear equation
+(and vice versa) than if $x$ were unknown.
+The correlation between $\bm X$ and $\bm Y$ is the same as that between 
+$\bm Y$ and $\bm X$,
+so it makes no difference whether you type
+\texttt{cor(dat\$AOA, dat\$GJT)} or \texttt{cor(dat\$GJT, dat\$AOA)}.
+
+\mypar[Form vs strength of a relationship]{Example}
+Figure \ref{fig:correlation} shows four relationships
+to better illustrate the meaning of Pearson's $r$.
+\begin{itemize}
+\item \textit{Top left:} There is little scatter along the $y$ axis.
+The variation that exists is mostly captured by a straight line.
+Hence, $r$ is very high.
+\item \textit{Top right:} There is now more scatter along the $y$ axis;
+this is less well captured by a straight line,
+resulting in a lower correlation coefficient.
+The line has the same slope as in the left plot,
+but the correlation coefficient differs.
+\item \textit{Bottom left:} There is substantial scatter along the $y$ axis,
+but it is still largely captured by a straight line.
+$r$ is therefore again very high.
+While the correlation coefficient is similar to that of the plot above,
+the slope of the line differs.
+\item \textit{Bottom right:} The same line captures the scatter along the
+$y$ axis less well, so while the slope of the line is the same,
+the correlation coefficient is lower.\parend
+\end{itemize}
+
+<<fig.width = 3.5, fig.height = 3.5, echo = FALSE, fig.cap = "Correlation coefficients tell you little about the shape of a relationship.\\label{fig:correlation}", out.width=".5\\textwidth">>=
+par(mar = c(3, 4, 2, 1), mgp=c(2,.7,0), tck = -0.01, las = 1, cex = 0.65, cex.main = 1.1)
+par(mfrow = c(2,2), cex.main = 0.9)
+par(cex = 0.65, cex.main = 1)
+set.seed(15926)
+x <- 1:30
+noise <- rnorm(30, sd=3.5)
+y1 <- 15 + 1*x + noise
+y2 <- 15 + 1*x + 4*noise
+y3 <- 15 + 5*x + 5*noise
+y4 <- 15 + 5*x + 20*noise
+
+plot(x, y1, xlim=range(x),
+ylim=range(y4), ylab="y",
+main=paste("y = 15 + x, r = ", round(cor(x,y1),2), sep=""))
+abline(a=15, b=1)
+
+plot(x, y2, xlim=range(x),
+ylim=range(y4), ylab="y",
+main=paste("y = 15 + x, r = ", round(cor(x,y2),2), sep=""))
+abline(a=15, b=1)
+
+plot(x, y3, xlim=range(x),
+ylim=range(y4), ylab="y",
+main=paste("y = 15 + 5x, r = ", round(cor(x,y3),2), sep=""))
+abline(a=15, b=5)
+
+plot(x, y4, xlim=range(x),
+ylim=range(y4), ylab="y",
+main=paste("y = 15 + 5x, r = ", round(cor(x,y4),2), sep=""))
+abline(a=15, b=5)
+@
+
+
+\mypar[Data patterns behind correlation coefficients]{Remark}
+As we have just seen, 
+Pearson's $r$ expresses the proportion of variation in the points 
+of a scatterplot that is captured by a \emph{straight line}. 
+It doesn't answer the question of what the line looks like 
+(other than if it increases or decreases); see the four examples above.
+You'd need regression analysis for this.
+
+It is also possible for there to be a very strong 
+but nonlinear relationship between two variables that is 
+not reflected in Pearson's $r$ (Figure \ref{fig:nonlinearcorrelation}, left). 
+Conversely, $r$ can give the impression of a 
+fairly strong linear relationship even when such a relationship 
+barely exists for most of the points (centre), 
+or even when the relationship actually runs in the opposite direction. 
+For example, in the right-hand plot there are two groups where the association is negative. 
+However, the coefficient is positive if the two groups are considered together. 
+The issue here is not that $r$ has been miscalculated, 
+but that computing $r$ in this situation is largely meaningless. 
+Before you worry about correctness, first worry about relevance.
+
+<<fig.width = 5, fig.height = 1.5, echo = FALSE, fig.cap = "A correlation coefficient near 0 does not necessarily mean that there is no relationship between the variables, and a coefficient near 1 does not necessarily mean that the pattern in the data is best described by a strong positive relationship.\\label{fig:nonlinearcorrelation}", out.width=".9\\textwidth">>=
+par(mar = c(3, 4, 2, 1), mgp=c(2,.7,0), tck = -0.01, las = 1, cex = 0.65, cex.main = 1.1)
+par(mfrow = c(1, 3), cex.main = 0.9)
+par(cex = 0.65, cex.main = 1)
+x <- seq(-2*pi, pi, by = 0.2)
+y1 <- sin(x) + rnorm(length(x), sd = 0.15)
+x <- (x - min(x))/(max(x)-min(x))
+y1 <- (y1 - min(y1))/(max(y1)-min(y1))
+plot(x, y1, ylab="", xlab="",
+main=paste("r = ", round(cor(x,y1),2),sep=""))
+
+x <- c(seq(1, 20, by = 2), 80)
+y1 <- sin(x) + rnorm(length(x), sd = 2)
+y1[length(y1)] <- 100
+x <- (x - min(x))/(max(x)-min(x))
+y1 <- (y1 - min(y1))/(max(y1)-min(y1))
+plot(x, y1, ylab="", xlab="",
+main=paste("r = ", round(cor(x,y1),2),sep=""))
+
+x <- c(seq(1, 30, by = 3), seq(81, 100, length.out = 10))
+y2 <- 5-2*x + rnorm(length(x), sd = 8)
+y2[11:20] <- 500-2*x[11:20] + rnorm(10, sd = 8)
+x <- (x - min(x))/(max(x)-min(x))
+y2 <- (y2 - min(y2))/(max(y2)-min(y2))
+plot(x, y2, ylab="", xlab="",
+main=paste("r = ", round(cor(x,y2),2),sep=""))
+@
+
+With the \texttt{plot\_r()} function from the \texttt{cannonball} package, you can draw scatterplots that all look different but share the same correlation coefficient. 
+Instructions for installing the package can be found at \url{https://github.com/janhove/cannonball}. 
+The blog post \href{https://janhove.github.io/posts/2016-11-21-what-correlations-look-like/}{\textit{What data patterns can lie behind a correlation coefficient?}} (21 November 2016) describes the \texttt{plot\_r()} function. 
+Figure \ref{fig:plotr} shows sixteen relationships, each with 50 observations, all exhibiting a correlation of $r = -0.72$:
+
+<<fig.width = .8*10, fig.height = .8*10, echo = TRUE, fig.cap = "All sixteen relationships display a correlation of $-0.72$, yet they look quite different.\\label{fig:plotr}", out.width="\\textwidth">>=
+library(cannonball)
+plot_r(n = 50, r = -0.72)
+@
+
+Play around with the \texttt{plot\_r()} function to better understand what a correlation coefficient does \emph{not} tell you, and the influence of nonlinear relationships and outliers:
+
+<<eval = FALSE>>=
+plot_r(n = 15, r = 0.9)
+plot_r(n = 80, r = 0.0)
+plot_r(n = 30, r = 0.4)
+@
+You can access the function documentation with \texttt{?plot\_r} as usual.
+\parend
+
+To summarise, a single correlation coefficient can correspond to a wide variety of relationships.
+Always inspect your data graphically using scatterplots before calculating correlation coefficients. 
+Include these scatterplots in your papers, assignments, and presentations. 
+In my opinion, a correlation coefficient without a scatterplot is essentially meaningless.
+
+Besides Pearson's correlation coefficient, you will occasionally 
+encounter other measures of association between two variables in 
+the research literature.
+
+\mypar[Spearman's $\rho$]{Remark}
+To calculate Spearman's $\rho$, you first express the observations as ranks, 
+that is, you order the data from smallest to largest 
+and note the position of each data point. 
+You then simply compute the Pearson correlation for the ranks instead of the raw values:
+<<>>=
+cor(rank(d$AOA), rank(d$GJT))
+
+# simpler:
+cor(d$AOA, d$GJT, method = "spearman")
+@
+
+Spearman's $\rho$ can be useful when the relationship between two variables is 
+monotonic but not linear (monotonic meaning generally increasing or generally decreasing, rather than first increasing and then decreasing) 
+or when an outlier distorts the overall picture 
+but cannot be removed from the dataset for some reason.  
+
+If Spearman's $\rho = 1$, the relationship 
+is perfectly monotonically increasing 
+(higher values of $x$ always correspond to higher values of $y$); 
+if $\rho = -1$, the relationship is perfectly monotonically decreasing; and if $\rho = 0$, there is no monotonic association in the data. 
+Note that $\rho$ answers a different question from $r$: 
+\textit{How perfect is the monotonic relationship?} versus 
+\textit{How perfect is the linear relationship?}
+\parend
+
+\mypar[Kendall's $\tau$]{*Remark}
+  Kendall's $\tau$ is used fairly rarely. 
+  The calculation is conceptually straightforward \citep[see][]{Noether1981}, 
+  but can look complicated in R code, so I will summarise it here in words:
+\begin{enumerate}
+ \item Compare each $x$ value with every other $x$ value and 
+ note whether the first is larger or smaller than the second. 
+ For example, if the $x$ values are 5, 3, 8, and 7, 
+ the comparisons are:
+ \begin{itemize}
+  \item 5 vs 3: larger,
+  \item 5 vs 8: smaller,
+  \item 5 vs 7: smaller,
+  \item 3 vs 8: smaller,
+  \item 3 vs 7: smaller,
+  \item 8 vs 7: larger.
+ \end{itemize}
+ \item Compare each $y$ value with every other $y$ value. 
+ For $y$ values 8, $-2$, $-4$, $-3$, we obtain:
+ larger, larger, larger, larger, larger, smaller.
+ \item Count how many comparisons go in the same direction:
+ \begin{itemize}
+  \item 1st comparison: larger--larger: concordant,
+  \item 2nd comparison: smaller--larger: discordant,
+  \item 3rd comparison: smaller--larger: discordant,
+  \item 4th comparison: smaller--larger: discordant,
+  \item 5th comparison: smaller--larger: discordant,
+  \item 6th comparison: larger--smaller: discordant.
+ \end{itemize}
+ So there is 1 concordant comparison and 5 discordant comparisons.
+ \item Estimate Kendall's $\tau$ as follows:
+ \begin{equation*}
+ \hat{\tau} = \frac{\textrm{number of concordant} - \textrm{number of discordant}}{\textrm{total number of comparisons}}.
+ \end{equation*}
+ The hat indicates that this is a sample-based estimate.
+ Thus:
+  \begin{equation*}
+ \hat{\tau} = \frac{1 - 5}{6} = -0.67.
+ \end{equation*}
+\end{enumerate}
+
+If some $x$ or $y$ values are tied, the calculation is adjusted to account for these ties.
+
+<<>>=
+# For our small example
+x <- c(5, 3, 8, 7)
+y <- c(8, -2, -4, -3)
+cor(x, y, method = "kendall")
+
+# For the AOA-GJT data
+cor(d$AOA, d$GJT, method = "kendall")
+@
+
+Kendall's $\hat{\tau}$ estimates the difference between 
+the proportion of concordant comparisons and the proportion of discordant comparisons. 
+I personally find this interpretation a bit awkward, but there is a simpler way:
+Take any two $(x, y)$ pairs---let's call them $(x_1, y_1)$ and $(x_2, y_2)$.
+If $x_2$ is larger than $x_1$, then it is $\frac{1 + \hat{\tau}}{1 - \hat{\tau}}$ 
+times more likely that $y_2$ is also larger than $y_1$ than that it is smaller.
+For the \textsc{aoa}--\textsc{gjt} data: 
+if one person has a higher \textsc{aoa} than another, 
+then it is $\frac{1+(-0.60)}{1-(-0.60)} = 0.25$ times more likely that they 
+also have a higher \textsc{gjt} than a lower one.
+In other words, it is four times more likely that 
+they have a lower \textsc{gjt} than a higher one.
+\parend
+
+In practice, the use of Spearman's $\rho$ and Kendall's $\tau$ is rather limited. 
+Rather than automatically turning to $\rho$ or $\tau$ when a relationship is nonlinear 
+or when an outlier is suspected, 
+I would argue that it is usually better to consider whether
+(a) you are genuinely interested the strength of the relationship rather than its form,
+(b) one or both variables can be meaningfully transformed to yield a more linear relationship, 
+or (c) the suspected outlier is actually a legitimate data point at all.
+
+
+\mypar[`Strong' and `weak' correlations]{Remark}
+Correlation coefficients are often---without consideration of the 
+research question or context---classified as small or weak, medium, or large or strong. 
+I find this rather unhelpful, which is why I do not reproduce such classifications here. 
+Personally, I believe correlation coefficients are overused. 
+I explain why in these blog posts:
+\begin{itemize}
+\item \href{https://janhove.github.io/posts/2015-02-05-standardised-vs-unstandardised-es/}{\textit{Why I don't like standardised effect sizes}} (5 February 2015)
+\item \href{https://janhove.github.io/posts/2015-03-16-standardised-es-revisited/}{\textit{More on why I don't like standardised effect sizes}} (16 March 2015)
+\item \href{https://janhove.github.io/posts/2017-07-14-OtherRoadsToPower/}{\textit{Abandoning standardised effect sizes and opening up other roads to power}} (14 July 2017)
+\end{itemize}
+See also \citet{Baguley2009}.
+\parend
+
+
+Since correlation coefficients are calculated from samples, 
+they are also affected by sampling error: 
+different samples drawn from the same population 
+will yield correlation coefficients that differ to some extent. 
+The uncertainty or variability of a correlation coefficient based on a 
+sample can be expressed as a confidence interval. 
+Here, we discuss both a bootstrap approach and a method based on $t$ distributions.
+
+\mypar[Confidence interval using the bootstrap]{Remark}\label{sec:r_bootstrap}
+  The procedure is analogous to the bootstrap described in 
+  Chapter \ref{ch:uncertainty}:
+  new bootstrap samples are drawn from the original sample, 
+  and for each bootstrap sample
+  the statistic of interest (here: the correlation between \textsc{aoa} and \textsc{gjt}) 
+  is calculated. 
+  The spread of the estimates across the bootstrap samples 
+  gives us an indication of the variability of the correlation coefficient 
+  in samples of this size.
+
+<<cache = TRUE>>=
+n_bootstraps <- 20000
+bootstraps <- vector(length = n_bootstraps)
+
+for (i in 1:n_bootstraps) {
+  # sampling with replacement from the observed sample
+  bootstrap_sample <- d[sample(1:nrow(d), replace = TRUE), ]
+
+  # calculate and store correlation in the bootstrap sample
+  bootstraps[[i]] <- cor(bootstrap_sample$GJT, bootstrap_sample$AOA)
+}
+@
+
+<<eval = FALSE>>=
+# histogram of bootstrap estimates (not shown)
+hist(bootstraps, breaks = 50)
+@
+
+As the histogram is not normally distributed, we will forego calculating a standard error.
+However, using the percentiles of the distribution, it is certainly possible
+to construct a confidence interval. Here, we calculate a 90\% confidence interval:
+<<>>=
+quantile(bootstraps, probs = c(0.05, 0.95))
+@
+\parend
+
+
+\mypar[Confidence interval using $t$ distributions]{Remark}
+I will not reproduce the formula for constructing a confidence interval 
+for a correlation coefficient using a $t$ distribution, 
+as it is both intimidating and conceptually adds little. 
+It is based on the assumption that the population 
+from which the two variables were drawn is bivariately normal. 
+In essence, this means that the relationship between both variables 
+is linear and both variables are normally distributed.  
+
+If these assumptions are plausible, 
+a 90\% confidence interval can be calculated using the \texttt{cor.test()} function:
+<<>>=
+cor.test(d$AOA, d$GJT, conf.level = 0.9)$conf.int
+@
+
+Using this method, we obtain a 90\% confidence interval of 
+approximately $[-0.86, -0.72]$. This differs only slightly 
+from the interval we computed via the bootstrap. 
+However, with the bootstrap we did not assume that the population 
+is bivariately normal. 
+In particular, for smaller samples, the results of the bootstrap and 
+$t$-based methods can diverge substantially. 
+If the assumptions hold, the $t$-method is undoubtedly superior, 
+but these assumptions are difficult to verify in small samples.  
+
+The performance of the bootstrap can be improved somewhat by 
+alternative interval constructions \citep[see][]{DiCiccio1996}, 
+though these methods are more complex and less intuitive. 
+For our purposes, it suffices to reiterate the warning from 
+\citet{Hesterberg2015}: ``Bootstrapping does not overcome the weakness of 
+small samples as a basis for inference.'' (p.\ 379)
+\parend
+
+
+\mypar{Exercise}\label{ex:poarch}
+There is now a substantial body of literature examining whether 
+bilingualism confers cognitive advantages. 
+One cognitive \term{construct} often mentioned in this context is 
+\emph{cognitive control}. 
+This construct can only be measured indirectly, 
+namely through cognitive tests: a person’s performance on a test is 
+not their cognitive control per se, but merely an imperfect 
+\term{indicator} of it. If different indicators of cognitive control are strongly correlated, 
+it is more likely that findings based on one indicator will generalise to other indicators.
+
+The file \texttt{poarch2018.csv} contains data from two cognitive tests 
+that are assumed to be indicators of cognitive control: 
+the Flanker task \citep{Eriksen1974} and the Simon task \citep{Simon1969b}. 
+In both tasks, participants must sometimes ignore irrelevant information. 
+The data come from a small study by \citet{Poarch2018}, 
+in which participants completed both tasks. 
+The results represent how much faster participants responded 
+when the irrelevant information was `congruent' with the relevant information 
+compared to when it was `incongruent’. Values are expressed in stimuli per second; 
+for example, a value of 0.5 means the participant completed 5 more stimuli per 10 seconds 
+in the congruent condition than in the incongruent condition.
+\begin{enumerate}
+  \item Plot the relationship between the variables \texttt{Flanker} and \texttt{Simon}.
+  \item Calculate the Pearson correlation coefficient, if you consider it appropriate.
+  \item If applicable, calculate a 90\% confidence interval, both using the bootstrap and the $t$ distribution.
+  \item Briefly Summarise your findings.\parend
+\end{enumerate}
+
+\mypar[Reconstructing confidence intervals]{*Remark}
+When a confidence interval around a correlation coefficient is constructed 
+using the $t$ distribution method, the result depends on just three factors:
+\begin{itemize}
+ \item the desired confidence level (50\%, 80\%, 87\%, etc.);
+ \item the correlation coefficient itself;
+ \item the number of observed pairs.
+\end{itemize}
+If you know the correlation coefficient and the sample size, 
+you can calculate the $t$ distribution-based confidence interval yourself. 
+I find this useful when a study does not report a confidence interval for $r$. 
+The function \texttt{r.test()} from the \texttt{psych} package makes this
+easy, although it only calculates 95\% confidence intervals. 
+You need to install the \texttt{psych} package first.
+<<>>=
+psych::r.test(r12 = -0.80, n = 76)
+@
+By the way, when you use the notation \texttt{psych::r.test()}, you don't 
+need to load the \texttt{psych} package with \texttt{library(psych)}. 
+This is useful if you only need a single function from a package.
+
+The 95\% confidence interval for a correlation coefficient of $r = -0.80$ 
+in a sample of 76 data points is therefore $[-0.87, -0.70]$.
+
+If you prefer to calculate 80\% or 90\% confidence intervals for 
+correlation coefficients, you can use the function below. 
+It generates a dataset with the desired characteristics using the 
+\texttt{plot\_r()} function from the \texttt{cannonball} package 
+and then calculates the confidence interval around the correlation 
+coefficient in that dataset. 
+<<>>=
+ci_r <- function(r, n, conf_level = 0.90) {
+  dat <- cannonball::plot_r(r = r, n = n, showdata = 1, plot = FALSE)
+  ci <- cor.test(dat$x, dat$y, conf.level = conf_level)$conf.int[1:2]
+  ci
+}
+
+# 95% confidence interval
+ci_r(r = -0.80, n = 76, conf_level = 0.95)
+# 80% confidence interval
+ci_r(r = -0.80, n = 76, conf_level = 0.80)
+# 50% confidence interval
+ci_r(r = -0.80, n = 76, conf_level = 0.50)
+@
+Bootstrap-based confidence intervals 
+can only be reconstructed from the data itself.
+\parend
+
+% \section{Modellannahmen überprüfen}
+% Die Modellresiduen sollten grafisch dargestellt werden, um
+% die Modellannahmen zu überprüfen. Leitfragen dabei sind
+% unter anderem:
+% \begin{itemize}
+% 	\item Gibt es noch einen erkennbaren Zusammenhang zwischen
+% 	      den Residuen und den $\widehat{y}$-Werten? Ein
+% 	      solcher Zusammenhang deutet darauf hin, dass der
+% 	      Zusammenhang zwischen einem oder mehreren Prädiktoren
+% 	      und dem outcome nicht-linear ist.
+% 
+% 	\item Variiert die Streuung der Residuen mit $\widehat{y}$
+% 	      oder mit den Prädiktoren? Systematische Unterschiede
+% 	      in der Streuung der Residuen deuten darauf hin, dass
+% 	      der Restfehler `heteroskedastisch' ist.
+% 
+% 	\item Sind die Residuen ungefähr normalverteilt? Nicht-normalverteilte
+%         Residuen lassen vermuten, dass die Annahme, dass der Restfehler
+%         aus einer Normalverteilung stammt, nicht stimmt. Dies hätte einerseits
+%         Konsequenzen für die auf $t$-Verteilungen basierten Konfidenzintervalle
+%         und Konfidenzbänder. Andererseits, und wichtiger,
+%         sind die bedingten Mittel, die
+%         die Regressionslinie darstellt, eventuell weniger relevant.
+% 
+% 	\item Gibt es einzelne Datenpunkte, die einen viel stärkeren
+%         Einfluss aufs Regressionsmodell ausüben als die meisten?
+%         Das Problem mit einflussreichen Datenpunkten ist,
+%         dass sie etwa dazu führen können, dass das Modell
+%         einen leichten positiven Zusammenhang zwischen den Variablen
+%         findet, während für die meisten Datenpunkte ein starker
+%         negativer Zusammenhang vorliegt.
+% \end{itemize}
+% 
+% Abbildung \ref{fig:modeldiagnostics} zeigt ein paar nützliche
+% Grafiken, die man einfach mit \texttt{plot(aoa.lm)} generieren
+% kann. Auf riesige Probleme in den Modellannahmen deuten diese
+% Grafiken m.E.\ nicht hin. Solche Probleme würde man ohnehin
+% nicht erwarten, wenn man sich das Streudiagramm am Anfang dieses
+% Kapitels angeschaut hat. In meiner Erfahrung stösst man selten
+% auf Überraschungen, wenn man die Daten bereits ausführlich
+% grafisch dargestellt hat.
+% <<fig.cap = "Grafische Modelldiagnose des \\texttt{aoa.lm}-Modells mithilfe der \\texttt{plot()}-Funktion. \\textit{Links oben:} Zusammenhang zwischen Residuen und $\\widehat{y}$. Die rote Trendlinie sollte ungefähr flach sein. Sonstige auffällige Muster wären auch unerwünscht. \\textit{Rechts oben:} Normalität der Residuen. Wenn die Residuen normalverteilt sind, liegen sie grundsätzlich auf der gestrichelten Diagonale. \\textit{Links unten:} Streuung in den Residuen. Eine flache rote Trendlinie deutet auf Homoskedastizität hin. \\textit{Rechts unten:} Manchmal gibt es in dieser Grafik ein paar gestrichelte rote Linien. Datenpunkte, die jenseits dieser Linien liegen, dürften viel einflussreicher als andere Datenpunkte sein. Bei allen Grafiken ist jedoch zu bemerken, dass die Muster aufgrund des Stichprobenfehlers unerwünscht aussehen können, auch wenn die Annahmen tatsächlich berechtigt sind.\\label{fig:modeldiagnostics}", fig.width = 4*1.5, fig.height = 4*1.5, out.width=".66\\textwidth", echo = FALSE>>=
+% # 4 Grafiken in 2*2-Raster zeichnen.
+% # (Dies funktioniert nicht für ggplot!)
+% par(mfrow = c(2, 2), cex = 0.6, mar = c(4, 4, 2, 2))
+% # Modelldiagnosen darstellen
+% plot(aoa.lm)
+% # Ab jetzt wieder normal zeichnen.
+% par(mfrow = c(1, 1))
+% @
+% 
+% <<eval = FALSE, echo = TRUE>>=
+% # 4 Grafiken in 2x2-Raster zeichnen.
+% # (Dies funktioniert nicht für ggplot!)
+% par(mfrow = c(2, 2))
+% # Modelldiagnosen darstellen
+% plot(aoa.lm)
+% # Ab jetzt wieder normal zeichnen.
+% par(mfrow = c(1, 1))
+% @
+% 
+% Aufgrund des Stichprobenfehlers wird man oft -- rein durch
+% Zufall -- Zusammenhänge und nicht-normalverteilte Residuen
+% finden, sodass man ein bisschen Erfahrung braucht, um
+% unbedeutende Muster in den Residuen von potenziellen
+% Problemen zu unterscheiden. Ausserdem sind Modellannahmen
+% gerade bei kleineren Stichproben schwieriger zu überprüfen.
+% Für mehr Informationen hierzu, siehe \href{https://janhove.github.io/posts/2018-04-25-graphical-model-checking/}{\textit{Checking model assumptions without getting paranoid}} (25.4.2018)
+% und \citet{Vanhove2018b}.
+% Siehe ausserdem
+% \href{https://janhove.github.io/posts/2019-04-11-assumptions-relevance/}{\textit{Before worrying about model assumptions, think about model relevance}} (11.4.2019).
+% 
+% Das Thema Modellkritik wird weiter behandelt von
+% unter anderem
+% \citet{Baayen2008},
+% \citet[][Kapitel 4]{Cohen2003},
+% \citet[][Kapitel 4]{Faraway2005},
+% \citet[][Kapitel 8--9]{Weisberg2005} und
+% \citet[][Kapitel 2]{Zuur2009}.
+% Statt sich zu sehr in technischen Details zu verlieren,
+% halte ich es aber sinnvoller, sich stets die Relevanzfrage
+% zu stellen (vgl.\ Blogeintrag 11.4.2019).

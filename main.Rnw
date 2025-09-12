@@ -1,0 +1,230 @@
+\documentclass[twoside, 11pt]{book}
+
+\usepackage[top=1.25in, bottom=1.25in]{geometry}
+\usepackage[all]{nowidow}
+% \usepackage{lmodern}
+
+\usepackage{doi}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\hyphenation{work-space}
+
+\usepackage{parskip}
+\usepackage{tipa}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{tgpagella}
+\usepackage[sc]{mathpazo}
+\usepackage{bm}
+
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\clt}{\textsc{clt}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Var}{\textrm{Var}}
+\newcommand{\Cov}{\textrm{Cov}}
+\newcommand{\Std}{\textrm{Std}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\im}{\textrm{i}}
+\newcommand{\df}{\,\textrm{d}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage[margin=10pt, labelfont=bf, width=.8\textwidth]{caption}
+
+\usepackage[small, explicit]{titlesec}
+\usepackage{fancyhdr}
+
+\usepackage[sort]{natbib}
+
+% Define a new counter for theorems, lemmas, remarks, etc.
+\newcounter{mycounter}[chapter] % Reset counter at the start of each chapter
+\renewcommand{\themycounter}{\thechapter.\arabic{mycounter}}
+\NewDocumentCommand{\mypar}{som}{%
+  \refstepcounter{mycounter}%
+  \par\noindent\textbf{#3 \themycounter}%
+  % \par\medskip\noindent\textbf{#3 \themycounter}%
+    \IfBooleanF{#1}{\IfValueT{#2}{\space(#2)}}\textbf{.}%
+}
+
+\newcommand{\term}[1]{\textbf{#1}}
+
+\usepackage{hyperref}
+\usepackage{varioref}
+
+% After proofs
+\newcommand*{\QED}[1][$\square$]{%
+\leavevmode\unskip\penalty9999 \hbox{}\nobreak\hfill
+    \quad\hbox{#1}\par%
+}
+
+% After comments / exercises
+\newcommand*{\parend}[1][$\diamondsuit$]{%
+\leavevmode\unskip\penalty9999 \hbox{}\nobreak\hfill
+    \quad\hbox{#1}\par%
+}
+\newcommand{\parendeq}{\tag*{$\diamondsuit$}}
+
+\title{Analysing quantitative data:\\An introduction for language researchers}
+\date{University of Fribourg \\ Autumn 2025}
+\author{Jan Vanhove \\ \url{jan.vanhove@unifr.ch} \\ \url{https://janhove.github.io}}
+
+% KNITR options -----------------------------------
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+
+# set global chunk options
+opts_chunk$set(fig.path = 'generated_figs/',
+               fig.align = 'center',
+               fig.show = 'hold',
+               fig.pos = "tp",
+               message = FALSE,
+               warning = FALSE,
+               tidy = FALSE,
+               prompt = FALSE,
+               comment = '',
+               highlight = TRUE,
+               dev = 'cairo_pdf',
+               cache = FALSE,
+               fig.width = 4,
+               fig.height = 4,
+               out.width = '.5\\textwidth')
+opts_knit$set(global.par = TRUE)
+
+options(formatR.arrow = TRUE,
+        width = 60, 
+        show.signif.stars = FALSE, 
+        tibble.print_max = 7,
+        tibble.print_min = 7)
+
+# knit_hooks$set(document = function(x) {
+#   gsub('(\n\n\\\\end\\{knitrout\\}[\n]+)', '\n\\\\end\\{knitrout\\}\n', paste(x, collapse = '\n'))
+# })
+
+set.seed(2025)
+@
+
+<<echo = FALSE, cache = FALSE>>=
+par(las = 1,
+    bty = "l",
+    mar = c(3,3.7,2,1),
+    mgp = c(2,0.3, 0),
+    tck = -.01,
+    cex = 0.8)
+op <- par(no.readonly = TRUE)
+@
+
+\begin{document}
+
+\frontmatter
+\maketitle
+
+\newpage
+~\vfill
+\thispagestyle{empty}
+\setlength{\parindent}{0pt}
+% \setlength{\parskip}{\baselineskip}
+{\small \textit{Analysing quantitative data: An introduction for language researchers} \copyright\ 2025 by Jan Vanhove is licensed under Creative Commons Attribution-NonCommercial 4.0 International. \\
+To view a copy of this license, visit \url{https://creativecommons.org/licenses/by-nc/4.0/}. \\
+\url{jan.vanhove@unifr.ch} \\
+\url{https://janhove.github.io}
+}
+
+<<Preface, child='00_preface.Rnw'>>=
+@
+
+\setcounter{tocdepth}{0}
+\tableofcontents
+
+\mainmatter
+
+\part{Basics}
+<<Software, child='01_software.Rnw'>>=
+@
+
+<<Datasets, child='02_datasets.Rnw'>>=
+@
+
+<<Probability, child='03_probability.Rnw'>>=
+@
+
+<<Univariate, child='04_univariate.Rnw'>>=
+@
+
+\part{Estimates}
+
+<<Samples, child='05_samples.Rnw'>>=
+@
+
+<<Uncertainty, child='06_uncertainty.Rnw'>>=
+@
+
+\part{The general linear model}
+<<LinearModel, child='07_linearmodel.Rnw'>>=
+@
+
+<<SimpleRegression, child='08_regression.Rnw'>>=
+@
+
+<<GroupDifferences, child='09_groupdiffs.Rnw'>>=
+@
+
+<<Interactions, child='10_interactions.Rnw'>>=
+@
+
+<<Multiple, child='11_multipleregression.Rnw'>>=
+@
+
+\part{Significance testing}
+<<Significance, child='12_significance.Rnw'>>=
+@
+
+<<ttest, child='13_ttest.Rnw'>>=
+@
+
+<<anova, child='14_anova.Rnw'>>=
+@
+
+<<power, child='15_power.Rnw'>>=
+@
+
+<<silly, child='16_silly.Rnw'>>=
+@
+
+<<qrp, child='17_QRP.Rnw'>>=
+@
+
+\part{Miscellaneous topics}
+
+<<within, child='18_within.Rnw'>>=
+@
+
+<<Logistic, child = '19_logistic.Rnw'>>=
+@
+
+<<selfstudy, child='20_selfstudy.Rnw'>>=
+@
+
+\appendix
+\part*{Appendices}
+\addcontentsline{toc}{part}{Appendices}
+
+<<Errors, child = '99_errormessages.Rnw'>>=
+@
+
+\chapter{Software versions}\label{app:versions}
+I last compiled this script using the following software versions.
+<<>>=
+suppressWarnings(devtools::session_info(pkgs = "attached"))
+@
+
+\bibliographystyle{../Documents/unified}
+\bibliography{../Documents/bibliography}
+
+\end{document}
