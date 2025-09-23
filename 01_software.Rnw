@@ -156,10 +156,10 @@ the result is displayed as \texttt{1.26e+95}.\footnote{The numbers in the runnin
 3328^27
 @
 This notation is known as \term{scientific notation}
-and is to be read as $1.26 \cdot 10^{95}$ -- that is, as $1.26$ but with the decimal
+and is to be read as $1.26 \cdot 10^{95}$---that is, as $1.26$ but with the decimal
 point moved 95 places to the right.
 The result of $2^{-21}$ is displayed as \texttt{4.8e-07},
-which is to be read as $4.8 \cdot 10^{-7}$ -- that is, as $4.8$ but with the decimal
+which is to be read as $4.8 \cdot 10^{-7}$---that is, as $4.8$ but with the decimal
 point moved seven places to the left ($0.00000048$).
 <<>>=
 2^(-21)
