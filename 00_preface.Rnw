@@ -28,7 +28,7 @@ Here is my tuppence-worth:
   The dangers of blind number crunching are illustrated 
   in several exercises in this script.
   
-  \item Outputs of statistical models are sometimes interpreted too eagerly 
+  \item Outputs of statistical models are usually interpreted too eagerly 
   in terms of the study's theories and hypotheses, 
   without a clear understanding of what all these numbers \emph{literally} mean.  
   Linking results to theory is desirable, of course. 
