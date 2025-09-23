@@ -913,8 +913,8 @@ The code becomes a bit more complex:
 \begin{itemize}
   \item The notation \texttt{French\_1:German\_3} selects all columns between 
         \texttt{French\_1} and \texttt{German\_3} (including). 
-        Alternatively, we could have used \texttt{starts\_with(c("French", "Portuguese", "German"))}
-        to select the relevant columns.
+        Alternatively, we could have selected the relevant columns using
+        \texttt{starts\_with(c("French", "Portuguese", "German"))}.
   \item A so-called \href{https://regexr.com}{\term{regular expression}} (regex) 
         is used to split up these column names into a \texttt{Language} bit and into a \texttt{Time} bit. 
         The split happens at the first underscore (\texttt{\_}) encountered.
