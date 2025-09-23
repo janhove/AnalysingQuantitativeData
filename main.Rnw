@@ -114,6 +114,13 @@ par(las = 1,
 op <- par(no.readonly = TRUE)
 @
 
+<<echo = FALSE, warning = FALSE, message = FALSE>>=
+library(here)
+library(tidyverse)
+theme_set(theme_bw())
+@
+
+
 \begin{document}
 
 \frontmatter
