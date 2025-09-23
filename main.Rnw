@@ -2,7 +2,6 @@
 
 \usepackage[top=1.25in, bottom=1.25in]{geometry}
 \usepackage[all]{nowidow}
-% \usepackage{lmodern}
 
 \usepackage{doi}
 \usepackage[T1]{fontenc}
@@ -102,15 +101,10 @@ options(formatR.arrow = TRUE,
         show.signif.stars = FALSE, 
         tibble.print_max = 7,
         tibble.print_min = 7)
-
-# knit_hooks$set(document = function(x) {
-#   gsub('(\n\n\\\\end\\{knitrout\\}[\n]+)', '\n\\\\end\\{knitrout\\}\n', paste(x, collapse = '\n'))
-# })
-
 set.seed(2025)
 @
 
-<<echo = FALSE, cache = FALSE>>=
+<<echo = FALSE>>=
 par(las = 1,
     bty = "l",
     mar = c(3,3.7,2,1),
