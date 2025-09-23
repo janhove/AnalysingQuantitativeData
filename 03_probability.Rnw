@@ -5,7 +5,7 @@ This chapter introduces some concepts in probability theory that I think you nee
 Incidentally, I've chosen to include a few proofs of mathematical statements---not because
 you should be able to do such proofs yourself, but because I want to show
 that these statements are fairly straightforward consequences of the definitions
-introduced.
+rather than inscrutable edicts.
 For the statements that are more difficult to prove using high-school mathematics,
 illustrations rather than proofs are included.
 
@@ -265,7 +265,7 @@ The yes--no question \textit{Have we drawn two Aces} then corresponds to the eve
 \mypar[Discrete probability space]{Definition}\label{def:discrete_prob_space}
   A \term{discrete probability space} consists of a countable sample space $\Omega$
   and a mapping (function) $\Prob$ that assigns to each event a number.
-  This map specifies the \term{probability} with which each event occurs.
+  This mapping specifies the \term{probability} with which each event occurs.
   To that end, it needs to fulfil the following criteria (axioms):
   \begin{enumerate}
   \item For each event $E$, we have $\Prob(E) \geq 0$.
@@ -283,7 +283,7 @@ The yes--no question \textit{Have we drawn two Aces} then corresponds to the eve
 \end{enumerate}
 
 \mypar[Calculating with probabilities]{Lemma}
-From the criteria that the map $\Prob$ has to satisfy,
+From the criteria that the mapping $\Prob$ has to satisfy,
 we can derive a few important rules for calculating with probabilities;
 refer to Figure \ref{fig:sets} for the set-theoretical operations referred to.
 \begin{enumerate}
@@ -982,7 +982,11 @@ As you may recall from school, the area underneath a curve over an interval is g
 by the integral of the function over this interval.
 Indeed, we have
 \[
-  \Prob(X \in [45, 93]) = \int_{45}^{93} f_X(t) \df t = \int_{45}^{93} \frac{1}{360} \df t = \frac{93 - 45}{360}.
+  \Prob(X \in [45, 93]) 
+  = \int_{45}^{93} f_X(t) \df t 
+  = \int_{45}^{93} \frac{1}{360} \df t 
+  = \frac{t}{360} \Big|_{45}^{93}
+  = \frac{93 - 45}{360}.
 \]
 
 \mypar{Remark}
@@ -1201,20 +1205,30 @@ $\sqrt{\Var(X)} =: \Std(X)$.
   So its standard deviation is $\sqrt{10800} \approx 103.9$.
 \parend
 
-Lemma \ref{lemma:steiner} can be used to prove the first claim of the following lemma.
-
 \mypar[Properties of the variance]{Lemma}\label{properties_variance}
-  Let $X$ be a random variable such that $\Var{Var}(X)$ exists
+  Let $X$ be a random variable such that $\Var(X)$ exists
   and let $a, b$ be constants.
   Then
   \[
-    \Var(aX + b) = a^2\Var(X).
+    \Var(aX + b) = a^2\Var(X). \parendeq
   \]
+\begin{proof}
+  We have
+  \begin{align*}
+    \Var(aX + b)
+    &= \E\left(\left(aX + b - \E\left(aX + b\right)\right)^2\right) \\
+    &= \E\left(\left(aX + b - a\E\left(X\right) - b\right)^2\right) \\
+    &= \E\left(a^2\left(X - \E(X)\right)^2\right) \\
+    &= a^2\E\left(\left(X - \E(X)\right)^2\right) \\
+    &= a^2\Var(X). \qedhere
+  \end{align*}
+\end{proof}
   
-  In general, though, it is \emph{not} the case that $\Var(X + Y) = \Var(X) + \Var(Y)$.
-  If $X, Y$ are independent (with independence of random variables being defined in the next section),
+  In general, though, it is \emph{not} the case that 
+  $\Var(X + Y) = \Var(X) + \Var(Y)$.
+  If $X, Y$ are independent 
+  (with independence of random variables being defined in the next section),
   however, it \emph{is} true that $\Var(X + Y) = \Var(X) + \Var(Y)$.
-\parend
 
 \mypar{Example}
   Based on the random variable $G$ from Example \ref{example:2k},
@@ -1669,7 +1683,7 @@ Second, thanks to the independence of the random variables, we have
 \end{align*}
 Hence, the standard deviation of the mean is
 \[
-  \Std(\overline X) = \sqrt{\Var(\overline X)} = \frac{\Var(X_1)}{\sqrt{n}}.
+  \Std(\overline X) = \sqrt{\Var(\overline X)} = \frac{\Std(X_1)}{\sqrt{n}}.
 \]
 Hence, the larger the sample size $n$, 
 the less individual sample means deviate from their expected value.
@@ -1691,7 +1705,7 @@ about the shape of the distribution of the sample mean.
 We won't prove this theorem, 
 but the examples will illustrate what this theorem says and doesn't say.
 Incidentally, the theorem is about a limit (that is, about an asymptotic finding)
-and it is central (that is, of key importance) to probability, hence the name.
+and it is central (that is, of key importance) to probability theory, hence the name.
 It's not a theorem about `central limits', which don't exist.
 
 \mypar{Remark}
@@ -1855,7 +1869,7 @@ pnorm(50, mean = 180, sd = sqrt(10800/n)) -
 @
   That is, about 3.1\%.
   The simulation, however, shows that the actual probability is closer to
-  4\%.\footnote{The true actual probability in this particular example is $\int_0^50 x/180^2 \df x = 25/648$.}
+  4\%.\footnote{The true actual probability in this particular example is $\int_0^50 x/180^2 \df x = 25/648 \approx 3.86\%$.}
 <<>>=
 mean(means < 50 & means > 0)
 @
@@ -1869,7 +1883,7 @@ is more useful more quickly for a continuous, bounded, symmetric distribution
 such as the continuous uniform distribution than it is for
 the discrete, unbounded, skewed distribution generated by our random number generator.
 It's important to appreciate that there is no magic sample size
-where the \clt\ magically `kicks in'.
+where the \clt\ `kicks in'.
 The \clt\ offers an \emph{approximation}.
 Whether this approximation is sufficiently good, depends on what you consider
 sufficiently good, on the sample size, and on the shape of the distribution
