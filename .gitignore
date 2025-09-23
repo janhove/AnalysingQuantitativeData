@@ -5,3 +5,4 @@
 .log
 build_main.R
 generated_figs/
+cache/
