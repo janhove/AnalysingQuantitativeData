@@ -1502,7 +1502,7 @@ The endpoints can be included or left out at will;
 the distribution doesn't change as a a result.
 For $X \sim \textrm{Unif}([a,b])$, we have
 \[
-  \E(X) = \frac{b-a}{2}
+  \E(X) = \frac{a+b}{2}
 \]
 and
 \[
