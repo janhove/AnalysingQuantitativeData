@@ -1371,7 +1371,7 @@ Hence,
 
 \mypar{Example}
   We draw a random card from a deck of 36 \textit{Jass} cards.
-  Th probability that we've drawn an Ace is $p = 4/36 = 1/9$.
+  The probability that we've drawn an Ace is $p = 4/36 = 1/9$.
   We can thus model the random experiment `Drawing an Ace' as a Bernoulli
   experiment with parameter $p = 1/9$,
   where we label the outcome of the experiment as 1 if we draw an Ace
@@ -1562,10 +1562,18 @@ that is, the normal distribution with mean 0 and variance 1.
 <<echo = FALSE, fig.cap = "Density functions of four normal distributions.\\label{fig:dnorm}", fig.width = 6, fig.height = 5, out.width=".6\\textwidth">>=
 op <- par(no.readonly = TRUE)
 par(mfrow = c(2, 2))
-curve(dnorm(x), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(0, 1)")
-curve(dnorm(x, mean = 2), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(2, 1)")
-curve(dnorm(x, sd = sqrt(3)), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(1, 3)")
-curve(dnorm(x, mean = 2, sd = sqrt(3)), from = -6, to = 6, ylab = "f(x)", ylim = c(0, 0.42), main = "N(2, 3)")
+curve(dnorm(x), from = -6, to = 6, 
+      ylab = "f(x)", ylim = c(0, 0.42), 
+      main = "N(0, 1)")
+curve(dnorm(x, mean = 2), from = -6, to = 6, 
+      ylab = "f(x)", ylim = c(0, 0.42), 
+      main = "N(2, 1)")
+curve(dnorm(x, sd = sqrt(3)), from = -6, to = 6, 
+      ylab = "f(x)", ylim = c(0, 0.42), 
+      main = "N(0, 3)")
+curve(dnorm(x, mean = 2, sd = sqrt(3)), from = -6, to = 6, 
+      ylab = "f(x)", ylim = c(0, 0.42), 
+      main = "N(2, 3)")
 par(op)
 @
 
@@ -1733,7 +1741,7 @@ It's not a theorem about `central limits', which don't exist.
     \Std(\overline G) = \sqrt{\frac{2}{5}} \approx 0.632.
   \]
   The \clt\ suggests that we could approximate the distribution of $\overline G$
-  as $\mathcal{N}(2, \sqrt{2/5})$.
+  as $\mathcal{N}(2, 2/5)$.
   
   Let's see how good this approximation actually is.
   The file \texttt{rng\_2k.R} in the \texttt{functions} subdirectory
@@ -1771,12 +1779,12 @@ sqrt(mean((means - mean(means))^2)) # standard deviation of sample means
   In essence, this is the distribution function you'd obtain if you treated
   the 50,000 observations of $\overline G$ as their own finite distribution.
   The blue line shows the distribution function of 
-  the $\mathcal{N}(2, \sqrt{2/5})$ distribution.
+  the $\mathcal{N}(2, 2/5)$ distribution.
   
   The right panel in the same figure shows a \term{histogram} of the same 
   50,000 observations of $\overline G$, which provides an estimate of the 
   density.
-  The blue line shows the density function of the $\mathcal{N}(2, \sqrt{2/5})$ distribution.
+  The blue line shows the density function of the $\mathcal{N}(2, 2/5)$ distribution.
 <<echo = TRUE, fig.cap = "The distribution of $\\overline G$ in 50,000 simulations for $n = 5$. The blue curves show the normal approximation.\\label{fig:clt_rng2k}", fig.width = 9, fig.height = 4, out.width=".8\\textwidth">>=
 par(mfrow = c(1, 2)) # plots side by side
 plot(ecdf(means), xlab = "Sample mean", ylab = "Cumulative frequency",
@@ -1794,7 +1802,7 @@ par(mfrow = c(1, 1)) # normal plotting from here on
 
   For $n = 5$, the \clt-based normal approximation is pretty poor.
   Indeed, if we compute $\Prob(\overline G < 1)$ under the assumption 
-  that $\overline G \sim \mathcal{N}(2, \sqrt{2/5})$, we obtain
+  that $\overline G \sim \mathcal{N}(2, 2/5)$, we obtain
   an estimate of about 5.7\%.
 <<>>=
 pnorm(1, mean = 2, sd = sqrt(2/n))
@@ -1869,7 +1877,7 @@ pnorm(50, mean = 180, sd = sqrt(10800/n)) -
 @
   That is, about 3.1\%.
   The simulation, however, shows that the actual probability is closer to
-  4\%.\footnote{The true actual probability in this particular example is $\int_0^50 x/180^2 \df x = 25/648 \approx 3.86\%$.}
+  4\%.\footnote{The true actual probability in this particular example is $\int_0^{50} x/180^2 \df x = 25/648 \approx 3.86\%$.}
 <<>>=
 mean(means < 50 & means > 0)
 @

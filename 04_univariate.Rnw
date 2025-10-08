@@ -63,7 +63,7 @@ previous chapter to this empirical distribution.
   \]
   with 
   \[
-    \Prob(Y = y) = \frac{1}{n}\# \{i : x_i = x\}
+    \Prob(Y = y) = \frac{1}{n}\# \{i : x_i = y\}
   \]
   for all real numbers $y$.
   That is, the probability of observing $Y = y$ corresponds exactly 
@@ -440,7 +440,7 @@ ggplot(data = d,
   We then draw a histogram using four bins spanning the percentage range
   of 0 to 80.
   
-  Compute the densities for each bins without drawing the histogram.
+  Compute the densities for each bin without drawing the histogram.
   
   What would the densities be if we had expressed the same scores
   as proportions rather than as percentages?
@@ -838,7 +838,7 @@ acquisition, see \citet{Vanhove2019b}.
 \subsubsection{The variance}
 We've defined the variance in the previous chapter.
 We can apply this definition to the empirical distibution defined by the sample.
-This quantity is called the \term{uncorrected (sample) variance}, sometimes written as $s_n^2$,
+This quantity is called the \term{uncorrected (sample) variance}, sometimes written as $s_n^2$ ($n$ for `naïve'),
 and can be computed as follows:
 \[
   s^2_n(\bm x) = \frac{1}{n}\sum_{i = 1}^n (x_i - \overline x)^2.
