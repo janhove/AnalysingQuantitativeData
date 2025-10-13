@@ -215,18 +215,21 @@ $\frac{\sigma^2}{n}$, where $\sigma^2$ is the parent distribution's variance.
 Hence, the variance of $\overline{X}$ becomes arbitrarily small for large $n$.
 This combined with the unbiasedness of the sample mean implies
 that the sample mean is a consistent estimator of $\mu$.
-Finally, the Gauss--Markov theorem tells us that, among all unbiased
+Finally, the Gauss--Markov theorem tells us that, among all linear unbiased
 estimators of the population's expected value, the sample mean is the one
-with the lowest variance.
+with the lowest variance.\footnote{Given a data vector $\bm X = (X_1, \dots, X_n)$,
+a linear estimator $g(\bm X)$ can be written as
+$g(\bm X) = w_1X_1 + \dots + w_nX_n$ for certain coefficients $w_1, \dots, w_n$.
+For the sample mean, $w_1 = \dots = w_n = 1/n$.}
 
 \mypar[Gauss--Markov]{Theorem}\label{th:gauss}
   Let $X_1, \dots, X_n$ be a simple random sample from a distribution $P$.
-  Then each unbiased estimator $g(X_1, \dots, X_n)$ of $\mu$ satisfies
+  Then each linear unbiased estimator $g(X_1, \dots, X_n)$ of $\mu$ satisfies
   \[
     \Var(\overline{X}) \leq \Var(g(X_1, \dots, X_n)). \parendeq
   \]
 
-It is, however, sometimes possible to come up with unbiased estimators
+It is, however, sometimes possible to come up with linear unbiased estimators
 with lower variance if the sample is not a simple random sample.
 
 \mypar{Example}
@@ -234,7 +237,7 @@ with lower variance if the sample is not a simple random sample.
   random variables.
   Then $\frac{1}{n}(X_1 + \dots + X_n)$ is an unbiased and consistent estimator
   of $p$.
-  Among all unbiased estimators of $p$, it has the lowest variance.
+  Among all linear unbiased estimators of $p$, it has the lowest variance.
 \parend
 
 \mypar[Weighted mean]{Example}\label{example:weightedmean}
