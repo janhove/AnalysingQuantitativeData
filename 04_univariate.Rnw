@@ -599,7 +599,8 @@ For instance, the median of $\bm x = (0, 1)$ is 0.5;
 that of $\bm y = (0, 0)$ is 0.
 But the median of $(0, 1, 0, 0)$ is again 0, not $0.25$ or something similar.
 
-Third, the Central Limit Theorem does not apply to the sample median.\footnote{Some \clt-like statement for the sample median does, in fact, exist. But it applies only to distributions with a density function, and it requires knowledge of this density function.}
+Third, the Central Limit Theorem does not apply to the sample median.\footnote{Some \clt-like statement for the sample median does, in fact, exist. But it applies only to distributions whose distribution function $F$ is differentiable at $1/2$
+and it requires knowledge of this derivative $F'(1/2)$.}
 
 The absence of these nice properties makes the median more difficult
 to handle mathematically than the mean.
@@ -847,8 +848,8 @@ and can be computed as follows:
 For the Norwegian scores, the variance of the empirical distribution is
 about 8.17:
 <<>>=
-mean((d$Norwegian - mean(d$Norwegian))^2)
-mean(d$Norwegian^2) - mean(d$Norwegian)^2
+mean((d$Norwegian - mean(d$Norwegian))^2) # cf. definition
+mean(d$Norwegian^2) - mean(d$Norwegian)^2 # cf. lemma 
 @
 
 For reasons that will become clearer in the next chapter, though, the 
