@@ -493,7 +493,8 @@ estimates the estimand $\theta$ in an unbiased way, doesn't mean that $h(g(X_1, 
 estimates the estimand $h(\theta)$ in an unbiased way.
 For instance, $\overline X$ is an unbiased estimator of $\mu$,
 but $(\overline X)^2$ overestimates $\mu^2$. 
-To convince yourself of this, consider a distribution with $\mu = 0$.}
+To convince yourself of this, 
+consider a distribution with $\Prob(X = -1) = \Prob(X = 1)$.}
 
 \mypar{*Exercise}
   Let $\bm X = (X_1, \dots, X_{10})$ be a simple random sample from
