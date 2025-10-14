@@ -573,9 +573,9 @@ Else, if there are an even number of observations (i.e., $n = 2m$),
 take the mean of the two middle values (i.e., the $m$-th and the $m+1$-th)
 as the median.\footnote{More efficient computer algorithms exist that do not rely on sorting.}
 For the Norwegian data, $n = 23 = 2\cdot 11 + 1$, so we sort the observations and
-read out the 11th one:
+read out the 12th one:
 <<>>=
-sort(d$Norwegian)[11]
+sort(d$Norwegian)[12]
 @
 Of course, we can use the built-in \texttt{median()} function:
 <<>>=
@@ -591,7 +591,7 @@ Both of these values are good indicators of where the bulk of the observations l
 However, the median doesn't have any of the nice properties that the mean has.
 First, the median is not linear.
 For instance, the medians of $\bm x = (-1, 0, 1)$ and $\bm y = (0, -1, 1)$
-are both 0. But the median of $\bm x + \bm y = (-1, -1, 1)$ is $-1$.
+are both 0. But the median of $\bm x + \bm y = (-1, -1, 2)$ is $-1$.
 
 Second, the median of a concatenated vector $(\bm x, \bm y)$ can't be computed
 from the medians of $\bm x$ and $\bm y$.
