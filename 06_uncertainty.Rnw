@@ -560,7 +560,9 @@ The exact values $150.7763 \pm 3.1170$ would include too many digits,
 giving a misleading sense of precision. 
 In \citet{Vanhove2020b}, I provide some guidelines for rounding estimates.
 
-Approximately 95\% of the bootstrapped means lie between 145 and 157. This interval represents a \term{confidence interval}, which we will discuss in more detail later.
+Approximately 95\% of the bootstrapped means lie between 145 and 157.
+This interval represents a \term{confidence interval}, 
+which we will discuss in more detail later.
 <<>>=
 quantile(bootstraps, probs = c(0.025, 0.975))
 @
@@ -578,11 +580,14 @@ The following calculation therefore yields essentially the same solution:
 <<>>=
 mean(d$GJT) + qnorm(c(0.025, 0.975)) * sd(bootstraps)
 @
-Of course, this only holds if the distribution of the bootstrapped means is approximately normal; the percentile method is more generally applicable.
+Of course, this only holds if the 
+distribution of the bootstrapped means is approximately normal; 
+the percentile method (that is, the approach using \texttt{quantile()} 
+is more generally applicable.
 \parend
 
 \mypar{Exercise}
-  The standard error and the interval width obtained in Exercise \ref{example:bootstrap}
+  The standard error and the interval width obtained in Example \ref{example:bootstrap}
   are smaller than those reported in Table \vref{tab:bootstrap}.
   Why?
 \parend
@@ -1134,7 +1139,7 @@ mean(simulation)
     and draw a conclusion.\parend
   \end{enumerate}
 
-\mypar[Exact confidence bounds for a binomial parameter]{Example}\label{example:clopperpearson}
+\mypar[Exact confidence bounds for a binomial parameter]{*Example}\label{example:clopperpearson}
   We conclude this chapter with a classic example.
   Let $X \sim \textrm{Binomial}(n, p)$. 
   An unbiased estimator of $p$ is
@@ -1213,7 +1218,7 @@ binom.test(7, 23, conf.level = 0.80)$conf.int
 @
 \parend
 
-\mypar[Alternative confidence bounds for a binomial parameter]{Remark}
+\mypar[Alternative confidence bounds for a binomial parameter]{*Remark}
   The method for constructing confidence bounds for a binomial parameter 
   introduced in Example \ref{example:clopperpearson}
   was first published by \citet{Clopper1934}.

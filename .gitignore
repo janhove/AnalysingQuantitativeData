@@ -6,3 +6,7 @@
 build_main.R
 generated_figs/
 cache/
+.tex
+.bbl
+.toc
+.synctex.gz

@@ -202,7 +202,7 @@ This phenomenon is known as the \term{bias--variance trade-off}.
 The \term{sample mean} is the expected value of the sample's empirical distribution.
 It serves as an estimate of the parent distribution's expected value $\mu$:
 \[
-  \widehat{\mu} := \overline{X} := \frac{1}{N}(X_1 + \dots + X_n).
+  \widehat{\mu} := \overline{X} := \frac{1}{n}(X_1 + \dots + X_n).
 \]
 In Section \ref{sec:clt}, we showed that
 \[
@@ -460,15 +460,18 @@ ggplot(data.frame(x = c(0, 40)),
              aes(x)) +
   stat_function(fun = function(x) dchisq(x, 4),
                 colour = my_col[1]) +
-  annotate("text", x = 2 + 2, y = dchisq(2, 4), label = bquote(chi[4]^2),
+  annotate("text", x = 2 + 2, y = dchisq(2, 4), 
+           label = "chi[4]^2", parse = TRUE,
            color = my_col[1]) +
   stat_function(fun = function(x) dchisq(x, 9),
                 colour = my_col[2]) +
-  annotate("text", x = 7 + 1.55, y = dchisq(7, 9) + 0.007, label = bquote(chi[9]^2),
+  annotate("text", x = 7 + 1.55, y = dchisq(7, 9) + 0.007, 
+           label = "chi[9]^2", parse = TRUE,
            color = my_col[2]) +
   stat_function(fun = function(x) dchisq(x, 16),
                 color = my_col[3]) +
-  annotate("text", x = 14, y = dchisq(14, 16) + 0.01, label = bquote(chi[16]^2),
+  annotate("text", x = 14, y = dchisq(14, 16) + 0.01, 
+           label = "chi[16]^2", parse = TRUE,
            color = my_col[3]) +
   ylab("Density")
 @
