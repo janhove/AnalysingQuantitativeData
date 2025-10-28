@@ -26,7 +26,7 @@ In the chapters that follow, the
 models become gradually more complex, but the fundamental principles
 from this chapter will still apply.
 
-Let us, for the moment, set aside everything we have said about means.
+Let us, for the moment, set aside everything we have said about averages.
 We are given data 
 (in this case, the \textsc{gjt} scores from \citet{DeKeyser2010},
 see Chapter \ref{ch:uncertainty}) and we need to
@@ -104,8 +104,7 @@ and again the equation would hold:
 So we need a principled method for estimating $\beta_0$.
 
 \section{Optimisation criteria}
-The question arises as to what the optimal way is
-to determine $\widehat{\beta}_0$.
+But what is the optimal way to determine $\widehat{\beta}_0$?
 The unsurprising answer is: it depends on what we mean
 by `optimal'.
 One sensible definition of `optimal' is
@@ -197,7 +196,7 @@ This result can be proved using secondary school mathematics.
 In fact, here are two different proofs---one using derivatives
 and another using elementary algebra.
 
-\begin{proof}
+\begin{proof}[Proof using derivatives]
 Consider the expression
 \[
  \sum_{i=1}^{n} (y_i - \widehat{\beta}_0)^2
@@ -228,7 +227,7 @@ Dividing both sides by $2n$, we obtain
 that is, the arithmetic mean of the $y_i$ values.
 \end{proof}
 
-\begin{proof}
+\begin{proof}[Proof using algebra]
 An alternative proof that doesn't rely on taking derivatives is this.
 Write $\overline y := \left(\sum_{i=1}^n y_i\right)/n$, i.e., the sample mean.
 Note that
@@ -236,7 +235,7 @@ Note that
  \sum_{i=1}^{n} (y_i - \widehat{\beta}_0)^2
  &= \sum_{i=1}^{n} \left((y_i - \overline y) + (\overline y - \widehat{\beta}_0)\right)^2 \\
  &= \sum_{i=1}^n \left((y_i - \overline y)^2 + 2(y_i - \overline y)(\overline y - \widehat{\beta}_0) + (\overline y - \widehat{\beta}_0)^2\right) \\
- &= \sum_{i=1}^n (y_i - \overline y)^2 + 2(\overline y - \widehat{\beta}_0)\underbrace{\left(\sum_{i=1}^n y_i - n\overline y\right)}_{= n\overline y - n\overline y = 0} \underbrace{n(\overline y - \widehat{\beta}_0)^2}_{\geq 0}  \\
+ &= \sum_{i=1}^n (y_i - \overline y)^2 + 2(\overline y - \widehat{\beta}_0)\underbrace{\left(\sum_{i=1}^n y_i - n\overline y\right)}_{= n\overline y - n\overline y = 0} + \underbrace{n(\overline y - \widehat{\beta}_0)^2}_{\geq 0}  \\
  &\geq \sum_{i=1}^n (y_i - \overline y)^2,
 \end{align*}
 with equality if and only if $\widehat{\beta}_0 = \overline y$.
@@ -317,7 +316,7 @@ The logic is again that we treat the sample as a stand-in
 for the population. However, instead of drawing bootstrap samples
 from the data itself, this time we draw bootstrap samples
 from the residuals ($\widehat{\varepsilon}$). We then combine these
-with $\widehat{\beta}_0$ to generate the bootstrap samples.
+with $\widehat{\beta}_0$ to generate the bootstrap replicates.
 If we are only interested in the mean, this method
 offers no additional benefit, as it is mathematically equivalent
 to the earlier bootstrap approach. But it is pedagogically more useful
@@ -332,7 +331,7 @@ Concretely:
  This vector also has $n$ values,
  with some $\widehat{\varepsilon}_i$ possibly absent and others appearing more than once.
  \item Combine $\widehat{\beta}_0$ and $\bm{\hat{\varepsilon}^{*}}$ to create
- a new series of $y$ values: $y_i^{*} = \widehat{\beta}_0 + \widehat{\varepsilon}_i^{*}$.
+ a a new vector $\bm{y^{*}}$, with $y_i^{*} = \widehat{\beta}_0 + \widehat{\varepsilon}_i^{*}$ for $i = 1, \dots, n$.
  \item On the basis of $\bm{y^{*}}$, re-estimate the parameter of interest ($\widehat{\beta}_0^{*}$).
  \item Repeat steps 2--4 several thousand times to obtain the distribution
  of the bootstrapped $\beta_0$ estimates.

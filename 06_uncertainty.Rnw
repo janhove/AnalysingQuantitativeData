@@ -1006,8 +1006,9 @@ we will examine the construction of confidence intervals for more realistic scen
 \mypar[Exact confidence bounds for the mean of a normal distribution with unknown variance]{Example}\label{bsp:ci_exact_t}
  If we have a random sample of independent observations
 $X_1, \dots, X_n \sim \mathcal{N}(\mu, \sigma^2)$, where both $\mu$ and $\sigma^2$
-are unknown, the method from Example \ref{example:ci_exact_norm} no longer
-provides exact confidence bounds. However, using Theorem \ref{th:gosset}, we can exploit the fact that
+are unknown, the method from Example \ref{example:ci_exact_norm}
+can no longer be used.
+However, using Theorem \ref{th:gosset}, we can exploit the fact that
   \[
     \frac{\overline{X} - \mu}{S / \sqrt{n}} \sim t(n-1).
   \]
@@ -1055,13 +1056,13 @@ for (i in 1:n_sim) {
 
 in_interval <- cis[, 1] <= popmean & popmean <= cis[, 2]
 
-resultats <- tibble(min = cis[, 1],
-                    max = cis[, 2],
-                    in_interval,
-                    sim = 1:n_sim) |>
+results <- tibble(min = cis[, 1],
+                  max = cis[, 2],
+                  in_interval,
+                  sim = 1:n_sim) |>
   mutate(width = max - min)
 
-ggplot(resultats,
+ggplot(results,
        aes(xmin = min, xmax = max,
            y = reorder(sim, width),
            colour = in_interval)) +
@@ -1080,7 +1081,7 @@ ggplot(resultats,
 \parend
 
 \mypar{Exercise}
-  Assume you have random samples with the same sample standard deviation:
+  Assume you have two random samples with the same sample standard deviation:
   $s_1 = s_2$.
   Sample 1 consists of 16 observations;
   sample 2 of only four.

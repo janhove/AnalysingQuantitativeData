@@ -1,0 +1,180 @@
+\contentsline {chapter}{Goals and philosophy}{iii}{chapter*.1}%
+\contentsline {paragraph}{Current practice vs best practice}{iii}{chapter*.1}%
+\contentsline {paragraph}{Curb your enthusiasm.}{iv}{chapter*.1}%
+\contentsline {paragraph}{Content.}{iv}{chapter*.1}%
+\contentsline {paragraph}{Prerequisites.}{iv}{chapter*.1}%
+\contentsline {paragraph}{Learning how to learn.}{v}{chapter*.1}%
+\contentsline {paragraph}{Script under revision.}{v}{chapter*.1}%
+\contentsline {part}{I\hspace {1em}Basics}{1}{part.1}%
+\contentsline {chapter}{\numberline {1}Self-study: Software}{3}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Installing and configuring R and RStudio}{3}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Using R as a calculator}{5}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Arithmetic}{5}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Vectorised operations}{8}{subsection.1.2.2}%
+\contentsline {section}{\numberline {1.3}*R as a programming language}{11}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Add-on packages}{13}{section.1.4}%
+\contentsline {section}{\numberline {1.5}R projects}{14}{section.1.5}%
+\contentsline {section}{\numberline {1.6}R Markdown reports}{15}{section.1.6}%
+\contentsline {chapter}{\numberline {2}Working with datasets}{17}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Organising datasets}{17}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Wide vs.\ long formats}{18}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Naming variables}{21}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Labelling missing values}{23}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Using several smaller datasets}{23}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Miscellaneous tips}{24}{subsection.2.1.5}%
+\contentsline {section}{\numberline {2.2}Reading in datasets}{26}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Excel files}{27}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}CSV files}{28}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Other formats}{30}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Joining datasets}{30}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Queries}{33}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Selecting by row number}{33}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Selecting rows by values}{34}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Selecting columns}{40}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Further examples}{41}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}Pivoting}{42}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Summaries}{46}{section.2.6}%
+\contentsline {section}{\numberline {2.7}String manipulation}{49}{section.2.7}%
+\contentsline {section}{\numberline {2.8}A full-fledged example}{51}{section.2.8}%
+\contentsline {subsection}{\numberline {2.8.1}Reading in the data}{52}{subsection.2.8.1}%
+\contentsline {subsection}{\numberline {2.8.2}Average rating per text}{52}{subsection.2.8.2}%
+\contentsline {subsection}{\numberline {2.8.3}Add to \texttt {metrics}}{53}{subsection.2.8.3}%
+\contentsline {subsection}{\numberline {2.8.4}Add to \texttt {skills}}{54}{subsection.2.8.4}%
+\contentsline {section}{\numberline {2.9}*Walkthrough with exercises}{55}{section.2.9}%
+\contentsline {section}{\numberline {2.10}*Further reading}{61}{section.2.10}%
+\contentsline {chapter}{\numberline {3}Fundamentals of probability theory}{63}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Probability spaces}{63}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Events and probabilities}{63}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Independence}{70}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Conditional probabilities}{71}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}Random variables}{75}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}The distribution function and the quantile function}{76}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Probability density functions}{78}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}The expected value and the variance}{79}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Independence}{83}{subsection.3.2.4}%
+\contentsline {section}{\numberline {3.3}Examples of discrete probability distributions}{83}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}The discrete uniform distribution}{83}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}The Bernoulli distribution}{85}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}The binomial distribution}{85}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Examples of continuous probability distributions}{88}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}The continuous uniform distribution}{88}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}The normal distribution}{89}{subsection.3.4.2}%
+\contentsline {section}{\numberline {3.5}The sampling distribution of the sample mean}{91}{section.3.5}%
+\contentsline {chapter}{\numberline {4}Descriptive statistics of a univariate sample}{99}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Visualisations}{101}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Dotplots}{101}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Histograms}{103}{subsection.4.1.2}%
+\contentsline {section}{\numberline {4.2}Numerical descriptions}{106}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}*Quantiles}{106}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Averages}{107}{subsection.4.2.2}%
+\contentsline {subsubsection}{The arithmetic mean}{108}{subsection.4.2.2}%
+\contentsline {subsubsection}{The median}{108}{subsection.4.2.2}%
+\contentsline {subsubsection}{The mode}{109}{subsection.4.2.2}%
+\contentsline {subsubsection}{*Other averages}{110}{Item.67}%
+\contentsline {subsection}{\numberline {4.2.3}Measures of spread}{112}{subsection.4.2.3}%
+\contentsline {subsubsection}{The range}{113}{subsection.4.2.3}%
+\contentsline {subsubsection}{The variance}{113}{subsection.4.2.3}%
+\contentsline {subsubsection}{The standard deviation}{114}{subsection.4.2.3}%
+\contentsline {subsubsection}{*The mean and median absolute deviation}{115}{figure.caption.45}%
+\contentsline {section}{\numberline {4.3}*Further reading}{117}{section.4.3}%
+\contentsline {part}{II\hspace {1em}Estimates}{119}{part.2}%
+\contentsline {chapter}{\numberline {5}Random samples}{121}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Sampling error}{122}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Estimating the expected value}{123}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Estimating the variance and the standard deviation}{126}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Non-random samples}{129}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Estimating estimation uncertainty}{131}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Sample means vary}{131}{section.6.1}%
+\contentsline {section}{\numberline {6.2}The bootstrap}{132}{section.6.2}%
+\contentsline {section}{\numberline {6.3}The plug-in principle and the central limit theorem}{140}{section.6.3}%
+\contentsline {section}{\numberline {6.4}The $t$ distributions}{141}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Confidence intervals}{143}{section.6.5}%
+\contentsline {part}{III\hspace {1em}The general linear model}{153}{part.3}%
+\contentsline {chapter}{\numberline {7}Another look at the mean}{155}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Optimisation criteria}{156}{section.7.1}%
+\contentsline {section}{\numberline {7.2}General linear models in R}{159}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Quantifying uncertainty in a general linear model}{160}{section.7.3}%
+\contentsline {subsection}{\numberline {7.3.1}The bootstrap}{160}{subsection.7.3.1}%
+\contentsline {subsection}{\numberline {7.3.2}Another kind of bootstrap}{161}{subsection.7.3.2}%
+\contentsline {subsection}{\numberline {7.3.3}Using $t$ distributions}{162}{subsection.7.3.3}%
+\contentsline {section}{\numberline {7.4}*Maximum likelihood estimation}{163}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Assumptions and relevance}{165}{section.7.5}%
+\contentsline {section}{\numberline {7.6}Summary}{167}{section.7.6}%
+\contentsline {chapter}{\numberline {8}Adding a predictor}{169}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Simple linear regression}{172}{section.8.1}%
+\contentsline {subsection}{\numberline {8.1.1}Estimating the parameters}{173}{subsection.8.1.1}%
+\contentsline {subsection}{\numberline {8.1.2}Quantifying uncertainty}{175}{subsection.8.1.2}%
+\contentsline {subsubsection}{The semiparametric bootstrap}{176}{figure.caption.69}%
+\contentsline {subsubsection}{The parametric bootstrap}{178}{figure.caption.69}%
+\contentsline {subsubsection}{$t$ distributions}{182}{mycounter.8.8}%
+\contentsline {subsection}{\numberline {8.1.3}Interpreting regression lines}{183}{subsection.8.1.3}%
+\contentsline {subsection}{\numberline {8.1.4}Assumptions and relevance}{188}{subsection.8.1.4}%
+\contentsline {subsection}{\numberline {8.1.5}Summary}{189}{subsection.8.1.5}%
+\contentsline {section}{\numberline {8.2}Correlation analysis}{190}{section.8.2}%
+\contentsline {chapter}{\numberline {9}Group differences}{203}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Differences between two groups}{203}{section.9.1}%
+\contentsline {section}{\numberline {9.2}Differences between more than two groups}{209}{section.9.2}%
+\contentsline {chapter}{\numberline {10}Differences between differences}{215}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Interactions between two binary predictors}{215}{section.10.1}%
+\contentsline {section}{\numberline {10.2}Interactions between a binary and a continuous predictor}{222}{section.10.2}%
+\contentsline {section}{\numberline {10.3}More complex interactions}{223}{section.10.3}%
+\contentsline {section}{\numberline {10.4}About non-cross-over interactions}{223}{section.10.4}%
+\contentsline {chapter}{\numberline {11}Several predictors in one model}{225}{chapter.11}%
+\contentsline {section}{\numberline {11.1}Accounting for confounders}{226}{section.11.1}%
+\contentsline {section}{\numberline {11.2}Control variables in randomised experiments}{234}{section.11.2}%
+\contentsline {section}{\numberline {11.3}Posttreatment variables}{238}{section.11.3}%
+\contentsline {section}{\numberline {11.4}*For the sake of completeness}{246}{section.11.4}%
+\contentsline {subsection}{\numberline {11.4.1}Collinearity}{246}{subsection.11.4.1}%
+\contentsline {subsection}{\numberline {11.4.2}Multiple $R^2$ and adjusted $R^2$}{246}{subsection.11.4.2}%
+\contentsline {section}{\numberline {11.5}Summary}{250}{section.11.5}%
+\contentsline {section}{\numberline {11.6}*Further reading}{251}{section.11.6}%
+\contentsline {part}{IV\hspace {1em}Significance testing}{253}{part.4}%
+\contentsline {chapter}{\numberline {12}The logic of significance testing}{255}{chapter.12}%
+\contentsline {section}{\numberline {12.1}Randomisation as a basis for inference}{255}{section.12.1}%
+\contentsline {section}{\numberline {12.2}A template for exact $p$-values}{261}{section.12.2}%
+\contentsline {section}{\numberline {12.3}On the meaning of $p$-values}{264}{section.12.3}%
+\contentsline {section}{\numberline {12.4}Type I and Type II Errors}{264}{section.12.4}%
+\contentsline {section}{\numberline {12.5}Randomisation tests for group differences}{266}{section.12.5}%
+\contentsline {section}{\numberline {12.6}Permutation tests for associations}{270}{section.12.6}%
+\contentsline {section}{\numberline {12.7}The binomial test}{274}{section.12.7}%
+\contentsline {section}{\numberline {12.8}Fisher's exact test}{276}{section.12.8}%
+\contentsline {chapter}{\numberline {13}The $t$-test}{281}{chapter.13}%
+\contentsline {chapter}{\numberline {14}Analysis of variance}{291}{chapter.14}%
+\contentsline {section}{\numberline {14.1}First solution: Randomisation tests}{294}{section.14.1}%
+\contentsline {section}{\numberline {14.2}Second solution: Analysis of variance and $F$-tests}{297}{section.14.2}%
+\contentsline {subsection}{\numberline {14.2.1}Partitioning the variance}{297}{subsection.14.2.1}%
+\contentsline {subsection}{\numberline {14.2.2}The $F$-test}{298}{subsection.14.2.2}%
+\contentsline {subsection}{\numberline {14.2.3}Analysis of variance in R}{299}{subsection.14.2.3}%
+\contentsline {section}{\numberline {14.3}Analysis of variance with multiple predictors}{300}{section.14.3}%
+\contentsline {section}{\numberline {14.4}Planned comparisons and post-hoc tests}{303}{section.14.4}%
+\contentsline {section}{\numberline {14.5}*$F$-test in the \texttt {summary()} output}{305}{section.14.5}%
+\contentsline {section}{\numberline {14.6}Interim summary}{306}{section.14.6}%
+\contentsline {chapter}{\numberline {15}*Calculating statistical power}{309}{chapter.15}%
+\contentsline {section}{\numberline {15.1}Calculating power through simulations}{309}{section.15.1}%
+\contentsline {section}{\numberline {15.2}Analytical power calculation}{311}{section.15.2}%
+\contentsline {section}{\numberline {15.3}Further reading}{314}{section.15.3}%
+\contentsline {chapter}{\numberline {16}*Silly tests}{315}{chapter.16}%
+\contentsline {section}{\numberline {16.1}RM-ANOVA for pretest/posttest designs}{315}{section.16.1}%
+\contentsline {section}{\numberline {16.2}Balance tests}{316}{section.16.2}%
+\contentsline {section}{\numberline {16.3}Tautological tests}{317}{section.16.3}%
+\contentsline {section}{\numberline {16.4}Tests unrelated to the research question}{317}{section.16.4}%
+\contentsline {section}{\numberline {16.5}Tests for uninteresting main effects}{317}{section.16.5}%
+\contentsline {section}{\numberline {16.6}Conclusion}{318}{section.16.6}%
+\contentsline {chapter}{\numberline {17}*Questionable research practices}{319}{chapter.17}%
+\contentsline {section}{\numberline {17.1}Sterling et al.~(1995) on publication bias}{319}{section.17.1}%
+\contentsline {section}{\numberline {17.2}Kerr (1998) on \textit {hypothesizing after the results are known}}{320}{section.17.2}%
+\contentsline {section}{\numberline {17.3}Simmons et al.~(2011) on undisclosed flexibility}{320}{section.17.3}%
+\contentsline {part}{V\hspace {1em}Miscellaneous topics}{323}{part.5}%
+\contentsline {chapter}{\numberline {18}*Within-subjects experiments}{325}{chapter.18}%
+\contentsline {section}{\numberline {18.1}Within-subjects experiments without order effects}{326}{section.18.1}%
+\contentsline {section}{\numberline {18.2}AB/BA cross-over experiments}{336}{section.18.2}%
+\contentsline {chapter}{\numberline {19}*Logistic regression}{339}{chapter.19}%
+\contentsline {section}{\numberline {19.1}Categorical predictors}{339}{section.19.1}%
+\contentsline {section}{\numberline {19.2}Continuous predictors}{351}{section.19.2}%
+\contentsline {section}{\numberline {19.3}Further reading}{353}{section.19.3}%
+\contentsline {chapter}{\numberline {20}*Recommendations for self-study and tips}{355}{chapter.20}%
+\contentsline {section}{\numberline {20.1}Books}{355}{section.20.1}%
+\contentsline {section}{\numberline {20.2}Final tips}{355}{section.20.2}%
+\contentsline {part}{Appendices}{359}{part*.139}%
+\contentsline {chapter}{\numberline {A}Common error messages in R}{359}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Software versions}{363}{appendix.B}%
