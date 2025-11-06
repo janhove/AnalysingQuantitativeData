@@ -65,8 +65,7 @@ par(old_ops)
 @
 
 Figure \ref{fig:boxplotklein1} shows side-by-side boxplots of the Klein et al.\ data.
-But boxplots sometimes deceive
-Boxplots sometimes deceive, and for this reason, I prefer to add the individual
+But boxplots sometimes deceive, and for this reason, I prefer to add the individual
 data points to the plots, too.
 Doing so helps both us and our readers
 gauge what the data actually look like; see Figure \ref{fig:boxplotklein2};

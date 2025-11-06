@@ -1011,9 +1011,12 @@ correspond to small differences in $Y$
 and large differences in $X$ correspond to large differences in $Y$, 
 and whose absolute value is small when large differences in one variable 
 correspond to only small differences in the other. 
-Such a measure is the \term{covariance}.
+One such measure is the \term{covariance}.
+While important in the mathematics behind more complex procedures
+you'll rarely encounter it in the research literature,
+so the following paragraphs are optional.
 
-\mypar[Population covariance]{Definition}\label{def:covar}
+\mypar[Population covariance]{*Definition}\label{def:covar}
 Let $X$ and $Y$ be two random variables 
 with finite variance on a probability space $\Omega$. 
 Then the covariance of $X$ and $Y$ is defined as
@@ -1025,7 +1028,7 @@ Then the covariance of $X$ and $Y$ is defined as
 &= \E(XY) - \E(X)\E(Y). \parendeq
 \end{align*}
 
-\mypar{Example}
+\mypar{*Example}
 We revisit the Jass example from Chapter \ref{ch:probability}.
 In Example \ref{example:obenabe},
 the variable $X$ was defined by the point value of the cards in the \textit{Obenabe} game:
@@ -1072,7 +1075,7 @@ So
  3.62. \parendeq
 \]
 
-\mypar[Properties of covariance]{Lemma}
+\mypar[Properties of covariance]{*Lemma}
 Let $X, Y, Z$ be three random variables with finite variance
 on a common probability space, and let $a, b$ be constants. Then:
 \begin{enumerate}
@@ -1100,7 +1103,7 @@ then $\textrm{Var}(X + Y) = \Var(X) + \Var(Y)$.
 This proves Lemma \vref{properties_variance}.
 \parend
 
-\mypar[Zero covariance, but dependent]{Example}
+\mypar[Zero covariance, but dependent]{*Example}
 If two random variables are independent, then $\textrm{Cov}(X, Y) = 0$.
 The converse, however, is not true. To see this, consider the sample space
 \[
@@ -1173,7 +1176,9 @@ It is calculated similarly to the covariance,
 but the variables are expressed in standard deviations from their sample means,
 producing a value between $-1$ and $1$:
 \[
-  \rho_{XY} := \frac{\textrm{Cov}(X, Y)}{\sigma_X \sigma_Y}.
+  \rho_{XY} 
+  := \frac{\textrm{Cov}(X, Y)}{\sigma_X \sigma_Y}
+  = \frac{1}{\sigma_X \sigma_Y}\E\left((X - \E(X))(Y-\E(Y))\right).
 \]
 When estimating the correlation from a sample $(\bm X, \bm Y)$,
 the formula is adapted accordingly:
@@ -1571,7 +1576,7 @@ in the congruent condition than in the incongruent condition.
   \item Plot the relationship between the variables \texttt{Flanker} and \texttt{Simon}.
   \item Calculate the Pearson correlation coefficient, if you consider it appropriate.
   \item If applicable, calculate a 90\% confidence interval, both using the bootstrap and the $t$ distribution.
-  \item Briefly Summarise your findings.\parend
+  \item Briefly summarise your findings.\parend
 \end{enumerate}
 
 \mypar[Reconstructing confidence intervals]{*Remark}
