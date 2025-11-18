@@ -653,7 +653,7 @@ We now turn our attention to scenarios where $z$ is a posttreatment variable.
 This means that, when we draw a \textsc{dag}, 
 we can arrive at $z$ starting in $x$ by following arrows.
 In the context of a randomised experiment with $x$ as the predictor of interest,
-this means that $z$ was collected after the randomisation. 
+this means that $z$ must have been collected after the randomisation. 
 As a consequence, $z$ may be influenced by $x$.
 
 % \paragraph{Mediators.}
@@ -922,7 +922,7 @@ Let's say that instead of merely observing and measuring all the
   experiment in which we randomly assign the participants to values of $x$.
   \begin{enumerate}
     \item Draw the updated \textsc{dag}.
-    \item Which predictors would you in the general linear model now?
+    \item Which predictors would you include in the general linear model now?
           Justify your answer. \parend
   \end{enumerate}
 
@@ -960,7 +960,7 @@ summary(lexdiv.lm)$coefficients
     estimated model parameters literally means.
     
     \item According to this model, what mean rating
-    would you expect for a text consisting of 64 tokens with a \textsc{ttr} of 0.7? \parend
+    would you expect for texts consisting of 64 tokens with a \textsc{ttr} of 0.7? \parend
   \end{enumerate}
   
 
@@ -1012,11 +1012,11 @@ summary(mod.lm)$coefficients
 \item What, according to the model, is the expected average difference 
 in \texttt{CorrectSpoken} between women with a
 \texttt{Raven.Right} score of 20 and women with a \texttt{Raven.Right} score
-of 30, keeping \texttt{NrLang} and \texttt{DS.Span} constant.\parend
+of 30, keeping \texttt{NrLang} and \texttt{DS.Span} constant?\parend
 \end{enumerate}
   
 The following exercise isn't specific to this chapter. 
-Rather, you can draw on what we've covered so far to tackle it
+Rather, you can draw on what we've covered so far to tackle it.
 
 \mypar[Analysing an experiment]{Exercise}
 From the abstract of \citet{Vanhove2016}:

@@ -1,0 +1,628 @@
+\begin{thebibliography}{107}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{#1}
+\providecommand{\urlprefix}{}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{Abelson(1995)}]{Abelson1995}
+Abelson, Robert~P. 1995.
+\newblock \emph{Statistics as principled argument}.
+\newblock New York, NY: Psychology Press.
+
+\bibitem[{Agresti(2002)}]{Agresti2002}
+Agresti, Alan. 2002.
+\newblock \emph{Categorical data analysis}.
+\newblock Hoboken, NJ: Wiley 2nd edn.
+
+\bibitem[{Albers et~al.(2018)Albers, Kiers \& {van Ravenzwaaij}}]{Albers2018}
+Albers, Casper~J., Henk A.~L. Kiers \& Don {van Ravenzwaaij}. 2018.
+\newblock Credible confidence: A pragmatic view on the frequentist vs {B}ayesian debate.
+\newblock \emph{Collabra: Psychology} 4(1). 31.
+\newblock \doi{10.1525/collabra.149}.
+
+\bibitem[{Baayen(2008)}]{Baayen2008}
+Baayen, R.~Harald. 2008.
+\newblock \emph{Analyzing linguistic data: A practical introduction to statistics using {R}}.
+\newblock Cambridge: Cambridge University Press.
+
+\bibitem[{Baayen \& Linke(2020)}]{Baayen2020}
+Baayen, R.~Harald \& Maja Linke. 2020.
+\newblock Generalized additive mixed models.
+\newblock In Magali Paquot \& Stefan~Th. Gries (eds.), \emph{A practical handbook of corpus linguistics}, 563--591. Cham, Switzerland: Springer Nature.
+\newblock \doi{10.1107/978-3-030-46216-1_23}.
+
+\bibitem[{Baguley(2009)}]{Baguley2009}
+Baguley, Thom. 2009.
+\newblock Standardized or simple effect size: What should be reported?
+\newblock \emph{British Journal of Psychology} 100(3). 603--617.
+\newblock \doi{10.1348/000712608X377117}.
+
+\bibitem[{Bender \& Lange(2001)}]{Bender2001}
+Bender, Ralf \& Stefan Lange. 2001.
+\newblock Adjusting for multiple testing: when and how?
+\newblock \emph{Journal of Clinical Epidemiology} 54(4). 343--349.
+\newblock \doi{10.1016/S0895-4356(00)00314-0}.
+
+\bibitem[{Berthele(2012)}]{Berthele2011b}
+Berthele, Raphael. 2012.
+\newblock The influence of code-mixing and speaker information on perception and assessment of foreign language proficiency: An experimental study.
+\newblock \emph{International Journal of Bilingualism} 16(4). 453--466.
+\newblock \doi{10.1177/1367006911429514}.
+
+\bibitem[{Berthele(2019)}]{Berthele2019}
+Berthele, Raphael. 2019.
+\newblock Policy recommendations for language learning: Linguists' contributions between scholarly debats and pseudoscience.
+\newblock \emph{Journal of the European Second Language Association} 3(1). 1--11.
+\newblock \doi{10.22599/jesla.50}.
+
+\bibitem[{Broman \& Woo(2017)}]{Broman2017}
+Broman, Karl~W. \& Kara~H. Woo. 2017.
+\newblock Data organization in spreadsheets.
+\newblock \emph{The American Statistician} \doi{10.1080/00031305.2017.1375989}.
+
+\bibitem[{Caruso et~al.(2013)Caruso, Vohs, Baxter \& Waytz}]{Caruso2013}
+Caruso, Eugene~M., Kathleen~D Vohs, Brittani Baxter \& Adam Waytz. 2013.
+\newblock Mere exposure to money increases endorsement of free-market systems and social inequality.
+\newblock \emph{Journal of Experimental Psychology: General} 142(2). 301--306.
+\newblock \doi{10.1037/a0029288}.
+
+\bibitem[{Chambers(2017)}]{Chambers2017}
+Chambers, Chris. 2017.
+\newblock \emph{The seven deadly sins of psychology: A manifesto for reforming the culture of scientific practice}.
+\newblock Princeton, NJ: Princeton University Press.
+
+\bibitem[{Christenfeld et~al.(2004)Christenfeld, Sloan, Carroll \& Greenland}]{Christenfeld2004}
+Christenfeld, Nicholas J.~S., Richard~P. Sloan, Douglas Carroll \& Sander Greenland. 2004.
+\newblock Risk factors, confounding, and the illusion of statistical control.
+\newblock \emph{Psychosomatic Medicine} 66. 868--875.
+\newblock \doi{10.1097/01.psy.0000140008.70959.41}.
+
+\bibitem[{Clopper \& Pearson(1934)}]{Clopper1934}
+Clopper, C.~J. \& Egon~Sharpe Pearson. 1934.
+\newblock The use of confidence or fiducial limits illustrated in the case of the binomial.
+\newblock \emph{Biometrika} 26(4). 404--413.
+\newblock \doi{10.2307/2331986}.
+
+\bibitem[{Cohen(1977)}]{Cohen1977}
+Cohen, Jacob. 1977.
+\newblock \emph{Statistical power analysis for the behavioral sciences}.
+\newblock New York, NY: Academic Press revised edition edn.
+
+\bibitem[{Cohen(1992)}]{Cohen1992}
+Cohen, Jacob. 1992.
+\newblock A power primer.
+\newblock \emph{Psychological Bulletin} 112(1). 155--159.
+\newblock \doi{10.1037/0033-2909.112.1.155}.
+
+\bibitem[{{de Bruin} et~al.(2015){de Bruin}, Treccani \& {Della Sala}}]{DeBruin2015}
+{de Bruin}, Angela, Barbara Treccani \& Sergio {Della Sala}. 2015.
+\newblock Cognitive advantage in bilingualism: An example of publication bias?
+\newblock \emph{Psychological Science} 26(1). 99--107.
+\newblock \doi{10.1177/0956797614557866}.
+
+\bibitem[{{de Groot}(2014)}]{DeGroot2014}
+{de Groot}, Adrianus~Dingeman. 2014.
+\newblock The meaning of `significance' for different types of research.
+\newblock \emph{Acta Psychologica} 148. 188--194.
+\newblock \doi{10.1016/j.actpsy.2014.02.001}.
+\newblock Translated and annotated by {E}ric-{J}an {W}agenmakers, {D}enny {B}orsboom, {J}osine {V}erhagen, {R}ogier {K}ievit, {M}arjan {B}akker, {A}ngelique {C}ramer, {D}ora {M}atzke, {D}on {M}ellenbergh, and {H}an {L.} {J.} {van der Maas}.
+
+\bibitem[{{DeKeyser} et~al.(2010){DeKeyser}, {Alfi-Shabtay} \& Ravid}]{DeKeyser2010}
+{DeKeyser}, Robert, Iris {Alfi-Shabtay} \& Dorit Ravid. 2010.
+\newblock Cross-linguistic evidence for the nature of age effects in second language acquisition.
+\newblock \emph{Applied Psycholinguistics} 31. 413--438.
+\newblock \doi{10.1017/S0142716410000056}.
+
+\bibitem[{Desgrippes et~al.(2017)Desgrippes, Lambelet \& Vanhove}]{Lambelet_HELASCOT_writing}
+Desgrippes, Magalie, Amelia Lambelet \& Jan Vanhove. 2017.
+\newblock The development of argumentative and narrative writing skills in {P}ortuguese heritage speakers in {S}witzerland ({HELASCOT} project).
+\newblock In Raphael Berthele \& Amelia Lambelet (eds.), \emph{Heritage and school language literacy development in migrant children: Interdependence or independence?}, 83--96. Bristol: Multilingual Matters.
+\newblock \doi{10.21832/9781783099054-006}.
+
+\bibitem[{Di{C}iccio \& Efron(1996)}]{DiCiccio1996}
+Di{C}iccio, Thomas~J. \& Bradley Efron. 1996.
+\newblock Bootstrap confidence intervals.
+\newblock \emph{Statistical Science} 11(3). 189--212.
+\newblock \doi{10.1214/ss/1032280214}.
+
+\bibitem[{Dümbgen(2016)}]{Duembgen2016}
+Dümbgen, Lutz. 2016.
+\newblock \emph{Einführung in die {S}tatistik}.
+\newblock Basel: Birkhäuser.
+\newblock \doi{10.1007/978-3-0348-0004-4}.
+
+\bibitem[{Efron(1979)}]{Efron1979}
+Efron, Bradley. 1979.
+\newblock Bootstrap methods: Another look at the jackknife.
+\newblock \emph{The Annals of Statistics} 7(1). 1--26.
+\newblock \doi{10.1214/aos/1176344552}.
+
+\bibitem[{Efron \& Tibshirani(1993)}]{Efron1993}
+Efron, Bradley \& Robert~J. Tibshirani. 1993.
+\newblock \emph{An introduction to the bootstrap}.
+\newblock Boca Raton, FL: Chapman \& Hall/CRC.
+
+\bibitem[{Ehrenberg(1982)}]{Ehrenberg1982}
+Ehrenberg, Andrew S.~C. 1982.
+\newblock \emph{A primer in data reduction: An introductory statistics textbook}.
+\newblock Chichester: Wiley.
+
+\bibitem[{Eriksen \& Eriksen(1974)}]{Eriksen1974}
+Eriksen, Barbara~A. \& Charles~W. Eriksen. 1974.
+\newblock Effects of noise letters upon the identification of a target letter in a nonsearch task.
+\newblock \emph{Perception \& Psychophysics} 16. 143--149.
+\newblock \doi{10.3758/BF03203267}.
+
+\bibitem[{Everitt \& Hothorn(2011)}]{Everitt2011}
+Everitt, Brian \& Torsten Hothorn. 2011.
+\newblock \emph{An introduction to applied multivariate analysis with {R}}.
+\newblock New York: Springer.
+
+\bibitem[{Fagerland et~al.(2017)Fagerland, Lydersen \& Laake}]{Fagerland2017}
+Fagerland, Morten~W., Stian Lydersen \& Petter Laake. 2017.
+\newblock \emph{Statistical analysis of contingency tables}.
+\newblock Boca Raton, FL: Chapman and Hall/CRC.
+\newblock \doi{10.1201/9781315374116}.
+
+\bibitem[{Fisher(1936)}]{Fisher1936}
+Fisher, Ronald~Aylmer. 1936.
+\newblock ``{T}he coefficient of racial likeness'' and the future of craniometry.
+\newblock \emph{Journal of the Royal Anthropological Institute of Great Britain and Ireland} 66. 57--63.
+\newblock \doi{10.2307/2844116}.
+
+\bibitem[{Gelman \& Hill(2007)}]{Gelman2007}
+Gelman, Andrew \& Jennifer Hill. 2007.
+\newblock \emph{Data analysis using regression and multilevel/hierarchical models}.
+\newblock New York, NY: Cambridge University Press.
+
+\bibitem[{Gelman et~al.(2020/2023)Gelman, Hill \& Vehtari}]{Gelman2020}
+Gelman, Andrew, Jennifer Hill \& Aki Vehtari. 2020/2023.
+\newblock \emph{Regression and other stories}.
+\newblock Cambridge University Press.
+\newblock \urlprefix\url{https://avehtari.github.io/ROS-Examples/}.
+
+\bibitem[{Gelman \& Loken(2013)}]{Gelman2013}
+Gelman, Andrew \& Eric Loken. 2013.
+\newblock The garden of forking paths: Why multiple comparisons can be a problem, even when there is no `fishing expedition' or `p-hacking' and the research hypothesis was posited ahead of time.
+\newblock \urlprefix\url{http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf}.
+
+\bibitem[{Gelman \& Stern(2006)}]{Gelman2006}
+Gelman, Andrew \& Hal Stern. 2006.
+\newblock The difference between ``significant'' and ``not significant'' is not itself statistically significant.
+\newblock \emph{The American Statistician} 60(4). 328--331.
+\newblock \doi{10.1198/000313006X152649}.
+
+\bibitem[{Goodman(2008)}]{Goodman2008}
+Goodman, Steven. 2008.
+\newblock A dirty dozen: Twelve \textit{p}-value misconceptions.
+\newblock \emph{Seminars in Hematology} 45. 135--140.
+\newblock \doi{10.1053/j.seminhematol.2008.04.003}.
+
+\bibitem[{Graham(2009)}]{Graham2009}
+Graham, John~W. 2009.
+\newblock Missing data analyis: Making it work in the real world.
+\newblock \emph{Annual Review of Psychology} 60. 549--576.
+\newblock \doi{10.1146/annurev.psych.58.110405.085530}.
+
+\bibitem[{Greenland et~al.(2016)Greenland, Senn, Rothman, Carlin, Poole, Goodman \& Altman}]{Greenland2016}
+Greenland, Sander, Stephen~J. Senn, Kenneth~J. Rothman, John~B. Carlin, Charles Poole, Steven~N. Goodman \& Douglas~G. Altman. 2016.
+\newblock Statistical tests, $p$ values, confidence intervals, and power: A guide to misinterpretations.
+\newblock \emph{European Journal of Epidemiology} 31. 337--350.
+\newblock \doi{10.1007/s10654-016-0149-3}.
+
+\bibitem[{Healy(2019)}]{Healy2019}
+Healy, Kieran. 2019.
+\newblock \emph{Data visualization: A practical introduction}.
+\newblock Princeton, NJ: Princeton University Press.
+\newblock Also freely available online from https://socviz.co/.
+
+\bibitem[{Hellevik(2009)}]{Hellevik2009}
+Hellevik, Ottar. 2009.
+\newblock Linear versus logistic regression when the dependent variable is a dichotomy.
+\newblock \emph{Quality \& Quantity} 43. 59--74.
+\newblock \doi{10.1007/s11135-007-9077-3}.
+
+\bibitem[{Hesterberg(2014)}]{Hesterberg2014}
+Hesterberg, Tim~C. 2014.
+\newblock What teachers should know about the bootstrap: Resampling in the undergraduate statistics curriculum.
+\newblock arXiv.
+\newblock \doi{10.48550/arXiv.14115279}.
+
+\bibitem[{Hesterberg(2015)}]{Hesterberg2015}
+Hesterberg, Tim~C. 2015.
+\newblock What teachers should know about the bootstrap: Resampling in the undergraduate statistics curriculum.
+\newblock \emph{The American Statistician} 69(4). 371--386.
+\newblock \doi{10.1080/00031305.2015.1089789}.
+
+\bibitem[{Hicks(2021)}]{Hicks2021}
+Hicks, Nina~Selina. 2021.
+\newblock Exploring systematic orthographic crosslinguistic similarities to enhance foreign language vocabulary learning.
+\newblock \emph{Language Teaching Research} \doi{10.1177/13621688211047353}.
+
+\bibitem[{Hoekstra et~al.(2014)Hoekstra, Morey, Rouder \& Wagenmakers}]{Hoekstra2014}
+Hoekstra, Rink, Richard~D. Morey, Jeffrey~N. Rouder \& Eric-Jan Wagenmakers. 2014.
+\newblock Robust misinterpretation of confidence intervals.
+\newblock \emph{Psychonomic Bulletin \& Review} 21(5). 1157--1164.
+\newblock \doi{10.3758/s13423-013-0572-3}.
+
+\bibitem[{Huang(2019)}]{Huang2019}
+Huang, Francis~L. 2019.
+\newblock Alternatives to logistic regression models in experimental studies.
+\newblock \emph{Journal of Experimental Education} \doi{10.1080/00220973.2019.1699769}.
+
+\bibitem[{Huff(1954)}]{Huff1954}
+Huff, Darrell. 1954.
+\newblock \emph{How to lie with statistics}.
+\newblock New York: Norton.
+
+\bibitem[{Huitema(2011)}]{Huitema2011}
+Huitema, Bradley~E. 2011.
+\newblock \emph{The analysis of covariance and alternatives: Statistical methods for experiments, quasi-experiments, and single-case studies}.
+\newblock Hoboken, NJ: Wiley.
+
+\bibitem[{Imai et~al.(2008)Imai, King \& Stuart}]{Imai2008}
+Imai, Kosuke, Gary King \& Elizabeth~A. Stuart. 2008.
+\newblock Misunderstandings between experimentalists and observationalists about causal inference.
+\newblock \emph{Journal of the Royal Statistical Society: Series A (Statistics in Society)} 171. 481--502.
+\newblock \doi{10.1111/j.1467-985X.2007.00527.x}.
+
+\bibitem[{Jaeger(2008)}]{Jaeger2008}
+Jaeger, T.~Florian. 2008.
+\newblock Categorical data analysis: Away from \textsc{anova}s (transformation or not) and towards logit mixed models.
+\newblock \emph{Journal of Memory and Language} 59(4). 434--446.
+\newblock \doi{10.1016/j.jml.2007.11.007}.
+
+\bibitem[{Kelley et~al.(2003)Kelley, Maxwell \& Rausch}]{Kelley2003}
+Kelley, Ken, Scott~E. Maxwell \& Joseph~R. Rausch. 2003.
+\newblock Obtaining power or obtaining precision.
+\newblock \emph{Evaluation \& the Health Professions} 26(3). 258--287.
+\newblock \doi{10.1177/0163278703255242}.
+
+\bibitem[{Kerr(1998)}]{Kerr1998}
+Kerr, Norbert~L. 1998.
+\newblock {HARK}ing: Hypothesizing after the results are known.
+\newblock \emph{Personality and Social Psychology Review} 2(3). 196--217.
+\newblock \doi{10.1207/s15327957pspr0203\_4}.
+
+\bibitem[{Keysar et~al.(2012)Keysar, Hayakawa \& An}]{Keysar2012}
+Keysar, Boas, Sayuri~L. Hayakawa \& Sun~Gyu An. 2012.
+\newblock The foreign-language effect: Thinking in a foreign tongue reduces decision biases.
+\newblock \emph{Psychological Science} 23(6). 661--668.
+\newblock \doi{10.1177/0956797611432178}.
+
+\bibitem[{Klein et~al.(2014)Klein, Ratliff, Vianello, Jr., Štěpán Bahník, Bernstein, Bocian et~al.}]{Klein2014}
+Klein, Richard~A., Kate~A. Ratliff, Michelangelo Vianello, Reginald B.~Adams Jr., Štěpán Bahník, Michael~J. Bernstein, Konrad Bocian et~al. 2014.
+\newblock Investigating variation in replicability: A “many labs” replication project.
+\newblock \emph{Social Psychology} 45(3). 142--152.
+\newblock \doi{10.1027/1864-9335/a000178}.
+
+\bibitem[{Kuhn \& Johnson(2013)}]{Kuhn2013}
+Kuhn, Max \& Kjell Johnson. 2013.
+\newblock \emph{Applied predictive modeling}.
+\newblock New York: Springer.
+\newblock \doi{10.1007/978-1-4614-6849-3}.
+
+\bibitem[{Kv\aa{}lseth(1985)}]{Kvalseth1985}
+Kv\aa{}lseth, Tarald~O. 1985.
+\newblock Cautionary note about ${R}^2$.
+\newblock \emph{The American Statistician} 4(1).
+\newblock \doi{10.2307/2683704}.
+
+\bibitem[{Lakens(2014)}]{Lakens2014}
+Lakens, Daniël. 2014.
+\newblock Performing high-powered studies efficiently with sequential analyses.
+\newblock \emph{European Journal of Social Psychology} 44. 701--710.
+\newblock \doi{10.1002/ejsp.2023}.
+
+\bibitem[{Mc{E}lreath(2020)}]{McElreath2020}
+Mc{E}lreath, Richard. 2020.
+\newblock \emph{Statistical rethinking: A {B}ayesian course with examples in {R} and {S}tan}.
+\newblock Boca Raton, FL: CRC Press 2nd edn.
+
+\bibitem[{McGraw \& Wong(1992)}]{McGraw1992}
+McGraw, Kenneth~O. \& S.~P. Wong. 1992.
+\newblock A common language effect size statistic.
+\newblock \emph{Psychological Bulletin} 111. 361--365.
+
+\bibitem[{Mook(1983)}]{Mook1983}
+Mook, Douglas~G. 1983.
+\newblock In defense of external invalidity.
+\newblock \emph{American Psychologist} 38. 379--387.
+\newblock \doi{10.1037/0003-066X.38.4.379}.
+
+\bibitem[{Morey et~al.(2016)Morey, Hoekstra, Rouder, Lee \& Wagenmakers}]{Morey2016}
+Morey, Richard~D., Rink Hoekstra, Jeffrey~N. Rouder, Michael~D. Lee \& Eric-Jan Wagenmakers. 2016.
+\newblock The fallacy of placing confidence in confidence intervals.
+\newblock \emph{Psychonomic Bulletin \& Review} 23(1). 103--123.
+\newblock \doi{10.3758/s13423-015-0947-8}.
+
+\bibitem[{Morrissey \& Ruxton(2018)}]{Morrissey2018}
+Morrissey, Michael~B. \& Greame~D. Ruxton. 2018.
+\newblock Multiple regression is not multiple regressions: The meaning of multiple regression and the non-problem of collinearity.
+\newblock \emph{Philosophy, Theory, and Practice in Biology} 10(3).
+\newblock \doi{10.3998/ptpbio.16039257.0010.003}.
+
+\bibitem[{Nalborczyk et~al.(2019)Nalborczyk, B{\"u}rkner \& Williams}]{Nalborczyk2018}
+Nalborczyk, Ladislas, Paul-Christian B{\"u}rkner \& Donald~R. Williams. 2019.
+\newblock Pragmatism should not be a substitute for statistical literacy: A commentary on {A}lbers, {K}iers, and van {R}avenzwaaij (2018).
+\newblock \emph{Collabra: Psychology} 5(1). 13.
+\newblock \doi{10.1525/collabra.197}.
+
+\bibitem[{Nieuwenhuis et~al.(2011)Nieuwenhuis, Forstmann \& Wagenmakers}]{Nieuwenhuis2011}
+Nieuwenhuis, Sander, Birte~U. Forstmann \& Eric-Jan Wagenmakers. 2011.
+\newblock Erroneous analyses of interactions in neuroscience: A problem of significance.
+\newblock \emph{Nature Neuroscience} 14. 1105--1107.
+\newblock \doi{10.1038/nn.2886}.
+
+\bibitem[{Noether(1981)}]{Noether1981}
+Noether, G.~E. 1981.
+\newblock Why {K}endall tau?
+\newblock \emph{Teaching Statistics} 3(2). 41--43.
+\newblock \doi{10.1111/j.1467-9639.1981.tb00422.x}.
+
+\bibitem[{Oppenheimer et~al.(2009)Oppenheimer, Meyvis \& Davidenko}]{Oppenheimer2009}
+Oppenheimer, Daniel~M., Tom Meyvis \& Nicolas Davidenko. 2009.
+\newblock Instructional manipulation checks: Detecting satisficing to increase statistical power.
+\newblock \emph{Journal of Experimental Social Psychology} 45. 867--872.
+\newblock \doi{10.1016/j.jesp.2009.03.009}.
+
+\bibitem[{Oppenheimer \& Monin(2009)}]{Oppenheimer2009a}
+Oppenheimer, Daniel~M \& Beno{\^\i}t Monin. 2009.
+\newblock The retrospective gambler's fallacy: Unlikely events, constructing the past, and multiple universes.
+\newblock \emph{Judgment and Decision Making} 4(5). 326--334.
+
+\bibitem[{Pestana et~al.(2017)Pestana, Lambelet \& Vanhove}]{Pestana_HELASCOT_reading}
+Pestana, Carlos, Amelia Lambelet \& Jan Vanhove. 2017.
+\newblock Reading comprehension in {P}ortuguese heritage speakers in {S}witzerland ({HELASCOT} project).
+\newblock In Raphael Berthele \& Amelia Lambelet (eds.), \emph{Heritage and school language literacy development in migrant children: Interdependence or independence?}, 58--82. Bristol: Multilingual Matters.
+\newblock \doi{10.21832/9781783099054-005}.
+
+\bibitem[{Peterson(2016)}]{Peterson2016}
+Peterson, David. 2016.
+\newblock The baby factory: Difficult research objects, disciplinary standards, and the production of statistical significance.
+\newblock \emph{Socius} 2. 1--10.
+\newblock \doi{10.1177/2378023115625071}.
+
+\bibitem[{Poarch et~al.(2019)Poarch, Vanhove \& Berthele}]{Poarch2018}
+Poarch, Gregory~J., Jan Vanhove \& Raphael Berthele. 2019.
+\newblock The effect of bidialectalism on executive function.
+\newblock \emph{International Journal of Bilingualism} 23(2). 612--628.
+\newblock \doi{10.1177/1367006918763132}.
+
+\bibitem[{Ritchie(2021)}]{Ritchie2021}
+Ritchie, Stuart. 2021.
+\newblock \emph{Science fictions}.
+\newblock Penguin.
+
+\bibitem[{Rohrer(2018)}]{Rohrer2018}
+Rohrer, Julia~M. 2018.
+\newblock Thinking clearly about correlations and causation: Graphical causal models for observational data.
+\newblock \emph{Advances in Methods and Practices in Psychological Science} 1(1). 27--42.
+\newblock \doi{10.1177/2515245917745629}.
+
+\bibitem[{Ruxton(2006)}]{Ruxton2006}
+Ruxton, Graeme~D. 2006.
+\newblock The unequal variance $t$-test is an underused alternative to {S}tudent's $t$-test and the {M}ann--{W}hitney $u$ test.
+\newblock \emph{Behavioral Ecology} 17. 688--690.
+\newblock \doi{10.1093/beheco/ark016}.
+
+\bibitem[{Ruxton \& Beauchamp(2008)}]{Ruxton2008}
+Ruxton, Graeme~D. \& Guy Beauchamp. 2008.
+\newblock Time for some a priori thinking about post hoc testing.
+\newblock \emph{Behavioral Ecology} 19(3). 690--693.
+\newblock \doi{10.1093/beheco/arn020}.
+
+\bibitem[{Schad et~al.(2020)Schad, Vasishth, Hohenstein \& Kliegl}]{Schad2020}
+Schad, Daniel~J., Shravan Vasishth, Sven Hohenstein \& Reinhold Kliegl. 2020.
+\newblock How to capitalize on a priori contrasts in linear (mixed) models: A tutorial.
+\newblock \emph{Journal of Memory and Language} 110.
+\newblock \doi{10.1016/j.jml.2019.104038}.
+
+\bibitem[{Schmidt(1996)}]{Schmidt1996}
+Schmidt, Frank~L. 1996.
+\newblock Statistical significance testing and cumulative knowledge in psychology: Implications for training of researchers.
+\newblock \emph{Psychological Methods} 1. 115--129.
+\newblock \doi{10.1037/1082-989X.1.2.115}.
+
+\bibitem[{Schwertman et~al.(1990)Schwertman, Gilks \& Cameron}]{Schwertman1990}
+Schwertman, Neil~C., A.~J. Gilks \& J.~Cameron. 1990.
+\newblock A simple noncalculus proof that the median minimizes the sum of the absolute deviations.
+\newblock \emph{The American Statistician} 44(1). 38--39.
+\newblock \doi{10.1080/00031305.1990.10475690}.
+
+\bibitem[{Senn(2011)}]{Senn2011}
+Senn, Stephen. 2011.
+\newblock Francis {G}alton and regression to the mean.
+\newblock \emph{Significance} 8(3). 124--126.
+\newblock \doi{10.1111/j.1740-9713.2011.00509.x}.
+
+\bibitem[{Shmueli(2010)}]{Shmueli2010}
+Shmueli, Galit. 2010.
+\newblock To explain or to predict?
+\newblock \emph{Statistical Science} 25(3). 289--310.
+\newblock \doi{10.1214/10-STS330}.
+
+\bibitem[{Simmons et~al.(2011)Simmons, Nelson \& Simonsohn}]{Simmons2011}
+Simmons, Joseph~P., Leif~D. Nelson \& Uri Simonsohn. 2011.
+\newblock False-positive psychology: Undisclosed flexibility in data collection and analysis allows presenting anything as significant.
+\newblock \emph{Psychological Science} 22. 1359--1366.
+\newblock \doi{10.1177/0956797611417632}.
+
+\bibitem[{Simmons et~al.(2018)Simmons, Nelson \& Simonsohn}]{Simmons2018}
+Simmons, Joseph~P., Leif~D. Nelson \& Uri Simonsohn. 2018.
+\newblock False-positive citations.
+\newblock \emph{Perspectives on Psychological Science} 13(2). 255--259.
+\newblock \doi{10.1177/1745691617698146}.
+
+\bibitem[{Simon(1969)}]{Simon1969b}
+Simon, J.~Richard. 1969.
+\newblock Reactions toward the source of stimulation.
+\newblock \emph{Journal of Experimental Psychology} 81. 174--176.
+\newblock \doi{10.1037/h0027448}.
+
+\bibitem[{Simonsohn(2013)}]{Simonsohn2013}
+Simonsohn, Uri. 2013.
+\newblock Just post it: The lesson from two cases of fabricated data detected by statistics alone.
+\newblock \emph{Psychological Science} 24(10). 1875--1888.
+\newblock \doi{10.1177/0956797613480366}.
+
+\bibitem[{Steegen et~al.(2016)Steegen, Tuerlinckx, Gelman \& Vanpaemel}]{Steegen2016}
+Steegen, Sara, Francis Tuerlinckx, Andrew Gelman \& Wolf Vanpaemel. 2016.
+\newblock Increasing transparency through a multiverse analysis.
+\newblock \emph{Perspectives on Psychological Science} 11(5). 702--712.
+\newblock \doi{10.1177/1745691616658637}.
+
+\bibitem[{Sterling et~al.(1995)Sterling, Rosenbaum \& Weinkam}]{Sterling1995}
+Sterling, Theodore~D., W.~L. Rosenbaum \& J.~J. Weinkam. 1995.
+\newblock Publication decision revisited: The effect of the outcome of statistical tests on the decision to publish and vice versa.
+\newblock \emph{The American Statistician} 49. 108--112.
+\newblock \urlprefix\url{http://www.jstor.org/stable/2684823}.
+
+\bibitem[{Stocker(2017)}]{Stocker2017}
+Stocker, Ladina. 2017.
+\newblock The impact of foreign accent on credibility: An analysis of cognitive statement ratings in a {S}wiss context.
+\newblock \emph{Journal of Psycholinguistic Research} 46(3). 617--628.
+\newblock \doi{10.1007/s10936-016-9455-x}.
+
+\bibitem[{Tversky \& Kahneman(1981)}]{Tversky1981}
+Tversky, Amos \& Daniel Kahneman. 1981.
+\newblock The framing of decisions and the psychology of choice.
+\newblock \emph{Science} 211(4481). 453--458.
+\newblock \doi{10.1126/science.7455683}.
+
+\bibitem[{{van den Broek} et~al.(2018){van den Broek}, Takashima, Segers \& Verhoeven}]{VanDenBroek2018}
+{van den Broek}, Gesa S.~E., Atsuko Takashima, Eliane Segers \& Ludo Verhoeven. 2018.
+\newblock Contextual richness and word learning: Context enhances comprehension but retrieval enhances retention.
+\newblock \emph{Language Learning} 68(2). 546--585.
+\newblock \doi{10.1111/lang.12285}.
+
+\bibitem[{Vanhove(2013)}]{Vanhove2013}
+Vanhove, Jan. 2013.
+\newblock The critical period hypothesis in second language acquisition: A statistical critique and a reanalysis.
+\newblock \emph{PLOS ONE} 8. e69172.
+\newblock \doi{10.1371/journal.pone.0069172}.
+
+\bibitem[{Vanhove(2014)}]{Vanhove2014}
+Vanhove, Jan. 2014.
+\newblock \emph{Receptive multilingualism across the lifespan: Cognitive and linguistic factors in cognate guessing}: University of Fribourg dissertation.
+\newblock \urlprefix\url{http://doc.rero.ch/record/210293}.
+
+\bibitem[{Vanhove(2015)}]{Vanhove2015}
+Vanhove, Jan. 2015.
+\newblock Analyzing randomized controlled interventions: Three notes for applied linguists.
+\newblock \emph{Studies in Second Language Learning and Teaching} 5. 135--152.
+\newblock \doi{10.14746/ssllt.2015.5.1.7}.
+
+\bibitem[{Vanhove(2016)}]{Vanhove2016}
+Vanhove, Jan. 2016.
+\newblock The early learning of interlingual correspondence rules in receptive multilingualism.
+\newblock \emph{International Journal of Bilingualism} 20(5). 580--593.
+\newblock \doi{10.1177/1367006915573338}.
+
+\bibitem[{Vanhove(2017{\natexlab{a}})}]{Vanhove2017}
+Vanhove, Jan. 2017{\natexlab{a}}.
+\newblock The influence of standard and substandard {D}utch on gender assignment in second language {G}erman.
+\newblock \emph{Language Learning} 67(2). 431--460.
+\newblock \doi{10.1111/lang.12230}.
+
+\bibitem[{Vanhove(2017{\natexlab{b}})}]{Vanhove_lexrich_TR}
+Vanhove, Jan. 2017{\natexlab{b}}.
+\newblock Lexical richness of short {F}rench, {G}erman and {P}ortugese texts written by children (technical report).
+\newblock \urlprefix\url{https://osf.io/vw4pc/}.
+
+\bibitem[{Vanhove(2018)}]{Vanhove2018b}
+Vanhove, Jan. 2018.
+\newblock Checking the assumptions of your statistical method without getting paranoid.
+\newblock \doi{10.31234/osf.io/zvawb}.
+
+\bibitem[{Vanhove(2019)}]{Vanhove2018}
+Vanhove, Jan. 2019.
+\newblock Metalinguistic knowledge about the native language and language transfer in gender assignment.
+\newblock \emph{Studies in Second Language Learning and Teaching} 9(2). 397--419.
+\newblock \doi{10.14746/ssllt.2019.9.2.7}.
+
+\bibitem[{Vanhove(2020{\natexlab{a}})}]{Vanhove2020c}
+Vanhove, Jan. 2020{\natexlab{a}}.
+\newblock Capitalising on covariates in cluster-randomised experiments.
+\newblock \emph{PsyArXiv Preprints} \doi{10.31234/osf.io/ef4zc}.
+
+\bibitem[{Vanhove(2020{\natexlab{b}})}]{Vanhove2019b}
+Vanhove, Jan. 2020{\natexlab{b}}.
+\newblock When labeling {L2} users as nativelike or not, consider classification errors.
+\newblock \emph{Second Language Research} 36(4). 709--724.
+\newblock \doi{10.1177/0267658319827055}.
+
+\bibitem[{Vanhove(2021{\natexlab{a}})}]{Vanhove2021}
+Vanhove, Jan. 2021{\natexlab{a}}.
+\newblock Collinearity isn't a disease that needs curing.
+\newblock \emph{Meta-Psychology} 5.
+\newblock \doi{10.15626/MP.2021.2548}.
+
+\bibitem[{Vanhove(2021{\natexlab{b}})}]{Vanhove2020b}
+Vanhove, Jan. 2021{\natexlab{b}}.
+\newblock Towards simpler and more transparent quantitative research reports.
+\newblock \emph{ITL - International Journal of Applied Linguistics} 172(1). 3--25.
+\newblock \doi{10.1075/itl.20010.van}.
+
+\bibitem[{Vanhove \& Berthele(2013)}]{Vanhove2013b}
+Vanhove, Jan \& Raphael Berthele. 2013.
+\newblock Factoren bij het herkennen van cognaten in onbekende talen: algemeen of taalspecifiek?
+\newblock \emph{Taal \& Tongval} 65. 171--210.
+\newblock \doi{10.5117/TET2013.2.VANH}.
+
+\bibitem[{Vanhove et~al.(2019)Vanhove, Bonvin, Lambelet \& Berthele}]{Vanhove2019}
+Vanhove, Jan, Audrey Bonvin, Amelia Lambelet \& Raphael Berthele. 2019.
+\newblock Predicting perceptions of the lexical richness of short {F}rench, {G}erman, and {P}ortuguese texts using text-based indices.
+\newblock \emph{Journal of Writing Research} 10(3). 499--525.
+\newblock \doi{10.17239/jowr-2019.10.03.04}.
+
+\bibitem[{Wagenmakers et~al.(2012{\natexlab{a}})Wagenmakers, Krypotos, Criss \& Iverson}]{Wagenmakers2012}
+Wagenmakers, Eric-Jan, Angelos-Miltiadis Krypotos, Amy~H. Criss \& Geoff Iverson. 2012{\natexlab{a}}.
+\newblock On the interpretation of removable interactions: A survey of the field 33 years after {L}oftus.
+\newblock \emph{Memory \& Cognition} 40(2). 145--160.
+\newblock \doi{10.3758/s13421-011-0158-0}.
+
+\bibitem[{Wagenmakers et~al.(2012{\natexlab{b}})Wagenmakers, Wetzels, Borsboom, {van der Maas} \& Kievit}]{Wagenmakers2012b}
+Wagenmakers, Eric-Jan, Ruud Wetzels, Denny Borsboom, Han L.~J. {van der Maas} \& Rogier~A. Kievit. 2012{\natexlab{b}}.
+\newblock An agenda for purely confirmatory research.
+\newblock \emph{Perspectives on Psychological Science} 7(6).
+\newblock \doi{10.1177/1745691612463078}.
+
+\bibitem[{Weissgerber et~al.(2015)Weissgerber, Milic, Winham \& Garovic}]{Weissgerber2015}
+Weissgerber, Tracey~L., Natasa~M. Milic, Stacey~J. Winham \& Vesna~D. Garovic. 2015.
+\newblock Beyond bar and line graphs: Time for a new data presentation paradigm.
+\newblock \emph{PLOS Biology} 13(4). e1002128.
+\newblock \doi{10.1371/journal.pbio.1002128}.
+
+\bibitem[{Westfall et~al.(2014)Westfall, Kenny \& Judd}]{Westfall2014}
+Westfall, Jacob, David~A. Kenny \& Charles~M. Judd. 2014.
+\newblock Statistical power and optimal design in experiments in which samples of participants respond to samples of stimuli.
+\newblock \emph{Journal of Experimental Psychology: General} 143. 2020--2045.
+\newblock \doi{10.1037/xge0000014}.
+
+\bibitem[{Westfall \& Yarkoni(2016)}]{Westfall2016}
+Westfall, Jacob \& Tal Yarkoni. 2016.
+\newblock Statistically controlling for confounding constructs is harder than you think.
+\newblock \emph{PLOS ONE} 11(3). e0152719.
+\newblock \doi{10.1371/journal.pone.0152719}.
+
+\bibitem[{Wickham et~al.(2023)Wickham, Çetinkaya Rundel \& Grolemund}]{Wickham2023}
+Wickham, Hadley, Mine Çetinkaya Rundel \& Garrett Grolemund. 2023.
+\newblock \emph{R for data science: Import, tidy, transform, visualize, and model data}.
+\newblock O'Reilly 2nd edn.
+\newblock \urlprefix\url{https://r4ds.hadley.nz/}.
+
+\bibitem[{Wieling(2018)}]{Wieling2018}
+Wieling, Martijn. 2018.
+\newblock Analyzing dynamic phonetic data using generalized additive mixed modeling: A tutorial focusing on articulatory differences between {L1} and {L2} speakers of {E}nglish.
+\newblock \emph{Journal of Phonetics} 70. 86--116.
+
+\bibitem[{Winter(2019)}]{Winter2019}
+Winter, Bodo. 2019.
+\newblock \emph{Statistics for linguists: An introduction using {R}}.
+\newblock Routledge.
+\newblock \doi{10.4324/9781315165547}.
+
+\end{thebibliography}

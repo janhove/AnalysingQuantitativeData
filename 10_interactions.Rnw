@@ -63,7 +63,7 @@ par(mfrow = c(1, 1))
 @
 
 \section{Interactions between two binary predictors}
-\citet{Berthele2011b} ask Swiss teachers in training to rate the 
+\citet{Berthele2011b} asked Swiss teachers in training to rate the 
 academic potential of a German-speaking boy based on a short recording
 in which he spoke French. About half of the future teachers were told
 that the boy's name was Luca (a typical Swiss name); the rest were told
@@ -230,7 +230,7 @@ rounding errors were corrected:
 Since we're using treatment coding,
 the estimate of $0.53$ for \texttt{Dragan} ($\widehat{\beta}_1$) \emph{only} pertains to the recording without
 code-switches (the level coded as 0). I
-n order to obtain difference between the estimated conditional
+In order to obtain the difference between the estimated conditional
 means between Luca and Dragan when the recording contains code-switches, you
 need to include the interaction terms: $0.53 - 0.93 = -0.40$.
 Similarly, the estimate of $0.27$ for \texttt{WithCS} ($\widehat{\beta}_2$) 
@@ -278,7 +278,7 @@ exercise.lm <- lm(Outcome ~ Var1 + Var2 + Interaction, df)
 coef(exercise.lm)
 @
   \begin{enumerate}
-    \item Compute the mean outcome value for each of the four cells.
+    \item Compute the mean outcome value for each of the four cells (AX, AY, BX, BY).
     \item Explain what the estimated \texttt{(Intercept)} coefficient represents.
     \item Explain what the estimated \texttt{Var1} and \texttt{Var2} coefficients represent.
     \item Explain what the estimated \texttt{Interaction} coefficient represents.\parend
@@ -336,8 +336,9 @@ models in order to gauge the relationship between
 the continuous predictor and the outcome separately for each group, and
 to conclude that if this relationship is statistically significant in one
 group but not in the other, there must be an interaction between the 
-groups and the continuous predictor. \citet{Gelman2006} and \citet{Nieuwenhuis2011}
-explain why this is a terrible idea.
+groups and the continuous predictor.  
+(We haven't discuss what `statistically significant' means, though.)
+\citet{Gelman2006} and \citet{Nieuwenhuis2011} explain why this is a terrible idea.
 
 \mypar{Exercise}
   The question tackled in this exercise is a bit silly, but I couldn't find
