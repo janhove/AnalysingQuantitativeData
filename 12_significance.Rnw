@@ -10,7 +10,7 @@ of this chapter are copied or adapted from the chapter \textit{Inferential stati
 in my booklet \href{https://github.com/janhove/QuantitativeMethodology}{\textit{Quantitative methodology: An introduction}}.}
 It does so by explicitly linking the computation of $p$-values
 to the random assignment of participants to conditions
-in experimental research. If you have ever taken an introductory
+in experimental research. If you have ever taken another introductory
 statistics class, chances are $p$-values were explained to you
 in a different fashion, presumably by making assumptions about
 how the observations in the sample were sampled from a larger
@@ -301,7 +301,7 @@ ggplot(df_diffs,
   \]
   Both of these valid ways coincide in `nice' cases (e.g., exhaustive 
   randomisation tests with an equal number of participants in both conditions),
-  but they may yield somewhat different results in other cases.
+  but the latter way may yield somewhat smaller $p$-values in other cases.
 \parend
 
 \mypar[Link to the research design]{Remark}
@@ -361,7 +361,7 @@ This nuance corresponds to the distinction between
 \term{internal validity} (Is the difference or effect
 observed in this sample attributable to the experimental
 manipulation?) and \term{external validity}
-(Can this finding be generalised beyond the sample?)
+(Can this finding be generalised beyond the sample?).
 Someone interested in the effectiveness of teaching methods
 would need to consider the external validity of the study.
 But for experimental psychologists, external validity is not
@@ -604,7 +604,8 @@ In our example, we \emph{cannot} conclude that $H_A$ is true with 91.3\% probabi
 
 \item The $p$-value is not the complement of the probability that the 
 observed result would replicate in a new study. 
-(I have no idea where this misunderstanding comes from, but I once saw it in a review report.)
+(I have no idea where this misunderstanding comes from, 
+but I once saw it in a review report.)
 \end{itemize}
 
 These---and other---misunderstandings are surprisingly common, 
@@ -615,7 +616,8 @@ Often, researchers distinguish between `statistically significant'
 and `statistically non-significant' $p$-values. 
 A $p$-value below a given threshold $\alpha$ is considered statistically significant. 
 For a statistically significant $p$-value, 
-researchers typically conclude that the data are unlikely under the null hypothesis, 
+researchers typically conclude that
+the data are too unlikely under the null hypothesis, 
 and therefore reject it in favour of the alternative. 
 The significance threshold, denoted $\alpha$, can in principle be chosen arbitrarily; 
 in the social and human sciences, 
@@ -632,9 +634,9 @@ In traditional null hypothesis significance testing (\textsc{nhst}),
 we distinguish between two types of potential mistakes.
 
 The first type of mistake is rejecting a null hypothesis that is actually true. 
-If you follow the conventional $\alpha$ threshold of 5\%, 
-you will incorrectly reject a true null hypothesis 
-at most 5\% of the time---assuming the data are analysed correctly. 
+% If you follow the conventional $\alpha$ threshold of 5\%, 
+% you will incorrectly reject a true null hypothesis 
+% at most 5\% of the time---assuming the data are analysed correctly. 
 This type of error is called a \term{Type I error} 
 (or a false positive, i.e., finding something that isn't there). 
 Because $\alpha$ is defined by the researcher---or, in practice, 
@@ -642,9 +644,9 @@ de facto set at 0.05---the frequency of Type I errors is, in principle, controll
 at most $100\alpha$\% (i.e., de facto 5\%) 
 of all true null hypotheses would be wrongly rejected 
 if the data are correctly analysed. 
-In practice, however, complications can arise.
+In practice, complications can arise.
 Exercise \ref{ex:multipletesting} deals with one such complication;
-more subtle ones are discussed in Chapter \ref{ch:QRP}.
+more subtle but equally important ones are discussed in Chapter \ref{ch:QRP}.
 
 \mypar[Multiple testing]{Exercise}\label{ex:multipletesting}
 A research team conducts an experiment in 30 school classes simultaneously. 
@@ -783,7 +785,7 @@ r <- sum(median_diffs_H0 >= median_difference)
   one could also compute the variance (or standard deviation) of the statistics to be compared
   rather than their difference.
   If a two-sided test is used,
-  this will give the same result,
+  this will give close to the same result,
   because the variance (or standard deviation) is a strictly monotonically increasing
   function of the absolute difference.
 \parend
@@ -802,7 +804,7 @@ r <- sum(median_diffs_H0 >= median_difference)
 
   \begin{enumerate}
     \item There are $\binom{2n}{n}$ possible ways of dividing $2n$ participants
-          into two equally sized groups.  
+          into two equally sized groups without any restrictions.  
           How many possible allocations are there in an experiment with $2n$ participants
           if a blocking factor groups the participants into pairs?
 
@@ -981,7 +983,7 @@ we first need to generate the distribution of the correlation coefficient
 we would expect in this sample
 if the two variables (\texttt{Flanker} and \texttt{Simon}) were independent ($H_0$).
 To this end, we can permute the observed values of one variable,
-i.e.\ shuffle them randomly,
+i.e., shuffle them randomly,
 without permuting the observed values of the other variable.
 It doesn't matter which variable you permute.
 This breaks the systematic association between the two variables.

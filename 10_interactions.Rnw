@@ -372,8 +372,17 @@ ggplot(d,
   is a women.
   Then fit the interaction model like so:
 <<eval = FALSE >>=
-int.mod <- lm(CorrectSpoken ~ n.Male * CorrectSpoken, data = d)
+int.mod <- lm(CorrectSpoken ~ n.Male * EnglishOverall, data = d)
 @
+
+  The notation above is equivalent to the following:
+<<eval = FALSE>>=
+d$Interaction <- d$n.Male * d$EnglishOverall
+int.mod <- lm(CorrectSpoken ~ n.Male + EnglishOverall + Interaction, data = d)
+@
+  In the output of the first model, the \texttt{Interaction} term 
+  will be shown as \texttt{n.Male:EnglishOverall}.
+
   Explain the literal meaning of each of the four estimated $\beta$ parameters
   in this model.
   Further calculate the model prediction for a man with a score of 1 on the 
